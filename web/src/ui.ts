@@ -5,3 +5,6 @@ export { SetupPage } from "./pages/Setup";
 export { SettingsPage } from "./pages/Settings";
 export { ResultCard } from "./components/ResultCard";
 export { PrivacyBadge } from "./components/PrivacyBadge";
+export { FamilyPage } from "./pages/Family";
+export { GuardianPage } from "./pages/Guardian";
+export { HowPage } from "./pages/How";

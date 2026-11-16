@@ -32,5 +32,8 @@
   "exports": {
     "./ui": "./src/ui.ts",
     "./styles.css": "./src/styles.css"
+  },
+  "imports": {
+    "#signin": "./src/lib/signin-popup.ts"
   }
 }

@@ -13,6 +13,9 @@ export const firebaseConfig = {
 
 export const isFirebaseConfigured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId);
 
+/** The hosted web app (Firebase Hosting URL), used for family invite links made in the extension. */
+export const publicAppUrl = ((e.VITE_PUBLIC_APP_URL as string | undefined) || "").replace(//$/, "") || undefined;
+
 export const recaptchaSiteKey = (e.VITE_RECAPTCHA_ENTERPRISE_SITE_KEY as string | undefined) || undefined;
 
 /** Debug App Check provider: always in `vite dev`, or when explicitly enabled. */

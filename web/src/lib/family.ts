@@ -2,13 +2,14 @@
 // (device/cloud/rules), platform and time. Never the message text, excerpts or redacted text.
 // firestore.rules enforces the same allow-list of fields.
 import { addDoc, arrayUnion, collection, doc, getDoc, getDocs, limit, onSnapshot, orderBy, query, serverTimestamp, setDoc, updateDoc, where, type Firestore } from "firebase/firestore";
-import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut, type Auth, type User } from "firebase/auth";
+import { onAuthStateChanged, signOut, type Auth, type User } from "firebase/auth";
+import { signInGoogle } from "#signin";
 import type { AlertDoc, Circle } from "./family-model";
 
 export * from "./family-model";
 
 export const watchUser = (auth: Auth, cb: (u: User | null) => void) => onAuthStateChanged(auth, cb);
-export const signIn = (auth: Auth) => signInWithPopup(auth, new GoogleAuthProvider());
+export const signIn = (auth: Auth) => signInGoogle(auth);
 export const signOutUser = (auth: Auth) => signOut(auth);
 
 function randomId(n = 20): string {

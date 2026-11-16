@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useApp } from "../lib/app-context";
+import { publicAppUrl } from "../lib/env";
 import { createCircle, joinCircle, myCircles, signIn, signOutUser, type Circle } from "../lib/family";
 
 export function FamilyPage({ joinId }: { joinId?: string }) {
@@ -36,7 +37,9 @@ export function FamilyPage({ joinId }: { joinId?: string }) {
 
   const mine = circles?.find((c) => c.ownerUid === user.uid);
   const guarding = circles?.filter((c) => c.ownerUid !== user.uid) ?? [];
-  const inviteUrl = mine ? `${location.origin}${location.pathname}#/join/${mine.id}` : "";
+  // In the extension, invites must point at the hosted web app, not chrome-extension://.
+  const appUrl = publicAppUrl ?? `${location.origin}${location.pathname}`;
+  const inviteUrl = mine ? `${appUrl}#/join/${mine.id}` : "";
 
   return (
     <div className="page">
