@@ -1,0 +1,11 @@
+node_modules/
+dist/
+dist-*/
+coverage/
+*.log
+.env
+.env.*
+!.env.example
+.firebase/
+.DS_Store
+*.tsbuildinfo
