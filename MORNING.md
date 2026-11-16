@@ -1,64 +1,69 @@
 # Good morning: overnight build notes
 
-Repo: https://github.com/im-Amrith/secondlook (public, `main`, small commits). **Nothing was deployed**, no Firebase or Google Cloud project was created, and no credentials or keys were entered anywhere. The Firebase config is placeholders only (`web/.env.example`).
+Repo: https://github.com/im-Amrith/secondlook (public, `main`, ~45 small commits, CI green). **Nothing was deployed**, no Firebase or Google Cloud project was created, and no credentials or keys were entered anywhere. The Firebase config is placeholders only (`web/.env.example`).
+
+## Read this first: one real finding
+
+While testing against the real Firebase AI Logic SDK (13.3.0) I found that an **`ONLY_ON_DEVICE` model silently sends its request to the cloud** when Chrome's `LanguageModel` isn't present at the moment the model is created (and always in the SDK's Node build): `chromeAdapterFactory` returns nothing and `callCloudOrDevice` falls through to the cloud call. Our pipeline only used the device runner after Nano reported "available", but I added a hard guard anyway (lazy model creation, a check before every call, rejecting any non-`on_device` answer) plus contract tests. It's worth mentioning in the submission, and you may want to report it to Firebase (I didn't post anything).
+
+Related: one of those tests briefly made a **real request** to `firebasevertexai.googleapis.com` with a fake API key, the fake project id `demo-secondlook` and the text "first call creates the model" (no user data). Google rejected it (`API_KEY_INVALID`). Web tests now block all network access.
 
 ## What got built
 
-**`shared/`** (core, all unit-tested)
-- `rules.ts`: the 16 shield-paypal-ai rules with generic (non-PayPal) wording and advice, plus new rules for secrecy/isolation ("don't tell anyone", "stay on the call"), "digital arrest"/video-call custody, account/KYC block and payment demands; some Hinglish, Manglish and Devanagari terms; genuine "do not share your OTP" warnings no longer count as OTP requests; Remote Config weight overrides and live extra rules.
-- `schema.ts` (verdict type + JSON schema, `source: ON_DEVICE | IN_CLOUD | RULES`, `redactions[]`), `redact.ts` (phones, emails, UPI, Luhn-checked cards, IBAN, accounts, OTPs, Aadhaar, PAN, names; `[PHONE_1]` placeholders; mapping stays local), `prompt.ts` (short prompts, ≤256 output tokens), `router.ts` (routing table as a pure function with a plain-language reason; one test per row), `combine.ts`, `pipeline.ts` (rules → router → device | redact→cloud | rules, fallbacks both ways, consent before a screenshot goes to the cloud, chunking, Nano-assisted name masking, follow-up questions), `url.ts` (local look-alike URL + login/payment page scorer).
+**`shared/`** (core, all unit-tested): rules engine (16 shield-paypal-ai rules made generic + secrecy, digital-arrest/video custody, account/KYC block, payment demand; Hinglish/Manglish/Devanagari terms), verdict schema + tolerant parser, redactor (phones, emails, UPI, cards, IBAN, accounts, OTPs, Aadhaar, PAN, names), prompts, privacy router (routing table as a pure function with reasons), combiner, the full check pipeline (fallbacks both ways, screenshot consent, chunking, Nano name masking, follow-ups, answers in Hindi/Malayalam from the cloud), local URL/page scorer.
 
-**`evals/`**: shield-paypal-ai's two sets + 32 new labelled cases; a redaction eval (22 messages, 26 identifiers); runner with recorded-prediction scorers for device/cloud; `RESULTS.md`. Rules only: 84 cases, 96% precision, 94% recall. Redaction: 26/26 identifiers removed, 41/41 useful phrases kept (after fixing 2 gaps the eval found).
+**`evals/`**: 84 labelled messages (52 from shield-paypal-ai + 32 new), a redaction eval (26 identifiers), a banner eval (36 login URLs), runner with recorded device/cloud scorers. Rules only: **96% precision / 94% recall**. Redaction: **26/26 removed, 41/41 useful phrases kept**. Banner: **18/18 look-alikes caught, 0/18 false alarms**. Each eval found a real bug that was fixed and is noted in `evals/RESULTS.md`.
 
-**`web/`** (Vite + React, large calm type, light/dark, phone-friendly)
-- Onboarding with **Download the private model (one time)** (`initializeDeviceModel()` on the click) and `LanguageModel.availability()` status, plus **Test the AI connection** (a `PREFER_ON_DEVICE` call that prints `response.inferenceSource`).
-- Check screen (paste or screenshot; non-JPEG/PNG images are re-encoded to PNG on the device), **live route preview** under the box, result card (score, level, highlighted signals, explanation, advice), the **🟢/🔵/⚪ privacy badge**, **See exactly what was sent** drawer, **follow-up questions**, **Let my family know**.
-- **Privacy** page: the real router run against this device's current state for typical cases.
-- Settings: **Never use the cloud**, family alerts, extra-large text, and what Remote Config set.
-- Family circle (Google sign-in, invite link) and the guardian **Alerts** page (real-time Firestore listener, optional desktop notification).
-- Firebase AI Logic (two models from one `getAI()`: `ONLY_ON_DEVICE` + `ONLY_IN_CLOUD`), App Check (reCAPTCHA Enterprise + debug token in dev), Remote Config with in-code defaults. **Rules-only mode with an "AI not configured" notice when `VITE_FIREBASE_*` is missing.**
-- Firebase is lazy-loaded: the first screen is 278 KB (90 KB gzipped) instead of 939 KB.
-- Developer eval page at `#/evals` (runs the datasets through the real models and downloads predictions).
+**`web/`** (Vite + React; large type, light/dark, phone-friendly, installable PWA that loads offline)
+- Welcome screen with language buttons (**English / हिंदी / മലയാളം**), **Download the private model (one time)** (`initializeDeviceModel()` on the click), `LanguageModel.availability()` status (text and image checked separately), **Test the AI connection** (a `PREFER_ON_DEVICE` call that prints `inferenceSource`).
+- Check screen: paste or screenshot, **live route preview** ("will be checked on this device" / "will remove personal details, then cloud"), result card, **🟢/🔵/⚪ privacy badge**, **See exactly what was sent**, **follow-up questions**, **Let my family know**.
+- **Privacy** page: the real router run against this device for typical cases.
+- Settings (Never use the cloud, family alerts, extra-large text, language), Family circle (Google sign-in, invite link), guardian **Alerts** (real-time Firestore listener).
+- Firebase AI Logic (`ONLY_ON_DEVICE` + `ONLY_IN_CLOUD` from one `getAI()`), App Check, Remote Config, lazy-loaded Firebase (first load 90 KB gzipped).
+- Rules-only mode with an "AI not configured" notice when `VITE_FIREBASE_*` is missing.
+- `#/evals` developer page to run the datasets through the real models in Chrome.
 
-**`extension/`** (MV3, plain Vite multi-entry build, no CRXJS)
-- Side panel reusing the web UI (Check, Family, Alerts, Model, Settings tabs); AI runs in the panel page, never in the service worker.
-- Right-click **Check with SecondLook** on a selection, or **Check this page with SecondLook**.
-- Shadow-DOM warning banner on look-alike login/payment pages (local rules only).
-- Google sign-in via `chrome.identity` → `signInWithCredential`, with `firebase/auth/web-extension` (MV3-safe); added to the manifest only when `VITE_GOOGLE_OAUTH_CLIENT_ID` is set.
+**`extension/`** (MV3, plain Vite multi-entry, no CRXJS): side panel reusing the web UI (Check, Family, Alerts, Model, Settings), right-click **Check with SecondLook** (selection or page), **Check the page I'm on** button, shadow-DOM warning banner on look-alike login/payment pages, `chrome.identity` sign-in with `firebase/auth/web-extension`.
 
-**Firebase project files**: `firebase.json` (Hosting, Firestore, Remote Config), `firestore.rules` (alerts allow-list: metadata only), `firestore.indexes.json`, `remoteconfig.template.json`.
+**Firebase files**: `firebase.json` (Hosting + Firestore + Remote Config), `firestore.rules` (metadata-only alerts), `firestore.indexes.json`, `remoteconfig.template.json`.
 
-**Docs**: `README.md` (problem, routing table, Mermaid architecture, eval results, setup, reuse statement), `DEMO.md` (the 3-minute video, shot by shot, with test messages and a fictional demo login page for the banner).
+**Docs**: `README.md` (problem, routing table, Mermaid architecture, evals, setup, the SDK finding, reuse statement), `DEMO.md` (3-minute video shot by shot, test messages, a fictional demo login page for the banner).
+
+**CI**: GitHub Actions runs tests, build, evals and the Firestore rules tests in the emulator on every push. All green.
 
 ## How it was verified
 
-- `npm test` at the root: **87 tests pass** (shared 65, evals 4, web 14, extension 4).
-- `npm run build` at the root: typecheck (shared, evals, web, extension) + web build + extension build pass.
-- `npm run test:rules`: **8 Firestore security-rules tests pass in the real Firestore emulator** (Firebase CLI run under Node 22 via npx, Java 25). Covers circle create/join/read and alerts rejecting any text-carrying field, bad values, impersonation and outsiders.
-- In the built-in browser (dev server): onboarding → simulated model download → CBI example → 🟢 on-device result; rules-only path with the router's reason; follow-up answer; Privacy page; light and dark mode; no horizontal overflow at 375 px. The simulated model is dev-only (`?mockNano`) and labelled "simulated" in the UI.
-- Cloud path, redaction-before-cloud, screenshot consent, device↔cloud fallbacks, Nano name masking and follow-up routing are covered by **mocked-model unit tests**, not by a real Gemini call.
+- `npm test`: **108 tests pass** (shared 71, evals 5, web 27, extension 5), including SDK contract tests against the real `firebase/ai` browser build with a fake Prompt API and stubbed `fetch`, and axe-core accessibility tests.
+- `npm run build`: typecheck of all packages + web build + extension build.
+- `npm run test:rules`: **8 Firestore security-rules tests pass in the emulator** (locally and in CI).
+- In the built-in browser: onboarding, simulated-model check (🟢), rules-only check (⚪) with reasons, follow-up answers, Privacy page, Malayalam UI end to end, light/dark, no overflow at 375 px, and the PWA loading with the server stopped. The simulated model is dev-only (`?mockNano`) and labelled.
 
 ## Not done / not verified
 
-- **No real Gemini Nano or cloud call has run.** Needs your Firebase project and your Chrome. If a real call fails, the likeliest spots are in `web/src/lib/ai.ts` (system prompt via `initialPrompts`, `responseConstraint`, `responseJsonSchema`); the SDK names were taken from the installed `firebase@13.3.0` typings, not guessed.
-- The extension is built and unit-tested (including the side panel with a queued right-click check) but **was not loaded into Chrome**.
-- Extension App Check uses the **debug provider only** (reCAPTCHA can't run in MV3). Fine for the demo; a production extension would need a custom App Check provider.
-- Hindi/Malayalam **UI** (PLAN's optional item) not done; only the router and rules handle those languages.
+- **No real Gemini Nano or Gemini cloud call has run** (needs your project and your Chrome). The SDK wiring is covered by the contract tests, which is as close as I could get without credentials.
+- The extension is built and unit-tested but **not loaded into Chrome**.
+- Extension App Check uses the **debug provider only** (reCAPTCHA can't run in MV3); a production extension would need a custom provider.
+- Hindi/Malayalam translations are **my first drafts**: please have them checked (you can judge the Malayalam). Family/Alerts/Privacy/Evals pages are still English.
+- No README screenshots yet: better to take them with real Nano tomorrow.
+- `npm audit`: 4 "high" advisories, all in `@grpc/grpc-js` from Firebase's Node build of Firestore. Not in the browser bundles; fix needs a Firebase update.
 - Android companion: not started (by plan).
-- `npm audit` reports 4 high-severity advisories in dev dependencies; not investigated.
 
 ## What you need to do
 
 1. **Create the Firebase project** and **register a web app**.
 2. **AI Logic** → Get started → **Gemini Developer API**.
-3. Copy `web/.env.example` → `web/.env.local`; fill the six `VITE_FIREBASE_*` values. (The extension reads the same file.)
-4. **App Check**: create a **reCAPTCHA Enterprise** key (add `localhost` and later your Hosting domain), put it in `VITE_RECAPTCHA_ENTERPRISE_SITE_KEY`. Run `npm run dev`, copy the **debug token** from the browser console, add it under App Check → Apps → Manage debug tokens. Turn on enforcement for AI Logic once checks work.
-5. **Authentication** → enable **Google**. **Firestore** → create the database (any region). Then deploy rules, indexes and the Remote Config template: `npm run deploy` deploys Hosting too; for rules only use `npx -y -p node@22 -p firebase-tools firebase deploy --only firestore,remoteconfig` (log in first with `npx -y -p node@22 -p firebase-tools firebase login`). The Firebase CLI crashes on Node 26, hence `node@22`.
+3. Copy `web/.env.example` → `web/.env.local`; fill the six `VITE_FIREBASE_*` values (the extension reads the same file).
+4. **App Check**: create a **reCAPTCHA Enterprise** key (add `localhost` and later your Hosting domain), put it in `VITE_RECAPTCHA_ENTERPRISE_SITE_KEY`. Run `npm run dev`, copy the **debug token** from the browser console, add it in App Check → Apps → Manage debug tokens. Enforce App Check for AI Logic once checks work.
+5. **Authentication** → enable **Google**. **Firestore** → create the database. Log in and deploy rules, indexes and the Remote Config template with Node 22 (the Firebase CLI crashes on Node 26):
+   `npx -y -p node@22 -p firebase-tools firebase login`
+   `npx -y -p node@22 -p firebase-tools firebase deploy --only firestore,remoteconfig --project <your-project-id>`
+   (`npm run deploy` also builds and deploys Hosting.)
 6. `npm install`, `npm run dev`, open http://localhost:5173.
-7. **Try the Nano path in your Chrome**: enable `chrome://flags/#prompt-api-for-gemini-nano-multimodal-input`, relaunch, **Model/Set up** → **Download the private model**, then **Test the AI connection** (expect 🟢 on this device), then check the "CBI officer" example (expect 🟢 and no "what was sent" link). Then paste the Hindi message from DEMO.md (expect 🔵 with redactions and the drawer).
-8. **Run the evals with AI**: http://localhost:5173/#/evals → **Run on-device** → download; **Run cloud (redacted)** → download; then
+7. **Nano in your Chrome**: enable `chrome://flags/#prompt-api-for-gemini-nano-multimodal-input`, relaunch, **Set up** → **Download the private model**, then **Test the AI connection** (expect 🟢), then the "CBI officer" example (expect 🟢, no "what was sent" link). Paste the Hindi message from DEMO.md (expect 🔵, redactions, the drawer, and a Hindi explanation).
+8. **Evals with AI**: http://localhost:5173/#/evals → **Run on-device** → download → **Run cloud (redacted)** → download, then
    `npm run evals -- --recorded device=predictions-device.json --recorded cloud=predictions-cloud.json --write`
    and copy the new rows into the README's eval table.
-9. **Load the extension**: `npm run build`, `chrome://extensions` → Developer mode → **Load unpacked** → `extension/dist`. Register its App Check debug token (side panel console). For family sign-in in the extension: create an OAuth client of type *Chrome extension* for the extension id, set `VITE_GOOGLE_OAUTH_CLIENT_ID` (and `VITE_EXTENSION_KEY` to keep the id stable), rebuild, and add `chrome-extension://<id>` to Auth's authorised domains.
-10. Set `VITE_PUBLIC_APP_URL` to your Hosting URL so invite links made in the extension open the web app.
-11. Windows only, if the Firestore emulator fails with "Unable to establish loopback connection": `set JAVA_TOOL_OPTIONS=-Djdk.net.unixdomain.tmpdir=C:\tmp` (any folder without spaces), then `npm run test:rules`.
+9. **Extension**: `npm run build`, `chrome://extensions` → Developer mode → **Load unpacked** → `extension/dist`. Register its App Check debug token (side-panel console). For sign-in inside the extension: create an OAuth client of type *Chrome extension* for its id, set `VITE_GOOGLE_OAUTH_CLIENT_ID` (and `VITE_EXTENSION_KEY` to pin the id), rebuild, and add `chrome-extension://<id>` to Auth's authorised domains.
+10. Set `VITE_PUBLIC_APP_URL` to the Hosting URL so invite links made in the extension open the web app.
+11. Take README screenshots with real Nano (on-device result, Hindi cloud result with the drawer open, the banner, the guardian alert).
+12. Windows only, if the Firestore emulator fails with "Unable to establish loopback connection": `set JAVA_TOOL_OPTIONS=-Djdk.net.unixdomain.tmpdir=C:\tmp` (a folder with no spaces), then `npm run test:rules`.
