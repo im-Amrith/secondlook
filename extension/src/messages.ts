@@ -29,3 +29,15 @@ export function safePageUrl(url: string | undefined): string {
     return "";
   }
 }
+
+/** Reads the visible text of the active tab (runs in the side panel; host permission covers it). */
+export async function readActiveTab(): Promise<{ text: string; url: string } | null> {
+  const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  if (!tab?.id || !tab.url || !/^https?:/.test(tab.url)) return null;
+  const [res] = await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    func: (max: number) => (document.body?.innerText ?? "").slice(0, max),
+    args: [MAX_PAGE_CHARS],
+  });
+  return { text: `Page: ${safePageUrl(tab.url)}\n\n${String(res?.result ?? "")}`, url: tab.url };
+}

@@ -6,3 +6,4 @@ main { padding: 12px; }
 .panel-source { margin: 4px 0 0; }
 .result { padding: 14px; }
 nav a { font-size: 0.8rem; padding: 6px 8px; }
+.panel-page-button { width: 100%; margin-top: 8px; }

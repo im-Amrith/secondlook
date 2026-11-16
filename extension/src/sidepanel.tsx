@@ -5,9 +5,9 @@ import { createRoot } from "react-dom/client";
 import { AppProvider, CheckPage, FamilyPage, GuardianPage, SettingsPage, SetupPage, useApp } from "@secondlook/web/ui";
 import "@secondlook/web/styles.css";
 import "./sidepanel.css";
-import { PENDING_KEY, type PendingCheck } from "./messages";
+import { PENDING_KEY, readActiveTab, type PendingCheck } from "./messages";
 
-function usePending(): PendingCheck | null {
+function usePending(): [PendingCheck | null, (p: PendingCheck) => void] {
   const [pending, setPending] = useState<PendingCheck | null>(null);
   useEffect(() => {
     void chrome.storage.session.get(PENDING_KEY).then((r) => setPending((r[PENDING_KEY] as PendingCheck | undefined) ?? null));
@@ -17,7 +17,7 @@ function usePending(): PendingCheck | null {
     chrome.storage.onChanged.addListener(on);
     return () => chrome.storage.onChanged.removeListener(on);
   }, []);
-  return pending;
+  return [pending, setPending];
 }
 
 type Tab = "check" | "family" | "alerts" | "setup" | "settings";
@@ -43,7 +43,19 @@ const TABS: { id: Tab; label: string; hash: string }[] = [
 
 function Panel() {
   const { settings, nano } = useApp();
-  const pending = usePending();
+  const [pending, setPending] = usePending();
+  const [pageError, setPageError] = useState<string | null>(null);
+
+  async function checkThisPage() {
+    setPageError(null);
+    try {
+      const page = await readActiveTab();
+      if (!page) return setPageError("This page can't be read (only normal web pages can).");
+      setPending({ id: Date.now(), kind: "page", text: page.text, url: page.url });
+    } catch {
+      setPageError("This page can't be read.");
+    }
+  }
   const [tab, setTab] = useState<Tab>(() => tabFromHash(location.hash) ?? (settings.onboarded || nano === "available" ? "check" : "setup"));
 
   useEffect(() => {
@@ -70,6 +82,8 @@ function Panel() {
         {tab === "check" && (
           <>
             {pending?.kind === "page" && pending.url && <p className="muted panel-source">Checking the page at {new URL(pending.url).host}</p>}
+            <button type="button" className="secondary panel-page-button" onClick={() => void checkThisPage()}>Check the page I'm on</button>
+            {pageError && <p className="notice notice-error" role="alert">{pageError}</p>}
             <CheckPage compact initialText={pending?.text} initialKind={pending?.kind} requestId={pending?.id} />
             {!pending && <p className="muted">Tip: select text on any page (WhatsApp Web, Gmail…), right-click, and choose <strong>Check with SecondLook</strong>.</p>}
           </>
