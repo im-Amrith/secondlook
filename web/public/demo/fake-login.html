@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Demo Bank: account update (SecondLook demo)</title>
+  <style>
+    body { font: 16px/1.5 system-ui, sans-serif; background: #eef1f6; margin: 0; }
+    .demo { background: #222; color: #fff; text-align: center; padding: 6px; font-size: 13px; }
+    form { max-width: 360px; margin: 48px auto; background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.1); }
+    h1 { font-size: 20px; margin-top: 0; }
+    label { display: block; margin: 12px 0 4px; }
+    input { width: 100%; box-sizing: border-box; padding: 10px; font: inherit; }
+    button { margin-top: 16px; width: 100%; padding: 12px; font: inherit; }
+  </style>
+</head>
+<body>
+  <div class="demo">SecondLook demo page. Not a real bank. Nothing you type here is sent anywhere.</div>
+  <form onsubmit="event.preventDefault(); alert('Demo only: nothing was sent.');">
+    <h1>Demo Bank: urgent KYC update</h1>
+    <p>Your account will be blocked today. Log in to update your KYC.</p>
+    <label for="u">Customer ID</label>
+    <input id="u" name="customer_id" autocomplete="username" />
+    <label for="p">Password</label>
+    <input id="p" name="password" type="password" autocomplete="current-password" />
+    <label for="o">OTP</label>
+    <input id="o" name="otp" autocomplete="one-time-code" />
+    <button type="submit">Update KYC</button>
+  </form>
+</body>
+</html>
