@@ -64,6 +64,9 @@ export function AppProvider({ children, override, surface = "web" }: { children:
   const [nanoImage, setNanoImage] = useState<NanoStatus>("unsupported");
   const [user, setUser] = useState<User | null>(null);
 
+  // Cloud answers follow the UI language (the on-device model can only answer in English).
+  const replyIn = settings.uiLang === "hi" ? ("Hindi" as const) : settings.uiLang === "ml" ? ("Malayalam" as const) : undefined;
+
   const simulated = useMemo(() => (simulatedNano ? { device: makeSimulatedDeviceRunner(), followUp: makeSimulatedFollowUpRunner() } : null), [simulatedNano]);
   const runners = runtime?.runners(config.cloudModel) ?? null;
   const device: DeviceRunner | null = simulated?.device ?? runners?.device ?? null;
@@ -113,14 +116,14 @@ export function AppProvider({ children, override, surface = "web" }: { children:
         online: () => navigator.onLine,
         device: simulated?.device ?? r?.device,
         cloud: config.cloudEnabled ? r?.cloud : undefined,
-        settings: { neverCloud: settings.neverCloud },
+        settings: { neverCloud: settings.neverCloud, replyIn },
         config: { cloudEnabled: config.cloudEnabled, rules: config.rules },
         confirmImageUpload,
         findNames: simulated ? undefined : r?.findNames,
         now: () => performance.now(),
       });
     },
-    [resolveRunners, nano, nanoImage, simulatedNano, simulated, config, settings.neverCloud],
+    [resolveRunners, nano, nanoImage, simulatedNano, simulated, config, settings.neverCloud, replyIn],
   );
 
   const followUp = useCallback(
@@ -132,12 +135,12 @@ export function AppProvider({ children, override, surface = "web" }: { children:
         online: () => navigator.onLine,
         device: simulated?.followUp ?? r?.followUp.device,
         cloud: config.cloudEnabled ? r?.followUp.cloud : undefined,
-        settings: { neverCloud: settings.neverCloud },
+        settings: { neverCloud: settings.neverCloud, replyIn },
         config: { cloudEnabled: config.cloudEnabled },
         findNames: simulated ? undefined : r?.findNames,
       });
     },
-    [resolveRunners, nano, simulated, config.cloudEnabled, settings.neverCloud],
+    [resolveRunners, nano, simulated, config.cloudEnabled, settings.neverCloud, replyIn],
   );
 
   const value: AppState = {

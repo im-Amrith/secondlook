@@ -1,7 +1,7 @@
 // The whole check, platform-independent: rules → router → (device | redact → cloud | rules) → combine.
 // Model calls are injected, so the web app, the extension and the tests all share this code.
 import { combine, mergeChunkVerdicts } from "./combine";
-import { buildFollowUpPrompt, buildUserPrompt, estimateTokens, IMAGE_PROMPT, replyLanguageFor } from "./prompt";
+import { buildFollowUpPrompt, buildUserPrompt, estimateTokens, IMAGE_PROMPT, replyLanguageFor, type ReplyLanguage } from "./prompt";
 import { redact, type RedactionItem } from "./redact";
 import { chunkText, decideRoute, guessLang, type Platform, type RouteDecision } from "./router";
 import { scoreRules, type RulesOptions } from "./rules";
@@ -37,7 +37,8 @@ export interface PipelineDeps {
   online: () => boolean;
   device?: ModelRunner;
   cloud?: ModelRunner;
-  settings: { neverCloud: boolean };
+  /** replyIn: the person's UI language, used for cloud answers when the message itself is English. */
+  settings: { neverCloud: boolean; replyIn?: ReplyLanguage };
   config?: { cloudEnabled?: boolean; rules?: RulesOptions };
   /**
    * Screenshots can't be cleaned by regex. If one would go to the cloud, ask the user first.
@@ -143,7 +144,7 @@ export async function checkMessage(input: CheckInput, deps: PipelineDeps): Promi
       image = input.image;
     }
     const red = redact(text, { names: await deviceNames(deps, nanoText, text) });
-    const replyIn = replyLanguageFor(guessLang(text));
+    const replyIn = replyLanguageFor(guessLang(text)) ?? deps.settings.replyIn;
     const prompt = image ? `${IMAGE_PROMPT}\n${buildUserPrompt(red.text, rules, { replyIn })}` : buildUserPrompt(red.text, rules, { replyIn });
     const reply = await deps.cloud.run(prompt, image);
     const ai = parseAiVerdict(reply.text);
@@ -252,7 +253,7 @@ export async function askFollowUp(question: string, original: string, verdict: V
       const both = `${original}\n\u0000\n${question}`;
       const joined = redact(both, { names: await deviceNames(deps, nano, both) });
       const [rOriginal = "", rQuestion = ""] = joined.text.split("\n\u0000\n");
-      const prompt = buildFollowUpPrompt(rOriginal, summary, rQuestion, replyLanguageFor(guessLang(question)) ?? replyLanguageFor(guessLang(original)));
+      const prompt = buildFollowUpPrompt(rOriginal, summary, rQuestion, replyLanguageFor(guessLang(question)) ?? replyLanguageFor(guessLang(original)) ?? deps.settings.replyIn);
       const reply = await deps.cloud.run(prompt);
       return { answer: reply.text.trim() || CANNED_FOLLOWUP, source: reply.source, decision, sentText: prompt, redactions: joined.redactions, redactionItems: joined.items };
     }

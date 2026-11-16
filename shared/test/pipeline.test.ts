@@ -222,3 +222,11 @@ describe("answer language for Hindi / Malayalam (cloud only)", () => {
     expect((dev.device!.run as ReturnType<typeof vi.fn>).mock.calls[0]![0]).not.toContain("in simple");
   });
 });
+
+describe("UI language preference for cloud answers", () => {
+  it("uses the person's UI language for an English message sent to the cloud", async () => {
+    const d = deps({ nanoAvailable: () => false, settings: { neverCloud: false, replyIn: "Malayalam" } });
+    const out = await checkMessage({ text: SCAM }, d);
+    expect(out.sentText).toContain("in simple Malayalam");
+  });
+});
