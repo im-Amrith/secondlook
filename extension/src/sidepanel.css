@@ -1,0 +1,7 @@
+/* Side panels are narrow: tighten spacing, keep type large. */
+:root { font-size: 18px; }
+main { padding: 12px; }
+.topbar { padding: 8px 12px; }
+.brand { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.panel-source { margin: 4px 0 0; }
+.result { padding: 14px; }

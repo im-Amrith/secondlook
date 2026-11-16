@@ -1,6 +1,6 @@
 // Firebase wiring. Everything is lazy and guarded so the app works with no config at all.
 import { initializeApp, type FirebaseApp } from "firebase/app";
-import { initializeAppCheck, ReCaptchaEnterpriseProvider, type AppCheck } from "firebase/app-check";
+import { CustomProvider, initializeAppCheck, ReCaptchaEnterpriseProvider, type AppCheck } from "firebase/app-check";
 import { getAI, GoogleAIBackend, type AI } from "firebase/ai";
 import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
@@ -33,6 +33,13 @@ export function getServices(): Services | null {
   if (recaptchaSiteKey) {
     appCheck = initializeAppCheck(app, {
       provider: new ReCaptchaEnterpriseProvider(recaptchaSiteKey),
+      isTokenAutoRefreshEnabled: true,
+    });
+  } else if (useAppCheckDebug) {
+    // No reCAPTCHA (e.g. inside the Chrome extension, where reCAPTCHA can't load): in debug mode the
+    // SDK exchanges the debug token and never calls this provider.
+    appCheck = initializeAppCheck(app, {
+      provider: new CustomProvider({ getToken: () => Promise.reject(new Error("App Check: debug token only")) }),
       isTokenAutoRefreshEnabled: true,
     });
   } else {

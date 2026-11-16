@@ -5,7 +5,7 @@ import { alertFromVerdict, myCircles, sendAlert, type Circle } from "../lib/fami
 
 /** On a medium/high result, offer to tell the family circle. Sends signal metadata only. */
 export function FamilyAlertButton({ verdict }: { verdict: Verdict }) {
-  const { services, user, settings } = useApp();
+  const { services, user, settings, surface } = useApp();
   const [circle, setCircle] = useState<Circle | null>(null);
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
@@ -32,7 +32,7 @@ export function FamilyAlertButton({ verdict }: { verdict: Verdict }) {
         onClick={async () => {
           setState("sending");
           try {
-            await sendAlert(services.db, alertFromVerdict(verdict, circle, user, "web"));
+            await sendAlert(services.db, alertFromVerdict(verdict, circle, user, surface));
             setState("sent");
           } catch {
             setState("error");

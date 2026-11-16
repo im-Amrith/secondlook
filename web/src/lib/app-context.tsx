@@ -9,7 +9,10 @@ import { useSettings, type Settings } from "./settings";
 import { mockNanoEnabled } from "./env";
 import { watchUser } from "./family";
 
+export type Surface = "web" | "extension";
+
 export interface AppState {
+  surface: Surface;
   services: Services | null;
   aiConfigured: boolean;
   device: DeviceRunner | null;
@@ -33,7 +36,7 @@ export function useApp(): AppState {
   return v;
 }
 
-export function AppProvider({ children, override }: { children: ReactNode; override?: Partial<AppState> }) {
+export function AppProvider({ children, override, surface = "web" }: { children: ReactNode; override?: Partial<AppState>; surface?: Surface }) {
   const services = useMemo(() => getServices(), []);
   const simulatedNano = useMemo(() => mockNanoEnabled(), []);
   const [config, setConfig] = useState<AppConfig>(DEFAULT_CONFIG);
@@ -82,6 +85,7 @@ export function AppProvider({ children, override }: { children: ReactNode; overr
   );
 
   const value: AppState = {
+    surface,
     services,
     aiConfigured: !!services,
     device,

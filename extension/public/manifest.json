@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "SecondLook: scam check",
+  "short_name": "SecondLook",
+  "version": "0.1.0",
+  "description": "Check suspicious messages and pages for scams on your own device first (Gemini Nano), with a privacy-safe cloud fallback.",
+  "minimum_chrome_version": "139",
+  "permissions": ["contextMenus", "sidePanel", "storage", "activeTab", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "background": { "service_worker": "background.js", "type": "module" },
+  "side_panel": { "default_path": "sidepanel.html" },
+  "action": { "default_title": "Open SecondLook", "default_icon": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" } },
+  "icons": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
+  "content_scripts": [
+    { "matches": ["http://*/*", "https://*/*"], "js": ["content.js"], "run_at": "document_idle", "all_frames": false }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}

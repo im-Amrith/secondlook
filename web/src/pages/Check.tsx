@@ -12,9 +12,18 @@ export const EXAMPLES = [
   { label: "Son's normal message", text: "Hi Amma, reached Bangalore safely. Will call you after dinner. Don't forget your doctor appointment tomorrow at 10." },
 ];
 
-export function CheckPage() {
+export interface CheckPageProps {
+  /** Text to check (e.g. from the extension's right-click menu). Changing it re-runs the check. */
+  initialText?: string;
+  initialKind?: "text" | "page";
+  /** Monotonic id so the same text can be re-checked. */
+  requestId?: number;
+  compact?: boolean;
+}
+
+export function CheckPage({ initialText, initialKind = "text", requestId, compact }: CheckPageProps = {}) {
   const app = useApp();
-  const [text, setText] = useState("");
+  const [text, setText] = useState(initialText ?? "");
   const [image, setImage] = useState<{ input: ImageInput; previewUrl: string; name: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [outcome, setOutcome] = useState<CheckOutcome | null>(null);
@@ -26,21 +35,33 @@ export function CheckPage() {
     if (outcome) resultRef.current?.scrollIntoView?.({ behavior: "smooth", block: "start" });
   }, [outcome]);
 
-  const askImageConsent = () => new Promise<boolean>((resolve) => setConsent(() => (ok: boolean) => { setConsent(null); resolve(ok); }));
-
-  async function onCheck(e: React.FormEvent) {
-    e.preventDefault();
-    if (!text.trim() && !image) return;
+  async function runCheck(t: string, img: ImageInput | undefined, kind: "text" | "page" = "text") {
     setBusy(true);
     setError(null);
     setOutcome(null);
     try {
-      setOutcome(await app.check({ text, image: image?.input }, askImageConsent));
+      setOutcome(await app.check({ text: t, image: img, kind: img ? "image" : kind }, askImageConsent));
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setBusy(false);
     }
+  }
+
+  useEffect(() => {
+    if (!initialText) return;
+    setText(initialText);
+    setImage(null);
+    void runCheck(initialText, undefined, initialKind);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialText, requestId]);
+
+  const askImageConsent = () => new Promise<boolean>((resolve) => setConsent(() => (ok: boolean) => { setConsent(null); resolve(ok); }));
+
+  async function onCheck(e: React.FormEvent) {
+    e.preventDefault();
+    if (!text.trim() && !image) return;
+    await runCheck(text, image?.input);
   }
 
   async function onFile(f: File | undefined) {
@@ -67,8 +88,12 @@ export function CheckPage() {
         <div className="notice notice-week" role="note"><strong>Scam of the week:</strong> {app.config.scamOfTheWeek}</div>
       )}
 
-      <h1>Is this a scam?</h1>
-      <p className="lead">Paste a message you're unsure about, or add a screenshot. We check it on your device first.</p>
+      {!compact && (
+        <>
+          <h1>Is this a scam?</h1>
+          <p className="lead">Paste a message you're unsure about, or add a screenshot. We check it on your device first.</p>
+        </>
+      )}
 
       <form onSubmit={onCheck} className="check-form">
         <label htmlFor="msg" className="label">The message</label>
@@ -95,12 +120,12 @@ export function CheckPage() {
         </p>
       </form>
 
-      <div className="examples">
+      {!compact && <div className="examples">
         <span className="muted">Try an example:</span>
         {EXAMPLES.map((ex) => (
           <button key={ex.label} type="button" className="chip" onClick={() => { setText(ex.text); setImage(null); setOutcome(null); }}>{ex.label}</button>
         ))}
-      </div>
+      </div>}
 
       {error && <div className="notice notice-error" role="alert">{error}</div>}
 
