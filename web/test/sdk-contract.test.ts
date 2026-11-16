@@ -108,7 +108,8 @@ describe("device runner (InferenceMode.ONLY_ON_DEVICE via Chrome's Prompt API)",
     });
     // The SDK decodes inline images with fetch("data:…"); only data: URLs are allowed here.
     const net = vi.fn(async (url: string) => {
-      if (String(url).startsWith("data:")) return new Response(new Blob([new Uint8Array([137, 80, 78, 71])], { type: "image/png" }));
+      // Plain bytes (not a jsdom Blob, which Node 22's fetch Response can't stream).
+      if (String(url).startsWith("data:")) return new Response(new Uint8Array([137, 80, 78, 71]), { headers: { "Content-Type": "image/png" } });
       throw new Error(`network: ${url}`);
     });
     vi.stubGlobal("fetch", net);

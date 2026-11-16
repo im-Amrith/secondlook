@@ -1,6 +1,6 @@
 # Good morning: overnight build notes
 
-Repo: https://github.com/im-Amrith/secondlook (public, `main`, ~45 small commits, CI green). **Nothing was deployed**, no Firebase or Google Cloud project was created, and no credentials or keys were entered anywhere. The Firebase config is placeholders only (`web/.env.example`).
+Repo: https://github.com/im-Amrith/secondlook (public, `main`, ~40 small commits, CI green). **Nothing was deployed**, no Firebase or Google Cloud project was created, and no credentials or keys were entered anywhere. The Firebase config is placeholders only (`web/.env.example`).
 
 ## Read this first: one real finding
 
