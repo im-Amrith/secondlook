@@ -125,6 +125,8 @@ The new cases were written alongside the new rules, so rules-only numbers on tha
 
 **Redaction** (the privacy claim, measured): on 22 messages with 26 labelled identifiers (phones, UPI IDs, accounts, cards, IBAN, OTPs, Aadhaar, PAN, emails, names), `redact()` removed **26/26** and kept **41/41** phrases the model still needs (amounts, times, scam words). The first run leaked 2; both gaps were fixed and are noted in RESULTS.md. Names are only caught after titles and introductions for now.
 
+**Extension banner:** on 36 hand-written login-page URLs (18 look-alikes in common Indian phishing styles, 18 real bank/shop/government sites), the local URL rules warned on all 18 look-alikes and on none of the real sites, after one fix the eval found (Microsoft's real `login.microsoftonline.com` was flagged). Small and hand-written, so treat it as a sanity check rather than a benchmark.
+
 To add the AI rows: open the web app at `#/evals` in Chrome, run on-device and cloud, download each predictions file, then:
 
 ```bash
