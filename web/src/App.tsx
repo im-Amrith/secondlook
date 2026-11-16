@@ -1,0 +1,66 @@
+import { useEffect, useState } from "react";
+import { useApp } from "./lib/app-context";
+import { CheckPage } from "./pages/Check";
+import { SetupPage } from "./pages/Setup";
+import { SettingsPage } from "./pages/Settings";
+import { FamilyPage } from "./pages/Family";
+import { GuardianPage } from "./pages/Guardian";
+import { EvalsPage } from "./pages/Evals";
+
+function useHash(): string {
+  const [hash, setHash] = useState(() => location.hash || "#/");
+  useEffect(() => {
+    const on = () => setHash(location.hash || "#/");
+    window.addEventListener("hashchange", on);
+    return () => window.removeEventListener("hashchange", on);
+  }, []);
+  return hash;
+}
+
+const NAV = [
+  { href: "#/", label: "Check" },
+  { href: "#/family", label: "Family" },
+  { href: "#/guardian", label: "Alerts" },
+  { href: "#/settings", label: "Settings" },
+];
+
+export function App() {
+  const hash = useHash();
+  const { settings } = useApp();
+  const path = hash.replace(/^#/, "") || "/";
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("large-text", settings.largeText);
+  }, [settings.largeText]);
+
+  let page: React.ReactNode;
+  if (path === "/" && !settings.onboarded) page = <SetupPage />;
+  else if (path === "/" ) page = <CheckPage />;
+  else if (path === "/setup") page = <SetupPage />;
+  else if (path === "/settings") page = <SettingsPage />;
+  else if (path === "/family") page = <FamilyPage />;
+  else if (path.startsWith("/join/")) page = <FamilyPage joinId={path.slice("/join/".length)} />;
+  else if (path === "/guardian") page = <GuardianPage />;
+  else if (path === "/evals") page = <EvalsPage />;
+  else page = <CheckPage />;
+
+  return (
+    <>
+      <header className="topbar">
+        <a href="#/" className="brand" aria-label="SecondLook home">
+          <img src="/icon.svg" alt="" width={32} height={32} />
+          <span>SecondLook</span>
+        </a>
+        <nav aria-label="Main">
+          {NAV.map((n) => (
+            <a key={n.href} href={n.href} aria-current={(n.href === "#/" ? path === "/" : path.startsWith(n.href.slice(1))) ? "page" : undefined}>{n.label}</a>
+          ))}
+        </nav>
+      </header>
+      <main>{page}</main>
+      <footer className="footer muted">
+        SecondLook gives a second opinion, not a guarantee. In India, report scams at <a href="https://cybercrime.gov.in" target="_blank" rel="noreferrer">cybercrime.gov.in</a> or call 1930.
+      </footer>
+    </>
+  );
+}

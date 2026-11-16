@@ -94,7 +94,8 @@ export async function checkMessage(input: CheckInput, deps: PipelineDeps): Promi
     multiTurn: false,
     userNeverCloud: deps.settings.neverCloud,
     online: deps.online(),
-    cloudEnabled: deps.config?.cloudEnabled,
+    // No cloud runner (AI not configured) behaves like the cloud being switched off.
+    cloudEnabled: deps.config?.cloudEnabled !== false && !!deps.cloud,
   });
 
   const done = (o: Omit<CheckOutcome, "latencyMs" | "decision"> & { decision?: RouteDecision }): CheckOutcome => ({ ...o, decision: o.decision ?? decision, latencyMs: now() - t0 });

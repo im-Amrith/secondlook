@@ -1,0 +1,60 @@
+rules_version = '2';
+
+// SecondLook family circle.
+// - circles/{id}: who is in the circle. The id is a 20-char random invite code.
+// - alerts/{id}:  METADATA ONLY (level, score, signal ids, source, platform, time).
+//   The allow-list below means a message, excerpt or redacted text can never be stored.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function circleData(id) { return get(/databases/$(database)/documents/circles/$(id)).data; }
+
+    match /circles/{circleId} {
+      allow read: if signedIn() && request.auth.uid in resource.data.memberUids;
+
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['ownerUid', 'ownerName', 'memberUids', 'createdAt'])
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.memberUids == [request.auth.uid]
+        && request.resource.data.ownerName is string && request.resource.data.ownerName.size() <= 40
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if signedIn() && (
+        // Joining with the invite link: you may only add yourself.
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids'])
+          && request.resource.data.memberUids.toSet() == resource.data.memberUids.toSet().union([request.auth.uid].toSet())
+          && request.resource.data.memberUids.size() <= 10)
+        ||
+        // The owner may remove members or rename, but stays in the circle.
+        (request.auth.uid == resource.data.ownerUid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids', 'ownerName'])
+          && request.auth.uid in request.resource.data.memberUids
+          && request.resource.data.memberUids.size() <= 10)
+      );
+
+      allow delete: if signedIn() && request.auth.uid == resource.data.ownerUid;
+    }
+
+    match /alerts/{alertId} {
+      // Guardians query with where('memberUids', 'array-contains', uid).
+      allow read: if signedIn() && request.auth.uid in resource.data.memberUids;
+
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['circleId', 'fromUid', 'fromName', 'memberUids', 'level', 'score', 'signalIds', 'source', 'platform', 'createdAt'])
+        && request.resource.data.fromUid == request.auth.uid
+        && request.auth.uid in circleData(request.resource.data.circleId).memberUids
+        && request.resource.data.memberUids == circleData(request.resource.data.circleId).memberUids
+        && request.resource.data.fromName is string && request.resource.data.fromName.size() <= 40
+        && request.resource.data.level in ['low', 'medium', 'high']
+        && request.resource.data.score is int && request.resource.data.score >= 0 && request.resource.data.score <= 100
+        && request.resource.data.signalIds is list && request.resource.data.signalIds.size() <= 11
+        && request.resource.data.source in ['ON_DEVICE', 'IN_CLOUD', 'RULES']
+        && request.resource.data.platform in ['web', 'extension', 'android']
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if false;
+      allow delete: if signedIn() && request.auth.uid == resource.data.fromUid;
+    }
+  }
+}

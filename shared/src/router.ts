@@ -80,7 +80,7 @@ export function decideRoute(i: RouteInput): RouteDecision {
     if (i.userNeverCloud)
       return { route: "rules", code: "rules_never_cloud", chunks: 1, reason: "You chose never to use the cloud and this device has no private AI model, so we ran a quick check." };
     if (i.cloudEnabled === false)
-      return { route: "rules", code: "rules_cloud_off", chunks: 1, reason: "The cloud check is switched off right now and this device has no private AI model, so we ran a quick check." };
+      return { route: "rules", code: "rules_cloud_off", chunks: 1, reason: "The cloud check isn't available right now and this device has no private AI model, so we ran a quick check." };
     return { route: "rules", code: "rules_offline", chunks: 1, reason: "You're offline and this device has no private AI model, so we ran a quick check." };
   }
 
