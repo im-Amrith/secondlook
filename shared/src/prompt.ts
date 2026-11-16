@@ -45,3 +45,30 @@ Placeholders like [PHONE_1] are personal details removed for privacy.`;
 export function buildFollowUpPrompt(original: string, verdictSummary: string, question: string): string {
   return `The message they received:\n"""${original.slice(0, 4000)}"""\nOur check said: ${verdictSummary}\nTheir question: ${question}`;
 }
+
+/**
+ * Used only when a check must go to the cloud but Gemini Nano is available: the on-device model
+ * finds people's names so they can be masked too (regex only catches names after titles).
+ */
+export const NAMES_SYSTEM_PROMPT = 'Find the names of real people in the message (not companies, places or job titles). Reply ONLY with JSON: {"names": ["..."]}. If there are none, reply {"names": []}.';
+
+export const NAMES_JSON_SCHEMA = {
+  type: "object",
+  properties: { names: { type: "array", maxItems: 10, items: { type: "string", maxLength: 40 } } },
+  required: ["names"],
+} as const;
+
+/** Keep only plausible names that really occur in the text. */
+export function parseNames(raw: string, text: string): string[] {
+  let v: unknown;
+  try {
+    v = JSON.parse(raw.trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, ""));
+  } catch {
+    return [];
+  }
+  const names = (v as { names?: unknown })?.names;
+  if (!Array.isArray(names)) return [];
+  return [...new Set(names.filter((n): n is string => typeof n === "string").map((n) => n.trim()))]
+    .filter((n) => n.length >= 2 && n.length <= 40 && text.includes(n) && /\p{L}/u.test(n))
+    .slice(0, 10);
+}

@@ -44,7 +44,28 @@ export interface PipelineDeps {
    * Returning false keeps it on the device (rules on any typed text only).
    */
   confirmImageUpload?: () => Promise<boolean>;
+  /**
+   * Optional on-device name finder (Gemini Nano). When a check must go to the cloud but Nano is
+   * available, names it finds are masked as well. Never called without Nano.
+   */
+  findNames?: (text: string) => Promise<string[]>;
   now?: () => number;
+}
+
+const NAME_TIMEOUT_MS = 5000;
+
+/** Ask the on-device model for names, but never let it block or break a check. */
+async function deviceNames(deps: Pick<PipelineDeps, "findNames">, nano: boolean, text: string): Promise<string[]> {
+  if (!nano || !deps.findNames || !text) return [];
+  try {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<string[]>((r) => (timer = setTimeout(() => r([]), NAME_TIMEOUT_MS)));
+    const names = await Promise.race([deps.findNames(text), timeout]);
+    clearTimeout(timer);
+    return names.filter((n) => text.includes(n));
+  } catch {
+    return [];
+  }
 }
 
 export interface CheckOutcome {
@@ -117,7 +138,7 @@ export async function checkMessage(input: CheckInput, deps: PipelineDeps): Promi
       if (!ok) return rulesOnly("The screenshot stayed on your device, so we ran a quick check on any text instead.", d);
       image = input.image;
     }
-    const red = redact(text);
+    const red = redact(text, { names: await deviceNames(deps, nano, text) });
     const prompt = image ? `${IMAGE_PROMPT}\n${buildUserPrompt(red.text, rules)}` : buildUserPrompt(red.text, rules);
     const reply = await deps.cloud.run(prompt, image);
     const ai = parseAiVerdict(reply.text);
@@ -219,7 +240,8 @@ export async function askFollowUp(question: string, original: string, verdict: V
   try {
     if (decision.route === "cloud" && deps.cloud) {
       // Redact the original and the question together so placeholders stay consistent.
-      const joined = redact(`${original}\n\u0000\n${question}`);
+      const both = `${original}\n\u0000\n${question}`;
+      const joined = redact(both, { names: await deviceNames(deps, nano, both) });
       const [rOriginal = "", rQuestion = ""] = joined.text.split("\n\u0000\n");
       const prompt = buildFollowUpPrompt(rOriginal, summary, rQuestion);
       const reply = await deps.cloud.run(prompt);

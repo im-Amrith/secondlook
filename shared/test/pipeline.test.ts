@@ -150,3 +150,33 @@ describe("askFollowUp (multi-turn → redacted cloud)", () => {
     expect(out.answer).toMatch(/1930/);
   });
 });
+
+import { parseNames } from "../src/prompt";
+
+describe("on-device name masking before the cloud", () => {
+  const HINDI = "मैं पुलिस से बोल रहा हूँ। Ramesh Kumar का केस है। Anita को मत बताना। 9876543210 पर कॉल करें।";
+
+  it("masks names found by Nano when the check must go to the cloud", async () => {
+    const findNames = vi.fn(async () => ["Ramesh Kumar", "Anita", "Not In Text"]);
+    const d = deps({ findNames });
+    const out = await checkMessage({ text: HINDI }, d);
+    expect(out.decision.code).toBe("cloud_lang");
+    expect(findNames).toHaveBeenCalledTimes(1);
+    expect(out.sentText).not.toMatch(/Ramesh|Anita|9876543210/);
+    expect(out.verdict.redactions).toEqual(expect.arrayContaining([{ type: "NAME", count: 2 }]));
+  });
+
+  it("never asks the device when Nano isn't available, and survives a failing finder", async () => {
+    const findNames = vi.fn(async () => ["x"]);
+    await checkMessage({ text: SCAM }, deps({ nanoAvailable: () => false, findNames }));
+    expect(findNames).not.toHaveBeenCalled();
+    const broken = vi.fn(async () => { throw new Error("busy"); });
+    const out = await checkMessage({ text: HINDI }, deps({ findNames: broken }));
+    expect(out.verdict.source).toBe("IN_CLOUD");
+  });
+
+  it("parseNames keeps only names that occur in the text", () => {
+    expect(parseNames('{"names":["Ramesh","CBI officer x","Ramesh",5]}', "Ramesh called")).toEqual(["Ramesh"]);
+    expect(parseNames("nope", "x")).toEqual([]);
+  });
+});

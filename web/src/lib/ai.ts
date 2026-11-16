@@ -6,7 +6,7 @@
 // InferenceMode.{ONLY_ON_DEVICE,ONLY_IN_CLOUD,PREFER_ON_DEVICE}, GenerativeModel.initializeDeviceModel,
 // response.inferenceSource ("on_device" | "in_cloud"), HybridParams.{onDeviceParams,inCloudParams}.
 import { getGenerativeModel, InferenceMode, InferenceSource, type AI, type GenerativeModel, type Part } from "firebase/ai";
-import { AI_VERDICT_JSON_SCHEMA, FOLLOWUP_SYSTEM_PROMPT, MAX_OUTPUT_TOKENS, SYSTEM_PROMPT, scoreRules, type ImageInput, type ModelReply, type ModelRunner } from "@secondlook/shared";
+import { AI_VERDICT_JSON_SCHEMA, FOLLOWUP_SYSTEM_PROMPT, MAX_OUTPUT_TOKENS, NAMES_JSON_SCHEMA, NAMES_SYSTEM_PROMPT, parseNames, SYSTEM_PROMPT, scoreRules, type ImageInput, type ModelReply, type ModelRunner } from "@secondlook/shared";
 import { NANO_CREATE_OPTIONS } from "./nano";
 
 export const DEFAULT_CLOUD_MODEL = "gemini-3.5-flash-lite";
@@ -126,6 +126,30 @@ export function makeFollowUpRunners(ai: AI, cloudModelName = DEFAULT_CLOUD_MODEL
   return {
     device: { run: (p) => run(device, p, undefined, "ON_DEVICE") },
     cloud: { run: (p) => run(cloud, p, undefined, "IN_CLOUD") },
+  };
+}
+
+/**
+ * On-device name finder: used only when a check is going to the cloud while Gemini Nano is
+ * available, so people's names are masked too (regex catches only names after titles).
+ */
+export function makeDeviceNameFinder(ai: AI, cloudModelName = DEFAULT_CLOUD_MODEL): (text: string) => Promise<string[]> {
+  const model = getGenerativeModel(ai, {
+    mode: InferenceMode.ONLY_ON_DEVICE,
+    onDeviceParams: {
+      createOptions: {
+        expectedInputs: [{ type: "text", languages: ["en"] }],
+        expectedOutputs: [{ type: "text", languages: ["en"] }],
+        initialPrompts: [{ role: "system", content: [{ type: "text", value: NAMES_SYSTEM_PROMPT }] }],
+      },
+      promptOptions: { responseConstraint: NAMES_JSON_SCHEMA },
+    },
+    inCloudParams: { model: cloudModelName },
+  });
+  return async (text) => {
+    const r = await model.generateContent(text.slice(0, 6000));
+    if (r.response.inferenceSource === InferenceSource.IN_CLOUD) return []; // must never happen; ignore if it does
+    return parseNames(r.response.text(), text);
   };
 }
 

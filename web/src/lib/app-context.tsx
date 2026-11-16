@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { User } from "firebase/auth";
 import { askFollowUp, checkMessage, type CheckInput, type CheckOutcome, type FollowUpOutcome, type ModelRunner, type Verdict } from "@secondlook/shared";
 import { getServices, type Services } from "./firebase";
-import { makeCloudRunner, makeDeviceRunner, makeFollowUpRunners, makeSimulatedDeviceRunner, makeSimulatedFollowUpRunner, type DeviceRunner } from "./ai";
+import { makeCloudRunner, makeDeviceNameFinder, makeDeviceRunner, makeFollowUpRunners, makeSimulatedDeviceRunner, makeSimulatedFollowUpRunner, type DeviceRunner } from "./ai";
 import { nanoStatus, type NanoStatus } from "./nano";
 import { DEFAULT_CONFIG, loadRemoteConfig, type AppConfig } from "./remoteConfig";
 import { useSettings, type Settings } from "./settings";
@@ -51,6 +51,8 @@ export function AppProvider({ children, override, surface = "web" }: { children:
   }, [services, simulatedNano, config.cloudModel]);
   const cloud = useMemo<ModelRunner | null>(() => (services ? makeCloudRunner(services.ai, config.cloudModel) : null), [services, config.cloudModel]);
 
+  const findNames = useMemo(() => (services && !simulatedNano ? makeDeviceNameFinder(services.ai, config.cloudModel) : undefined), [services, simulatedNano, config.cloudModel]);
+
   const refreshNano = useCallback(async () => {
     if (simulatedNano) return nano;
     const s = await nanoStatus();
@@ -80,9 +82,10 @@ export function AppProvider({ children, override, surface = "web" }: { children:
         settings: { neverCloud: settings.neverCloud },
         config: { cloudEnabled: config.cloudEnabled, rules: config.rules },
         confirmImageUpload,
+        findNames,
         now: () => performance.now(),
       }),
-    [nano, device, cloud, config, settings.neverCloud],
+    [nano, device, cloud, config, settings.neverCloud, findNames],
   );
 
   const followUpRunners = useMemo(() => {
@@ -100,8 +103,9 @@ export function AppProvider({ children, override, surface = "web" }: { children:
         cloud: config.cloudEnabled ? followUpRunners?.cloud : undefined,
         settings: { neverCloud: settings.neverCloud },
         config: { cloudEnabled: config.cloudEnabled },
+        findNames,
       }),
-    [nano, followUpRunners, config.cloudEnabled, settings.neverCloud],
+    [nano, followUpRunners, config.cloudEnabled, settings.neverCloud, findNames],
   );
 
   const value: AppState = {
