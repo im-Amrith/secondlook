@@ -5,6 +5,7 @@ import { prepareImage } from "../lib/image";
 import { ResultCard } from "../components/ResultCard";
 import { FamilyAlertButton } from "../components/FamilyAlertButton";
 import { FollowUp } from "../components/FollowUp";
+import { RoutePreview } from "../components/RoutePreview";
 import { NANO_STATUS_TEXT } from "../lib/nano";
 
 export const EXAMPLES = [
@@ -116,6 +117,7 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
         <button className="primary big" type="submit" disabled={busy || (!text.trim() && !image)}>
           {busy ? "Checking…" : "Check this message"}
         </button>
+        <RoutePreview text={text} hasImage={!!image} />
         <p className="model-status muted">
           Private model: {app.simulatedNano ? `${NANO_STATUS_TEXT[app.nano]} (simulated, dev only)` : NANO_STATUS_TEXT[app.nano]}{" "}
           {app.nano !== "available" && <a href="#/setup">Set up</a>}

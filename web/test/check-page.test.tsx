@@ -18,3 +18,17 @@ describe("Check page with no Firebase config (rules-only mode)", () => {
     expect(screen.getAllByRole("status").some((el) => /Quick check/.test(el.textContent ?? ""))).toBe(true);
   });
 });
+
+describe("route preview", () => {
+  it("tells the user where the check will run before they press the button", async () => {
+    render(
+      <AppProvider>
+        <CheckPage />
+      </AppProvider>,
+    );
+    expect(screen.queryByTestId("route-preview")).toBeNull();
+    await userEvent.type(screen.getByLabelText("The message"), "Your parcel is held");
+    expect(screen.getByTestId("route-preview")).toHaveAttribute("data-route", "rules");
+    expect(screen.getByTestId("route-preview")).toHaveTextContent("quick check on this device");
+  });
+});
