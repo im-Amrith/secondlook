@@ -70,3 +70,11 @@ Misses (5):
 | PAN | 1/1 |
 | PHONE | 9/9 |
 | UPI | 4/4 |
+
+## Extension banner (look-alike login pages)
+
+36 login-page URLs (18 look-alikes written in common Indian phishing styles, 18 real sites), each assumed to show a password field. Scored by shared/url.ts, the same local rules the content script runs. Hand-written, not a live phishing feed. The first run had one false alarm (Microsoft's real login.microsoftonline.com); its domain was added to the official list.
+
+| Precision | Recall | Accuracy | False alarms on real sites |
+|---|---|---|---|
+| 100% | 100% | 100% | 0/18 |

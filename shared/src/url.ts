@@ -34,7 +34,7 @@ const BRANDS: Record<string, string[]> = {
   amazon: ["amazon.in", "amazon.com", "amazon.co.uk"],
   flipkart: ["flipkart.com"],
   google: ["google.com", "accounts.google.com", "google.co.in"],
-  microsoft: ["microsoft.com", "live.com", "office.com"],
+  microsoft: ["microsoft.com", "microsoftonline.com", "live.com", "office.com", "outlook.com", "microsoft365.com"],
   apple: ["apple.com", "icloud.com"],
   netflix: ["netflix.com"],
   indiapost: ["indiapost.gov.in"],

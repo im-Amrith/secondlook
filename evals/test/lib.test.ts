@@ -37,3 +37,16 @@ describe("redaction eval", () => {
     expect(r.removed).toBe(r.identifiers);
   });
 });
+
+import { urlEvalMarkdown } from "../urls";
+
+describe("banner eval", () => {
+  it("runs over every URL and reports a table", () => {
+    const cases = JSON.parse(readFileSync(new URL("../data/urls.json", import.meta.url), "utf8"));
+    const md = urlEvalMarkdown(cases);
+    expect(md).toContain("| Precision | Recall |");
+    expect(md).toContain("| 0/18 |");
+    expect(md).not.toContain("**missed**");
+    expect(md).not.toContain("**false alarm**");
+  });
+});
