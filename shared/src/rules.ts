@@ -156,6 +156,10 @@ export const RULES: Rule[] = [
   },
 ];
 
+/** Real OTP messages warn you not to share the code; scammers ask you to share it. */
+const OTP_WARNING_RE = /(do not|don'?t|never|not to) (share|disclose|tell)\b.{0,40}\b(otp|code|pin|it|this|anyone)|\b(otp|code|password)\b.{0,80}(do not|don'?t|never) (share|disclose)/i;
+const OTP_ASK_RE = /(?<!(do not|don'?t|never|not to) )(share|send|tell|give|read|forward|say)( it)?( to)?( me| us)? (the |your |that )?(otp|code|pin|password)|otp (batao|bhejo|bata do|share karo|paranju tharu)|ओटीपी बता/i;
+
 /** A message that explicitly uses protected payment wording is slightly less risky. */
 const SAFE_PAYMENT_RE = /goods (and|&) services|buyer protection|via (a )?paypal invoice|cash on delivery|pay (in person|at pick ?up)/i;
 
@@ -210,7 +214,8 @@ export function scoreRules(text: string, opts: RulesOptions = {}): RulesResult {
   const rules = [...RULES, ...compileExtraRules(opts.extraRules)];
   const signals: RuleHit[] = [];
   for (const r of rules) {
-    const weight = opts.weights?.[r.id] !== undefined ? clampWeight(opts.weights[r.id]!) : r.weight;
+    let weight = opts.weights?.[r.id] !== undefined ? clampWeight(opts.weights[r.id]!) : r.weight;
+    if (r.id === "credentials" && OTP_WARNING_RE.test(text) && !OTP_ASK_RE.test(text)) weight = Math.min(weight, 0.1);
     if (weight <= 0) continue;
     const m = text.match(r.re);
     if (m) signals.push({ ruleId: r.id, id: r.category, label: r.label, why: r.why, weight, excerpt: excerptOf(text, m) });
