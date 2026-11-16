@@ -220,6 +220,7 @@ export function scoreRules(text: string, opts: RulesOptions = {}): RulesResult {
     const m = text.match(r.re);
     if (m) signals.push({ ruleId: r.id, id: r.category, label: r.label, why: r.why, weight, excerpt: excerptOf(text, m) });
   }
+  signals.sort((a, b) => b.weight - a.weight);
   let p = probOr(signals.map((s) => s.weight));
   if (SAFE_PAYMENT_RE.test(text) && !signals.some((s) => s.ruleId === "ff_request")) p = Math.max(0, p - 0.1);
   const score = Math.round(Math.min(1, p) * 100);

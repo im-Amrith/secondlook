@@ -57,7 +57,10 @@ export function CheckPage() {
     <div className="page">
       {!app.aiConfigured && (
         <div className="notice" role="note">
-          <strong>AI not configured.</strong> SecondLook is running quick checks (rules only, on this device). Add the Firebase settings to turn on the AI check.
+          <strong>AI not configured.</strong>{" "}
+          {app.simulatedNano
+            ? "Using a simulated on-device model (developer mode). The cloud check is off."
+            : "SecondLook is running quick checks (rules only, on this device). Add the Firebase settings to turn on the AI check."}
         </div>
       )}
       {app.config.scamOfTheWeek && (

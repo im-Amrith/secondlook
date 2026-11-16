@@ -9,3 +9,4 @@ coverage/
 .firebase/
 .DS_Store
 *.tsbuildinfo
+.claude/
