@@ -11,3 +11,8 @@ createRoot(document.getElementById("root")!).render(
     </AppProvider>
   </StrictMode>,
 );
+
+// Offline app shell (production only; the dev server serves fresh files).
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => void navigator.serviceWorker.register("/sw.js").catch(() => undefined));
+}

@@ -32,4 +32,5 @@ function pixel(x, y) {
   return [31, 95, 91, 255];
 }
 for (const s of [16, 48, 128]) writeFileSync(new URL(`../public/icons/icon${s}.png`, import.meta.url), png(s, pixel));
+for (const s of [192, 512]) writeFileSync(new URL(`../../web/public/icon-${s}.png`, import.meta.url), png(s, pixel));
 console.log("icons written");
