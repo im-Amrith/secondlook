@@ -14,7 +14,7 @@
     "build": "npm run typecheck -w shared && npm run build -w web --if-present && npm run build -w extension --if-present",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "evals": "npm run evals -w evals"
+    "evals": "tsx evals/run.ts"
   },
   "engines": {
     "node": ">=20"
