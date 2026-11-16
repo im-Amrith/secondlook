@@ -1,0 +1,28 @@
+{
+  "name": "secondlook",
+  "private": true,
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "workspaces": [
+    "shared",
+    "evals",
+    "web",
+    "extension"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w web",
+    "build": "npm run typecheck -w shared && npm run build -w web --if-present && npm run build -w extension --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "evals": "npm run evals -w evals"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}
