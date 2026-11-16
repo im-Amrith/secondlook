@@ -7,6 +7,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { piiMarkdown, runPiiEval, type PiiCase } from "./pii";
 import { groupBy, metrics, metricsRow, METRICS_HEADER, recordedScorer, rulesScorer, runScorer, type Case, type Row, type Scorer } from "./lib";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -57,6 +58,8 @@ async function main() {
     for (const r of misses) out.push(`- ${r.scam ? "**missed scam**" : "**false alarm**"} (score ${r.pred.score}): ${r.text.slice(0, 140).replace(/\|/g, "/")}${r.text.length > 140 ? "…" : ""}`);
     out.push("");
   }
+
+  out.push(piiMarkdown(runPiiEval(JSON.parse(readFileSync(join(here, "data", "pii.json"), "utf8")) as PiiCase[])));
 
   const md = out.join("\n");
   console.log(md);

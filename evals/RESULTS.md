@@ -45,3 +45,28 @@ Misses (5):
 - **false alarm** (score 35): Reminder from your branch: please visit with your Aadhaar and PAN to update your KYC by 30 November. You can also do it in the official app.
 - **false alarm** (score 40): Happy anniversary my love! Dinner is booked for 8. Don't be late this time :)
 - **missed scam** (score 20): Aapka bijli connection aaj raat cut ho jayega. Turant is number par call karo aur bill update karo.
+
+## Redaction (what reaches the cloud)
+
+22 messages with 26 labelled identifiers, plus 41 phrases the model still needs (amounts, times, scam words). Run by `redact()` from shared/redact.ts, the same code the app runs before every cloud call.
+
+> Caveat: written by the same author as the redactor. The first run leaked 2 of 26 identifiers (a UPI ID at the end of a sentence, and a name after a capitalised "I am"); both patterns were fixed. Names are only caught after titles and introductions; the plan is to add on-device name masking with Nano.
+
+| Measure | Result |
+|---|---|
+| Identifiers removed | 26/26 (100%) |
+| Useful phrases kept | 41/41 (100%) |
+| Removed but filed under another type | 1 |
+
+| Type | Removed |
+|---|---|
+| AADHAAR | 1/1 |
+| ACCOUNT | 2/2 |
+| CARD | 1/1 |
+| EMAIL | 1/1 |
+| IBAN | 1/1 |
+| NAME | 4/4 |
+| OTP | 2/2 |
+| PAN | 1/1 |
+| PHONE | 9/9 |
+| UPI | 4/4 |

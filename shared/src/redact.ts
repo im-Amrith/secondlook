@@ -52,11 +52,14 @@ function luhn(digits: string): boolean {
 
 const onlyDigits = (s: string) => s.replace(/\D/g, "");
 
+const TITLES = "Mr|Mrs|Ms|Miss|Dr|Shri|Smt|Sri|Kumari|Inspector|Officer|Constable|Sir|Madam";
+
 // Order matters: more specific patterns run first so e.g. an email isn't seen as a UPI id.
 const PATTERNS: Pattern[] = [
   { type: "EMAIL", re: /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/g },
   // UPI VPA: handle@psp (no dot-TLD after @), e.g. ramesh.k@okaxis, 9876543210@ybl
-  { type: "UPI", re: /[A-Za-z0-9._-]{2,256}@[A-Za-z][A-Za-z0-9]{1,63}(?![\w.@])/g },
+  // (a trailing full stop is allowed: "pay to priya.hr@paytm.")
+  { type: "UPI", re: /[A-Za-z0-9._-]{2,256}@[A-Za-z][A-Za-z0-9]{1,63}(?![\w@]|\.[A-Za-z])/g },
   // IBAN: 2 letters, 2 digits, 11-30 alphanumerics (optionally grouped by spaces)
   { type: "IBAN", re: new RegExp(`${L}[A-Z]{2}\\d{2}(?:[ ]?[A-Z0-9]{4}){2,7}(?:[ ]?[A-Z0-9]{1,4})?${R}`, "g"), valid: (m) => m.replace(/ /g, "").length >= 15 },
   // Payment cards: 13-19 digits, optional spaces/dashes, Luhn-valid
@@ -88,12 +91,18 @@ const PATTERNS: Pattern[] = [
   // Names after a title, or "my name is X" (simple heuristic; the device model can add more)
   {
     type: "NAME",
-    re: /\b(?:(?:Mr|Mrs|Ms|Miss|Dr|Shri|Smt|Sri|Kumari|Inspector|Officer|Constable|Sir|Madam)\.?\s+|(?:my name is|i am|i'm|this is)\s+)([A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})?)/g,
+    // "This is Officer Vikram" is left to the title branch, so only the name is masked.
+    re: new RegExp(String.raw`\b(?:(?:${TITLES})\.?\s+|(?:[Mm]y name is|I am|I'm|[Tt]his is)\s+(?!(?:${TITLES})\b))([A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})?)`, "g"),
     group: 1,
   },
 ];
 
-const NAME_STOPWORDS = new Set(["The", "From", "Your", "Calling", "Here", "Not", "Very", "Sorry", "Happy", "Going", "Fine", "Good", "Back", "Just", "Also", "Still", "Really", "Sure"]);
+const NAME_STOPWORDS = new Set([
+  "The", "From", "Your", "Calling", "Here", "Not", "Very", "Sorry", "Happy", "Going", "Fine", "Good", "Back", "Just", "Also", "Still", "Really", "Sure", "Team", "Customer",
+  // Organisations and places that often follow "this is" in scam messages: the model needs these.
+  "Amazon", "Flipkart", "Google", "Microsoft", "Apple", "Paytm", "Fedex", "Bluedart", "Police", "Bank", "Customs", "Income", "Electricity",
+  "Mumbai", "Delhi", "Kerala", "India", "Indian", "Cyber", "Crime", "Narcotics", "Telecom", "Reserve",
+]);
 
 export function redact(input: string, opts: RedactOptions = {}): RedactResult {
   let text = input;

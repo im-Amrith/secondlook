@@ -25,3 +25,15 @@ describe("eval metrics", () => {
     await expect(s.predict("b")).rejects.toThrow();
   });
 });
+
+import { runPiiEval } from "../pii";
+
+describe("redaction eval", () => {
+  it("removes every labelled identifier and keeps the useful phrases", () => {
+    const cases = JSON.parse(readFileSync(new URL("../data/pii.json", import.meta.url), "utf8"));
+    const r = runPiiEval(cases);
+    expect(r.leaks).toEqual([]);
+    expect(r.overRedactions).toEqual([]);
+    expect(r.removed).toBe(r.identifiers);
+  });
+});
