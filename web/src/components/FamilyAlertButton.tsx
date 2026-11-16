@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Verdict } from "@secondlook/shared";
 import { useApp } from "../lib/app-context";
-import { alertFromVerdict, myCircles, sendAlert, type Circle } from "../lib/family";
+import { alertFromVerdict, type Circle } from "../lib/family-model";
 
 /** On a medium/high result, offer to tell the family circle. Sends signal metadata only. */
 export function FamilyAlertButton({ verdict }: { verdict: Verdict }) {
@@ -11,7 +11,8 @@ export function FamilyAlertButton({ verdict }: { verdict: Verdict }) {
 
   useEffect(() => {
     if (!services || !user) return;
-    myCircles(services.db, user.uid)
+    import("../lib/family")
+      .then((f) => f.myCircles(services.db, user.uid))
       .then((cs) => setCircle(cs.find((c) => c.ownerUid === user.uid) ?? null))
       .catch(() => setCircle(null));
   }, [services, user]);
@@ -32,6 +33,7 @@ export function FamilyAlertButton({ verdict }: { verdict: Verdict }) {
         onClick={async () => {
           setState("sending");
           try {
+            const { sendAlert } = await import("../lib/family");
             await sendAlert(services.db, alertFromVerdict(verdict, circle, user, surface));
             setState("sent");
           } catch {

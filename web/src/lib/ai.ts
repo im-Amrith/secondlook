@@ -6,16 +6,11 @@
 // InferenceMode.{ONLY_ON_DEVICE,ONLY_IN_CLOUD,PREFER_ON_DEVICE}, GenerativeModel.initializeDeviceModel,
 // response.inferenceSource ("on_device" | "in_cloud"), HybridParams.{onDeviceParams,inCloudParams}.
 import { getGenerativeModel, InferenceMode, InferenceSource, type AI, type GenerativeModel, type Part } from "firebase/ai";
-import { AI_VERDICT_JSON_SCHEMA, FOLLOWUP_SYSTEM_PROMPT, MAX_OUTPUT_TOKENS, NAMES_JSON_SCHEMA, NAMES_SYSTEM_PROMPT, parseNames, SYSTEM_PROMPT, scoreRules, type ImageInput, type ModelReply, type ModelRunner } from "@secondlook/shared";
+import { AI_VERDICT_JSON_SCHEMA, FOLLOWUP_SYSTEM_PROMPT, MAX_OUTPUT_TOKENS, NAMES_JSON_SCHEMA, NAMES_SYSTEM_PROMPT, parseNames, SYSTEM_PROMPT, type ImageInput, type ModelReply, type ModelRunner } from "@secondlook/shared";
 import { NANO_CREATE_OPTIONS } from "./nano";
+import { DEFAULT_CLOUD_MODEL, type DeviceRunner } from "./models";
 
-export const DEFAULT_CLOUD_MODEL = "gemini-3.5-flash-lite";
-
-export interface DeviceRunner extends ModelRunner {
-  /** Must be called from a user gesture (button click). Downloads Gemini Nano if needed. */
-  initialize(onProgress?: (p: number) => void): Promise<void>;
-  simulated?: boolean;
-}
+export { DEFAULT_CLOUD_MODEL, type DeviceRunner };
 
 function toParts(prompt: string, image?: ImageInput): Array<string | Part> {
   return image ? [prompt, { type: "inlineData", inlineData: { data: image.data, mimeType: image.mimeType } }] : [prompt];
@@ -78,35 +73,6 @@ export function makePreferOnDeviceModel(ai: AI, cloudModelName = DEFAULT_CLOUD_M
   });
 }
 
-/**
- * DEV ONLY: a stand-in for Gemini Nano so the on-device path can be exercised where Nano isn't
- * available (e.g. automated browsers). Enabled with ?mockNano in `npm run dev`. Clearly labelled.
- */
-export function makeSimulatedDeviceRunner(): DeviceRunner {
-  return {
-    simulated: true,
-    initialize: async (onProgress) => {
-      for (let i = 1; i <= 5; i++) {
-        await new Promise((r) => setTimeout(r, 120));
-        onProgress?.(i / 5);
-      }
-    },
-    run: async (prompt) => {
-      await new Promise((r) => setTimeout(r, 400));
-      const body = prompt.split('"""')[1] ?? prompt;
-      const r = scoreRules(body);
-      const json = {
-        score: Math.min(100, r.score + (r.signals.length ? 5 : 0)),
-        level: r.level,
-        signals: r.signals.slice(0, 4).map((s) => ({ id: s.id, excerpt: s.excerpt.slice(0, 60) })),
-        explanation: `(Simulated on-device model) ${r.explanation}`,
-        advice: r.advice,
-      };
-      return { text: JSON.stringify(json), source: "ON_DEVICE" };
-    },
-  };
-}
-
 /** Plain-text runners for follow-up questions (no JSON schema). */
 export function makeFollowUpRunners(ai: AI, cloudModelName = DEFAULT_CLOUD_MODEL): { device: ModelRunner; cloud: ModelRunner } {
   const device = getGenerativeModel(ai, {
@@ -153,12 +119,3 @@ export function makeDeviceNameFinder(ai: AI, cloudModelName = DEFAULT_CLOUD_MODE
   };
 }
 
-/** DEV ONLY stand-in for follow-up answers (see makeSimulatedDeviceRunner). */
-export function makeSimulatedFollowUpRunner(): ModelRunner {
-  return {
-    run: async () => {
-      await new Promise((r) => setTimeout(r, 300));
-      return { text: "(Simulated on-device model) Don't reply or pay. If you already shared a code or paid, call your bank on the number on your card now, then call 1930.", source: "ON_DEVICE" };
-    },
-  };
-}

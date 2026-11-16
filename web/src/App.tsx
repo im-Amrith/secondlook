@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useApp } from "./lib/app-context";
 import { CheckPage } from "./pages/Check";
 import { SetupPage } from "./pages/Setup";
 import { SettingsPage } from "./pages/Settings";
-import { FamilyPage } from "./pages/Family";
-import { GuardianPage } from "./pages/Guardian";
-import { EvalsPage } from "./pages/Evals";
+// Pages that need Firestore/Auth (or big eval data) load on demand.
+const FamilyPage = lazy(() => import("./pages/Family").then((m) => ({ default: m.FamilyPage })));
+const GuardianPage = lazy(() => import("./pages/Guardian").then((m) => ({ default: m.GuardianPage })));
+const EvalsPage = lazy(() => import("./pages/Evals").then((m) => ({ default: m.EvalsPage })));
 
 function useHash(): string {
   const [hash, setHash] = useState(() => location.hash || "#/");
@@ -57,7 +58,9 @@ export function App() {
           ))}
         </nav>
       </header>
-      <main>{page}</main>
+      <main>
+        <Suspense fallback={<p className="muted">Loading…</p>}>{page}</Suspense>
+      </main>
       <footer className="footer muted">
         SecondLook gives a second opinion, not a guarantee. In India, report scams at <a href="https://cybercrime.gov.in" target="_blank" rel="noreferrer">cybercrime.gov.in</a> or call 1930.
       </footer>
