@@ -2,6 +2,13 @@
 import { defineConfig } from "vite";
 import { configDefaults } from "vitest/config";
 import react from "@vitejs/plugin-react";
+import { createRequire } from "node:module";
+import { dirname, join } from "node:path";
+
+const require = createRequire(import.meta.url);
+// Tests run in Node, where @firebase/ai would resolve to its Node build (no on-device adapter at all).
+// Point it at the browser build so tests exercise the same code paths as Chrome.
+const firebaseAiBrowser = join(dirname(require.resolve("@firebase/ai/package.json")), "dist/esm/index.esm.js");
 
 export default defineConfig({
   plugins: [react()],
@@ -11,6 +18,7 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: ["./test/setup.ts"],
+    alias: [{ find: /^firebase\/ai$/, replacement: firebaseAiBrowser }],
     // Firestore rules tests need the emulator: run them with `npm run test:rules` at the root.
     exclude: [...configDefaults.exclude, "rules-test/**"],
   },

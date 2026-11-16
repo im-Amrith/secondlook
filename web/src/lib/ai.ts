@@ -43,6 +43,41 @@ export function plainSchema(schema: unknown): unknown {
 
 const DEVICE_VERDICT_SCHEMA = plainSchema(AI_VERDICT_JSON_SCHEMA) as object;
 
+/**
+ * PRIVACY GUARD. In firebase@13.3.0, getGenerativeModel() only attaches the on-device adapter if
+ * Chrome's `LanguageModel` (Prompt API) exists at that moment; without it, generateContent() goes
+ * straight to the cloud even in ONLY_ON_DEVICE mode (see callCloudOrDevice / chromeAdapterFactory
+ * in @firebase/ai). So on-device models are created lazily, only once the Prompt API is present,
+ * and every on-device call refuses to run without it. A cloud answer from an on-device model is
+ * also rejected (see run()).
+ */
+export function promptApiPresent(): boolean {
+  const g = globalThis as unknown as { LanguageModel?: { availability?: unknown }; window?: { LanguageModel?: { availability?: unknown } } };
+  return typeof g.LanguageModel?.availability === "function" || typeof g.window?.LanguageModel?.availability === "function";
+}
+
+export class OnDeviceUnavailableError extends Error {
+  constructor() {
+    super("The on-device model (Chrome Prompt API) isn't available; refusing to run an on-device request.");
+  }
+}
+
+/** Creates the model on first use, and only when the Prompt API exists. */
+function lazyDevice(make: () => GenerativeModel): () => GenerativeModel {
+  let model: GenerativeModel | undefined;
+  return () => {
+    if (!promptApiPresent()) throw new OnDeviceUnavailableError();
+    return (model ??= make());
+  };
+}
+
+/** Runs an ONLY_ON_DEVICE model and refuses any answer that didn't come from the device. */
+async function runOnDevice(model: GenerativeModel, prompt: string, image?: ImageInput): Promise<ModelReply> {
+  const reply = await run(model, prompt, image, "ON_DEVICE");
+  if (reply.source !== "ON_DEVICE") throw new OnDeviceUnavailableError();
+  return reply;
+}
+
 function deviceModel(ai: AI, cloudModelName: string, withImages: boolean): GenerativeModel {
   return getGenerativeModel(ai, {
     mode: InferenceMode.ONLY_ON_DEVICE,
@@ -61,15 +96,17 @@ function deviceModel(ai: AI, cloudModelName: string, withImages: boolean): Gener
 
 /** Two on-device models: text-only (works on every Nano-capable Chrome) and text+image. */
 export function makeDeviceRunner(ai: AI, cloudModelName = DEFAULT_CLOUD_MODEL): DeviceRunner {
-  const text = deviceModel(ai, cloudModelName, false);
-  const image = deviceModel(ai, cloudModelName, true);
+  const text = lazyDevice(() => deviceModel(ai, cloudModelName, false));
+  const image = lazyDevice(() => deviceModel(ai, cloudModelName, true));
   return {
     initialize: async (onProgress) => {
-      await text.initializeDeviceModel(onProgress);
+      await text().initializeDeviceModel(onProgress);
       // Same model weights; this just prepares a multimodal session if this Chrome supports it.
-      await image.initializeDeviceModel().catch(() => undefined);
+      await image()
+        .initializeDeviceModel()
+        .catch(() => undefined);
     },
-    run: (prompt, img) => run(img ? image : text, prompt, img, "ON_DEVICE"),
+    run: async (prompt, img) => runOnDevice(img ? image() : text(), prompt, img),
   };
 }
 
@@ -105,7 +142,7 @@ export function makePreferOnDeviceModel(ai: AI, cloudModelName = DEFAULT_CLOUD_M
 
 /** Plain-text runners for follow-up questions (no JSON schema). */
 export function makeFollowUpRunners(ai: AI, cloudModelName = DEFAULT_CLOUD_MODEL): { device: ModelRunner; cloud: ModelRunner } {
-  const device = getGenerativeModel(ai, {
+  const device = lazyDevice(() => getGenerativeModel(ai, {
     mode: InferenceMode.ONLY_ON_DEVICE,
     onDeviceParams: {
       createOptions: {
@@ -114,13 +151,13 @@ export function makeFollowUpRunners(ai: AI, cloudModelName = DEFAULT_CLOUD_MODEL
       },
     },
     inCloudParams: { model: cloudModelName },
-  });
+  }));
   const cloud = getGenerativeModel(ai, {
     mode: InferenceMode.ONLY_IN_CLOUD,
     inCloudParams: { model: cloudModelName, systemInstruction: FOLLOWUP_SYSTEM_PROMPT, generationConfig: { maxOutputTokens: 200, temperature: 0.3 } },
   });
   return {
-    device: { run: (p) => run(device, p, undefined, "ON_DEVICE") },
+    device: { run: async (p) => runOnDevice(device(), p) },
     cloud: { run: (p) => run(cloud, p, undefined, "IN_CLOUD") },
   };
 }
@@ -130,7 +167,8 @@ export function makeFollowUpRunners(ai: AI, cloudModelName = DEFAULT_CLOUD_MODEL
  * available, so people's names are masked too (regex catches only names after titles).
  */
 export function makeDeviceNameFinder(ai: AI, cloudModelName = DEFAULT_CLOUD_MODEL): (text: string) => Promise<string[]> {
-  const model = getGenerativeModel(ai, {
+  // This model sees the UNREDACTED text, so it must never fall back to the cloud (see promptApiPresent).
+  const model = lazyDevice(() => getGenerativeModel(ai, {
     mode: InferenceMode.ONLY_ON_DEVICE,
     onDeviceParams: {
       createOptions: {
@@ -141,11 +179,10 @@ export function makeDeviceNameFinder(ai: AI, cloudModelName = DEFAULT_CLOUD_MODE
       promptOptions: { responseConstraint: plainSchema(NAMES_JSON_SCHEMA) as object },
     },
     inCloudParams: { model: cloudModelName },
-  });
+  }));
   return async (text) => {
-    const r = await model.generateContent(text.slice(0, 6000));
-    if (r.response.inferenceSource === InferenceSource.IN_CLOUD) return []; // must never happen; ignore if it does
-    return parseNames(r.response.text(), text);
+    const reply = await runOnDevice(model(), text.slice(0, 6000));
+    return parseNames(reply.text, text);
   };
 }
 
