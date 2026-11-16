@@ -1,5 +1,7 @@
 # SecondLook
 
+[![CI](https://github.com/im-Amrith/secondlook/actions/workflows/ci.yml/badge.svg)](https://github.com/im-Amrith/secondlook/actions/workflows/ci.yml)
+
 **Scam checks that run on your device first.** SecondLook reads a suspicious message, web page or screenshot with **Gemini Nano on your own device** through the **Firebase AI Logic hybrid SDK**. It falls back to the cloud only after removing personal details, and it always shows you which path ran. If something is serious, it can tell a family member you trust, with the warning signs only and never your messages.
 
 Built for the Firebase **#BuildHybridAI** hackathon. Platforms: **Web (Chrome)** and a **Chrome extension**; Android is planned as a thin companion.

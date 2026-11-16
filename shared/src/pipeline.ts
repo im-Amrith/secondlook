@@ -1,7 +1,7 @@
 // The whole check, platform-independent: rules → router → (device | redact → cloud | rules) → combine.
 // Model calls are injected, so the web app, the extension and the tests all share this code.
 import { combine, mergeChunkVerdicts } from "./combine";
-import { buildFollowUpPrompt, buildUserPrompt, estimateTokens, IMAGE_PROMPT } from "./prompt";
+import { buildFollowUpPrompt, buildUserPrompt, estimateTokens, IMAGE_PROMPT, replyLanguageFor } from "./prompt";
 import { redact, type RedactionItem } from "./redact";
 import { chunkText, decideRoute, guessLang, type Platform, type RouteDecision } from "./router";
 import { scoreRules, type RulesOptions } from "./rules";
@@ -143,7 +143,8 @@ export async function checkMessage(input: CheckInput, deps: PipelineDeps): Promi
       image = input.image;
     }
     const red = redact(text, { names: await deviceNames(deps, nanoText, text) });
-    const prompt = image ? `${IMAGE_PROMPT}\n${buildUserPrompt(red.text, rules)}` : buildUserPrompt(red.text, rules);
+    const replyIn = replyLanguageFor(guessLang(text));
+    const prompt = image ? `${IMAGE_PROMPT}\n${buildUserPrompt(red.text, rules, { replyIn })}` : buildUserPrompt(red.text, rules, { replyIn });
     const reply = await deps.cloud.run(prompt, image);
     const ai = parseAiVerdict(reply.text);
     const verdict = combine(rules, ai, { source: ai ? reply.source : "RULES", redactions: red.redactions, thresholds });
@@ -251,7 +252,7 @@ export async function askFollowUp(question: string, original: string, verdict: V
       const both = `${original}\n\u0000\n${question}`;
       const joined = redact(both, { names: await deviceNames(deps, nano, both) });
       const [rOriginal = "", rQuestion = ""] = joined.text.split("\n\u0000\n");
-      const prompt = buildFollowUpPrompt(rOriginal, summary, rQuestion);
+      const prompt = buildFollowUpPrompt(rOriginal, summary, rQuestion, replyLanguageFor(guessLang(question)) ?? replyLanguageFor(guessLang(original)));
       const reply = await deps.cloud.run(prompt);
       return { answer: reply.text.trim() || CANNED_FOLLOWUP, source: reply.source, decision, sentText: prompt, redactions: joined.redactions, redactionItems: joined.items };
     }

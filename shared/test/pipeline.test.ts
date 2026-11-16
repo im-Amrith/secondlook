@@ -205,3 +205,20 @@ describe("text vs image availability", () => {
     expect(out.sentImage).toBe(true);
   });
 });
+
+describe("answer language for Hindi / Malayalam (cloud only)", () => {
+  it("asks the cloud model to explain in Hindi for a Hindi message", async () => {
+    const d = deps();
+    const out = await checkMessage({ text: "मैं पुलिस से बोल रहा हूँ, तुरंत पैसे भेजो" }, d);
+    expect(out.decision.route).toBe("cloud");
+    expect(out.sentText).toContain("in simple Hindi");
+  });
+  it("doesn't add a language instruction for English or on device", async () => {
+    const d = deps({ nanoAvailable: () => false });
+    const out = await checkMessage({ text: SCAM }, d);
+    expect(out.sentText).not.toContain("in simple");
+    const dev = deps();
+    await checkMessage({ text: SCAM }, dev);
+    expect((dev.device!.run as ReturnType<typeof vi.fn>).mock.calls[0]![0]).not.toContain("in simple");
+  });
+});

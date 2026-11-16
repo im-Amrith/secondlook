@@ -16,13 +16,25 @@ Reply ONLY with JSON: {"score":0-100,"level":"low|medium|high","signals":[{"id":
 Use simple words. No more than 4 signals.`;
 
 /** Builds the user turn. Rule findings are a hint, not a verdict, so the model can disagree. */
-export function buildUserPrompt(text: string, rules?: Pick<RulesResult, "signals" | "score">, opts: { maxChars?: number } = {}): string {
+export function buildUserPrompt(text: string, rules?: Pick<RulesResult, "signals" | "score">, opts: { maxChars?: number; replyIn?: ReplyLanguage } = {}): string {
   const max = opts.maxChars ?? 6000;
   const body = text.length > max ? text.slice(0, max) + " …[cut]" : text;
   const hint = rules
     ? `Quick rules found: ${rules.signals.map((s) => s.label).join(", ") || "nothing"} (score ${rules.score}).\n`
     : "";
-  return `${hint}Message:\n"""${body}"""`;
+  return `${hint}Message:\n"""${body}"""${replyInstruction(opts.replyIn)}`;
+}
+
+/** Languages the CLOUD model is asked to answer in (the on-device model only outputs English). */
+export type ReplyLanguage = "Hindi" | "Malayalam";
+
+/** Hindi/Malayalam messages go to the cloud anyway, so the person gets the answer in their language. */
+export function replyLanguageFor(lang: string): ReplyLanguage | undefined {
+  return lang === "hi" ? "Hindi" : lang === "ml" ? "Malayalam" : undefined;
+}
+
+function replyInstruction(replyIn?: ReplyLanguage): string {
+  return replyIn ? `\nWrite "explanation" and "advice" in simple ${replyIn}. Keep the JSON keys and the signal ids in English.` : "";
 }
 
 export const IMAGE_PROMPT = "This is a screenshot of a message or web page. Read it and judge whether it is a scam.";
@@ -42,8 +54,9 @@ export const FOLLOWUP_SYSTEM_PROMPT = `You help an older person who received a m
 Never ask for personal details, codes or money. If they may already have paid or shared a code, tell them to call their bank on the number on their card right away and report it (in India: call 1930 or visit cybercrime.gov.in).
 Placeholders like [PHONE_1] are personal details removed for privacy.`;
 
-export function buildFollowUpPrompt(original: string, verdictSummary: string, question: string): string {
-  return `The message they received:\n"""${original.slice(0, 4000)}"""\nOur check said: ${verdictSummary}\nTheir question: ${question}`;
+export function buildFollowUpPrompt(original: string, verdictSummary: string, question: string, replyIn?: ReplyLanguage): string {
+  const lang = replyIn ? `\nAnswer in simple ${replyIn}.` : "";
+  return `The message they received:\n"""${original.slice(0, 4000)}"""\nOur check said: ${verdictSummary}\nTheir question: ${question}${lang}`;
 }
 
 /**
