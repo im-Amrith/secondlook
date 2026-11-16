@@ -27,7 +27,13 @@ Every result carries a badge, so "private AI" is something you can check rather 
 - 🔵 **Checked in the cloud, with personal details removed:** e.g. *3 phone numbers, 1 account number and 2 names*. Tap **See exactly what was sent** to read the redacted text word for word.
 - ⚪ **Quick check:** rules only, because no AI model was available.
 
-Under the badge, one sentence from the router says *why* that path was chosen.
+Under the badge, one sentence from the router says *why* that path was chosen. The router is visible in three more places:
+
+- **Before you check:** as you type, a line under the box says where the check *will* run (e.g. *"Hindi detected: will remove personal details, then check in the cloud"*).
+- **Follow-up questions** ("I already paid. What now?") are multi-turn, which the on-device model can't do, so they go to the cloud with the original message and the question redacted together, with the same badge and "what was sent" view. With the cloud off they're answered on device as a fresh question.
+- **The Privacy page** runs the real router against *this device's* current state for typical cases (short text, screenshot, Hindi, long chat, follow-up, offline) and lists exactly what leaves the device on each path.
+
+**Nano helps even when the cloud runs.** When a check must go to the cloud but Gemini Nano is on the device (Hindi text, very long chats, follow-ups), the on-device model first lists people's names so they're masked along with the regex redactions.
 
 ## Routing rules
 
@@ -76,20 +82,33 @@ Notes from the installed typings (`firebase@13.3.0`) that differ from older docs
 | Product | Job |
 |---|---|
 | **AI Logic** | Hybrid inference: Gemini Nano on device, Gemini in the cloud |
-| **App Check** | reCAPTCHA Enterprise on the web; debug provider in development and in the extension |
-| **Authentication** | Google sign-in for the family circle |
-| **Firestore** | `circles/{id}` (members) and `alerts/{id}` (metadata only). `firestore.rules` allow-lists alert fields, so message text can't be stored even by a modified client |
-| **Remote Config** | Risk thresholds, per-rule weight overrides, cloud on/off switch, prompt version, live extra rules ("scam of the week") |
+| **App Check** | reCAPTCHA Enterprise on the web; debug provider in development and in the extension (reCAPTCHA can't load in MV3) |
+| **Authentication** | Google sign-in for the family circle: popup on the web, `chrome.identity` → `signInWithCredential` in the extension (with `firebase/auth/web-extension`) |
+| **Firestore** | `circles/{id}` (members) and `alerts/{id}` (metadata only). `firestore.rules` allow-lists alert fields, so message text can't be stored even by a modified client. **8 rules tests pass in the Firestore emulator** (`npm run test:rules`) |
+| **Remote Config** | Risk thresholds, per-rule weight overrides, cloud on/off switch, cloud model, prompt version, live extra rules and a "scam of the week" banner (`remoteconfig.template.json`) |
 | **Hosting** | The web app and family dashboard (`firebase.json`) |
+
+The Firebase SDK is loaded lazily, only when a config exists: the first screen is 90 KB gzipped and works offline with rules alone.
+
+### Scam of the week (Remote Config)
+
+Push a new pattern to every user without a release, e.g. in the Remote Config console set `extra_rules` to:
+
+```json
+[{ "id": "fastag", "category": "link", "label": "Fake FASTag renewal", "why": "NHAI never asks you to renew FASTag through a link in a message.", "weight": 0.5, "pattern": "fastag.{0,40}(renew|expire|kyc|block)" }]
+```
+
+and `scam_of_the_week` to *"Fake FASTag renewal messages are going around"*. The next check picks it up: *"Your FASTag will be blocked today. Renew KYC now at fastag-renew.top"* scores **0** with the built-in rules and **50 (Be careful)** once the rule is live.
 
 ## Repository layout
 
 ```
 shared/     rules, verdict schema, redactor, prompt, router, combiner, check pipeline, URL scorer (all unit-tested)
-web/        Vite + React app: check, onboarding/model download, settings, family circle, guardian alerts, #/evals
-extension/  Chrome MV3: side panel (reuses the web UI), right-click check, look-alike page banner
-evals/      labelled datasets, runner, RESULTS.md
-firebase.json, firestore.rules, firestore.indexes.json
+web/        Vite + React app: check, onboarding/model download, privacy page, settings, family circle, guardian alerts, #/evals
+            rules-test/ Firestore security rules tests (emulator)
+extension/  Chrome MV3: side panel (reuses the web UI), right-click check, look-alike page banner, chrome.identity sign-in
+evals/      labelled datasets (scam + redaction), runner, RESULTS.md
+firebase.json, firestore.rules, firestore.indexes.json, remoteconfig.template.json
 ```
 
 ## Eval results
@@ -118,10 +137,14 @@ Requirements: Node 20+ (tested on Node 26), desktop Chrome 139+ for Gemini Nano.
 
 ```bash
 npm install
-npm test          # shared, evals, web and extension tests
-npm run build     # typecheck + web build + extension build
-npm run dev       # web app on http://localhost:5173
+npm test            # shared, evals, web and extension tests
+npm run build       # typecheck + web build + extension build
+npm run dev         # web app on http://localhost:5173
+npm run evals       # eval tables (add -- --write to update evals/RESULTS.md)
+npm run test:rules  # Firestore rules tests in the emulator (needs Java)
 ```
+
+The Firebase CLI crashes on Node 26, so the `test:rules`, `emulators` and `deploy` scripts run it under Node 22 through `npx -p node@22`. On Windows, if the Firestore emulator fails with *"Unable to establish loopback connection"*, set `JAVA_TOOL_OPTIONS=-Djdk.net.unixdomain.tmpdir=C:\tmp` (a folder with no spaces).
 
 With no Firebase config the app runs in **rules-only mode** and says so. To turn on AI:
 
@@ -134,12 +157,14 @@ With no Firebase config the app runs in **rules-only mode** and says so. To turn
 
 Developer mode: `npm run dev` then open `http://localhost:5173/?mockNano` to exercise the on-device path with a clearly labelled simulated model (dev builds only).
 
-**Chrome extension:** `npm run build`, then `chrome://extensions` → Developer mode → **Load unpacked** → `extension/dist`.
+**Chrome extension:** `npm run build`, then `chrome://extensions` → Developer mode → **Load unpacked** → `extension/dist`. For family sign-in inside the extension, create an OAuth client of type *Chrome extension* for its id and set `VITE_GOOGLE_OAUTH_CLIENT_ID` (and optionally `VITE_EXTENSION_KEY` to pin the id) before building.
+
+**Deploy** (Hosting, Firestore rules/indexes, Remote Config template): `npm run deploy`.
 
 ## Built during the contest vs reused
 
 - **Reused:** the 16 weighted scam rules, the probabilistic-OR scoring and the two eval sets from [shield-paypal-ai](https://github.com/im-Amrith/shield-paypal-ai) (rules made generic, not PayPal-specific); the extension shell idea (manifest, navigation hook, warning-banner content script, URL features) from [PhishShield_Extension](https://github.com/im-Amrith/PhishShield_Extension).
-- **New in the contest period:** everything hybrid and on-device (Firebase AI Logic integration, privacy router, redactor, visible badge, "what was sent" drawer), the secrecy / digital-arrest / account-block rules, the 32 new eval cases and runner, the web app, the MV3 side-panel extension and local URL scorer, the family circle, Remote Config and App Check wiring.
+- **New in the contest period:** everything hybrid and on-device (Firebase AI Logic integration, privacy router, redactor, Nano-assisted name masking, visible badge, route preview, "what was sent" drawer, follow-up questions, privacy page), the secrecy / digital-arrest / account-block rules, the 32 new eval cases, the redaction eval and the runner, the web app, the MV3 side-panel extension and local URL scorer, the family circle and its security rules tests, Remote Config and App Check wiring.
 
 ## License
 
