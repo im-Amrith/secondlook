@@ -1,8 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { User } from "firebase/auth";
-import { checkMessage, type CheckInput, type CheckOutcome, type ModelRunner } from "@secondlook/shared";
+import { askFollowUp, checkMessage, type CheckInput, type CheckOutcome, type FollowUpOutcome, type ModelRunner, type Verdict } from "@secondlook/shared";
 import { getServices, type Services } from "./firebase";
-import { makeCloudRunner, makeDeviceRunner, makeSimulatedDeviceRunner, type DeviceRunner } from "./ai";
+import { makeCloudRunner, makeDeviceRunner, makeFollowUpRunners, makeSimulatedDeviceRunner, makeSimulatedFollowUpRunner, type DeviceRunner } from "./ai";
 import { nanoStatus, type NanoStatus } from "./nano";
 import { DEFAULT_CONFIG, loadRemoteConfig, type AppConfig } from "./remoteConfig";
 import { useSettings, type Settings } from "./settings";
@@ -26,6 +26,7 @@ export interface AppState {
   updateSettings: (p: Partial<Settings>) => void;
   user: User | null;
   check: (input: CheckInput, confirmImageUpload: () => Promise<boolean>) => Promise<CheckOutcome>;
+  followUp: (question: string, original: string, verdict: Verdict) => Promise<FollowUpOutcome>;
 }
 
 const Ctx = createContext<AppState | null>(null);
@@ -84,6 +85,25 @@ export function AppProvider({ children, override, surface = "web" }: { children:
     [nano, device, cloud, config, settings.neverCloud],
   );
 
+  const followUpRunners = useMemo(() => {
+    const real = services ? makeFollowUpRunners(services.ai, config.cloudModel) : null;
+    return simulatedNano ? { device: makeSimulatedFollowUpRunner(), cloud: real?.cloud } : real;
+  }, [services, simulatedNano, config.cloudModel]);
+
+  const followUp = useCallback(
+    (question: string, original: string, verdict: Verdict) =>
+      askFollowUp(question, original, verdict, {
+        platform: "web",
+        nanoAvailable: () => nano === "available",
+        online: () => navigator.onLine,
+        device: followUpRunners?.device,
+        cloud: config.cloudEnabled ? followUpRunners?.cloud : undefined,
+        settings: { neverCloud: settings.neverCloud },
+        config: { cloudEnabled: config.cloudEnabled },
+      }),
+    [nano, followUpRunners, config.cloudEnabled, settings.neverCloud],
+  );
+
   const value: AppState = {
     surface,
     services,
@@ -99,6 +119,7 @@ export function AppProvider({ children, override, surface = "web" }: { children:
     updateSettings,
     user,
     check,
+    followUp,
     ...override,
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

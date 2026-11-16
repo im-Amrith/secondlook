@@ -6,7 +6,7 @@
 // InferenceMode.{ONLY_ON_DEVICE,ONLY_IN_CLOUD,PREFER_ON_DEVICE}, GenerativeModel.initializeDeviceModel,
 // response.inferenceSource ("on_device" | "in_cloud"), HybridParams.{onDeviceParams,inCloudParams}.
 import { getGenerativeModel, InferenceMode, InferenceSource, type AI, type GenerativeModel, type Part } from "firebase/ai";
-import { AI_VERDICT_JSON_SCHEMA, MAX_OUTPUT_TOKENS, SYSTEM_PROMPT, scoreRules, type ImageInput, type ModelReply, type ModelRunner } from "@secondlook/shared";
+import { AI_VERDICT_JSON_SCHEMA, FOLLOWUP_SYSTEM_PROMPT, MAX_OUTPUT_TOKENS, SYSTEM_PROMPT, scoreRules, type ImageInput, type ModelReply, type ModelRunner } from "@secondlook/shared";
 import { NANO_CREATE_OPTIONS } from "./nano";
 
 export const DEFAULT_CLOUD_MODEL = "gemini-3.5-flash-lite";
@@ -103,6 +103,38 @@ export function makeSimulatedDeviceRunner(): DeviceRunner {
         advice: r.advice,
       };
       return { text: JSON.stringify(json), source: "ON_DEVICE" };
+    },
+  };
+}
+
+/** Plain-text runners for follow-up questions (no JSON schema). */
+export function makeFollowUpRunners(ai: AI, cloudModelName = DEFAULT_CLOUD_MODEL): { device: ModelRunner; cloud: ModelRunner } {
+  const device = getGenerativeModel(ai, {
+    mode: InferenceMode.ONLY_ON_DEVICE,
+    onDeviceParams: {
+      createOptions: {
+        ...NANO_CREATE_OPTIONS,
+        initialPrompts: [{ role: "system", content: [{ type: "text", value: FOLLOWUP_SYSTEM_PROMPT }] }],
+      },
+    },
+    inCloudParams: { model: cloudModelName },
+  });
+  const cloud = getGenerativeModel(ai, {
+    mode: InferenceMode.ONLY_IN_CLOUD,
+    inCloudParams: { model: cloudModelName, systemInstruction: FOLLOWUP_SYSTEM_PROMPT, generationConfig: { maxOutputTokens: 200, temperature: 0.3 } },
+  });
+  return {
+    device: { run: (p) => run(device, p, undefined, "ON_DEVICE") },
+    cloud: { run: (p) => run(cloud, p, undefined, "IN_CLOUD") },
+  };
+}
+
+/** DEV ONLY stand-in for follow-up answers (see makeSimulatedDeviceRunner). */
+export function makeSimulatedFollowUpRunner(): ModelRunner {
+  return {
+    run: async () => {
+      await new Promise((r) => setTimeout(r, 300));
+      return { text: "(Simulated on-device model) Don't reply or pay. If you already shared a code or paid, call your bank on the number on your card now, then call 1930.", source: "ON_DEVICE" };
     },
   };
 }

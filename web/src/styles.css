@@ -189,3 +189,8 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   nav a { padding: 6px 8px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+
+.followup { margin: 8px 0 24px; padding: 16px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.followup h3 { margin: 0 0 8px; font-size: 1.1rem; }
+.followup-answer { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 12px; }
+.followup-answer .answer { font-size: 1.05rem; }

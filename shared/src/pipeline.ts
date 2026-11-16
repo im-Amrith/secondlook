@@ -1,11 +1,11 @@
 // The whole check, platform-independent: rules → router → (device | redact → cloud | rules) → combine.
 // Model calls are injected, so the web app, the extension and the tests all share this code.
 import { combine, mergeChunkVerdicts } from "./combine";
-import { buildUserPrompt, estimateTokens, IMAGE_PROMPT } from "./prompt";
+import { buildFollowUpPrompt, buildUserPrompt, estimateTokens, IMAGE_PROMPT } from "./prompt";
 import { redact, type RedactionItem } from "./redact";
 import { chunkText, decideRoute, guessLang, type Platform, type RouteDecision } from "./router";
 import { scoreRules, type RulesOptions } from "./rules";
-import { parseAiVerdict, type AiVerdict, type Verdict } from "./schema";
+import { parseAiVerdict, type AiVerdict, type Redaction, type Verdict } from "./schema";
 
 export interface ImageInput {
   /** Base64 without the data: prefix. */
@@ -179,4 +179,58 @@ export async function checkMessage(input: CheckInput, deps: PipelineDeps): Promi
     }
     return rulesOnly("The on-device model didn't answer, so we ran a quick check.", { route: "rules", code: "rules_offline", chunks: 1, reason: "The AI check didn't answer, so we ran a quick check." });
   }
+}
+
+export interface FollowUpDeps extends Omit<PipelineDeps, "device" | "cloud" | "confirmImageUpload"> {
+  /** Plain-text (not JSON) runners for follow-up answers. */
+  device?: ModelRunner;
+  cloud?: ModelRunner;
+}
+
+export interface FollowUpOutcome {
+  answer: string;
+  source: "ON_DEVICE" | "IN_CLOUD" | "RULES";
+  decision: RouteDecision;
+  sentText: string | null;
+  redactions: Redaction[];
+  redactionItems: RedactionItem[];
+}
+
+const CANNED_FOLLOWUP =
+  "Don't reply, pay, or share any code. If you already paid or shared a code, call your bank now using the number on your card, and report it (in India: call 1930 or visit cybercrime.gov.in). Then tell someone you trust.";
+
+/** A follow-up question is multi-turn, which the on-device model can't do, so the router prefers the (redacted) cloud. */
+export async function askFollowUp(question: string, original: string, verdict: Verdict, deps: FollowUpDeps): Promise<FollowUpOutcome> {
+  const nano = !!deps.device && (await deps.nanoAvailable());
+  const decision = decideRoute({
+    platform: deps.platform,
+    nanoAvailable: nano,
+    lang: guessLang(`${original} ${question}`),
+    estTokens: estimateTokens(original) + estimateTokens(question),
+    inputType: "text",
+    multiTurn: true,
+    userNeverCloud: deps.settings.neverCloud,
+    online: deps.online(),
+    cloudEnabled: deps.config?.cloudEnabled !== false && !!deps.cloud,
+  });
+  const summary = `${verdict.level} risk (${verdict.score}/100). ${verdict.explanation}`;
+  const canned = (d: RouteDecision): FollowUpOutcome => ({ answer: CANNED_FOLLOWUP, source: "RULES", decision: d, sentText: null, redactions: [], redactionItems: [] });
+
+  try {
+    if (decision.route === "cloud" && deps.cloud) {
+      // Redact the original and the question together so placeholders stay consistent.
+      const joined = redact(`${original}\n\u0000\n${question}`);
+      const [rOriginal = "", rQuestion = ""] = joined.text.split("\n\u0000\n");
+      const prompt = buildFollowUpPrompt(rOriginal, summary, rQuestion);
+      const reply = await deps.cloud.run(prompt);
+      return { answer: reply.text.trim(), source: reply.source, decision, sentText: prompt, redactions: joined.redactions, redactionItems: joined.items };
+    }
+    if (decision.route === "device" && deps.device) {
+      const reply = await deps.device.run(buildFollowUpPrompt(original, summary, question));
+      return { answer: reply.text.trim(), source: "ON_DEVICE", decision, sentText: null, redactions: [], redactionItems: [] };
+    }
+  } catch {
+    return canned({ route: "rules", code: "rules_offline", chunks: 1, reason: "The AI didn't answer, so here is our standard advice." });
+  }
+  return canned(decision.route === "rules" ? decision : { ...decision, route: "rules", reason: "AI isn't available right now, so here is our standard advice." });
 }

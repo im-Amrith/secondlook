@@ -4,6 +4,7 @@ import { useApp } from "../lib/app-context";
 import { prepareImage } from "../lib/image";
 import { ResultCard } from "../components/ResultCard";
 import { FamilyAlertButton } from "../components/FamilyAlertButton";
+import { FollowUp } from "../components/FollowUp";
 import { NANO_STATUS_TEXT } from "../lib/nano";
 
 export const EXAMPLES = [
@@ -28,6 +29,7 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
   const [busy, setBusy] = useState(false);
   const [outcome, setOutcome] = useState<CheckOutcome | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [checkedText, setCheckedText] = useState("");
   const [consent, setConsent] = useState<null | ((ok: boolean) => void)>(null);
   const resultRef = useRef<HTMLDivElement>(null);
 
@@ -39,6 +41,7 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
     setBusy(true);
     setError(null);
     setOutcome(null);
+    setCheckedText(t);
     try {
       setOutcome(await app.check({ text: t, image: img, kind: img ? "image" : kind }, askImageConsent));
     } catch (err) {
@@ -137,6 +140,7 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
             actions={<FamilyAlertButton verdict={outcome.verdict} />}
           />
         )}
+        {outcome && !outcome.inconclusive && checkedText && <FollowUp key={outcome.latencyMs} original={checkedText} verdict={outcome.verdict} />}
       </div>
 
       {consent && (

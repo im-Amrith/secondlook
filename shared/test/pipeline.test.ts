@@ -118,3 +118,35 @@ describe("checkMessage pipeline (mocked models)", () => {
     expect(out.verdict.score).toBe(90);
   });
 });
+
+import { askFollowUp } from "../src/pipeline";
+
+describe("askFollowUp (multi-turn → redacted cloud)", () => {
+  const verdict = { score: 95, level: "high" as const, signals: [], explanation: "Fake police.", advice: "Hang up.", source: "ON_DEVICE" as const, redactions: [] };
+  const base = { platform: "web" as const, nanoAvailable: () => true, online: () => true, settings: { neverCloud: false } };
+
+  it("goes to the cloud even when Nano is available, with redaction", async () => {
+    const cloud = { run: vi.fn(async () => ({ text: "Call your bank now.", source: "IN_CLOUD" as const })) };
+    const device = { run: vi.fn(async () => ({ text: "x", source: "ON_DEVICE" as const })) };
+    const out = await askFollowUp("I paid 9876543210 already, what now?", SCAM, verdict, { ...base, cloud, device });
+    expect(out.decision.code).toBe("cloud_followup");
+    expect(out.source).toBe("IN_CLOUD");
+    expect(device.run).not.toHaveBeenCalled();
+    expect(out.sentText).not.toMatch(/9876543210|Rajesh|ramesh@okaxis/);
+    expect(out.sentText).toContain("[PHONE_1]");
+    expect(out.answer).toBe("Call your bank now.");
+  });
+
+  it("answers on device when the cloud is off", async () => {
+    const device = { run: vi.fn(async () => ({ text: "Hang up and call family.", source: "ON_DEVICE" as const })) };
+    const out = await askFollowUp("What now?", SCAM, verdict, { ...base, device, settings: { neverCloud: true } });
+    expect(out.source).toBe("ON_DEVICE");
+    expect(out.sentText).toBeNull();
+  });
+
+  it("gives standard advice with no AI", async () => {
+    const out = await askFollowUp("What now?", SCAM, verdict, { ...base, nanoAvailable: () => false });
+    expect(out.source).toBe("RULES");
+    expect(out.answer).toMatch(/1930/);
+  });
+});

@@ -36,3 +36,12 @@ export function estimateTokens(text: string): number {
   const latin = text.length - nonLatin;
   return Math.ceil(latin / 4 + nonLatin / 1.5);
 }
+
+/** Follow-up questions ("What should I do now?"). Plain text, short. */
+export const FOLLOWUP_SYSTEM_PROMPT = `You help an older person who received a message that may be a scam. Answer their question in at most 4 short sentences, in plain words.
+Never ask for personal details, codes or money. If they may already have paid or shared a code, tell them to call their bank on the number on their card right away and report it (in India: call 1930 or visit cybercrime.gov.in).
+Placeholders like [PHONE_1] are personal details removed for privacy.`;
+
+export function buildFollowUpPrompt(original: string, verdictSummary: string, question: string): string {
+  return `The message they received:\n"""${original.slice(0, 4000)}"""\nOur check said: ${verdictSummary}\nTheir question: ${question}`;
+}
