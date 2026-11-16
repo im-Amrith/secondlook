@@ -13,7 +13,7 @@ export function RoutePreview({ text, hasImage }: { text: string; hasImage: boole
   if (!text.trim() && !hasImage) return null;
   const d = decideRoute({
     platform: "web",
-    nanoAvailable: (app.aiConfigured || app.simulatedNano) && app.nano === "available",
+    nanoAvailable: (app.aiConfigured || app.simulatedNano) && (hasImage ? app.nanoImage : app.nano) === "available",
     lang: guessLang(text),
     estTokens: estimateTokens(text),
     inputType: hasImage ? "image" : "text",

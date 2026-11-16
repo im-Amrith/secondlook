@@ -4,7 +4,7 @@ import { askFollowUp, checkMessage, type CheckInput, type CheckOutcome, type Fol
 import type { Services } from "./firebase";
 import type { Runtime } from "./runtime";
 import { makeSimulatedDeviceRunner, makeSimulatedFollowUpRunner, type DeviceRunner } from "./models";
-import { nanoStatus, type NanoStatus } from "./nano";
+import { nanoImageStatus, nanoStatus, type NanoStatus } from "./nano";
 import { DEFAULT_CONFIG, type AppConfig } from "./config";
 import { useSettings, type Settings } from "./settings";
 import { isFirebaseConfigured, mockNanoEnabled } from "./env";
@@ -21,6 +21,8 @@ export interface AppState {
   device: DeviceRunner | null;
   cloud: ModelRunner | null;
   nano: NanoStatus;
+  /** Separate status for screenshots (multimodal input can be unavailable while text works). */
+  nanoImage: NanoStatus;
   simulatedNano: boolean;
   refreshNano: () => Promise<NanoStatus>;
   setNano: (s: NanoStatus) => void;
@@ -54,6 +56,7 @@ export function AppProvider({ children, override, surface = "web" }: { children:
   const [config, setConfig] = useState<AppConfig>(DEFAULT_CONFIG);
   const [settings, updateSettings] = useSettings();
   const [nano, setNano] = useState<NanoStatus>(simulatedNano ? "downloadable" : "unsupported");
+  const [nanoImage, setNanoImage] = useState<NanoStatus>("unsupported");
   const [user, setUser] = useState<User | null>(null);
 
   const simulated = useMemo(() => (simulatedNano ? { device: makeSimulatedDeviceRunner(), followUp: makeSimulatedFollowUpRunner() } : null), [simulatedNano]);
@@ -63,8 +66,9 @@ export function AppProvider({ children, override, surface = "web" }: { children:
 
   const refreshNano = useCallback(async () => {
     if (simulatedNano) return nano;
-    const s = await nanoStatus();
+    const [s, img] = await Promise.all([nanoStatus(), nanoImageStatus()]);
     setNano(s);
+    setNanoImage(img);
     return s;
   }, [simulatedNano, nano]);
 
@@ -100,6 +104,7 @@ export function AppProvider({ children, override, surface = "web" }: { children:
       return checkMessage(input, {
         platform: "web",
         nanoAvailable: () => nano === "available",
+        nanoImageAvailable: () => (simulatedNano ? nano : nanoImage) === "available",
         online: () => navigator.onLine,
         device: simulated?.device ?? r?.device,
         cloud: config.cloudEnabled ? r?.cloud : undefined,
@@ -110,7 +115,7 @@ export function AppProvider({ children, override, surface = "web" }: { children:
         now: () => performance.now(),
       });
     },
-    [resolveRunners, nano, simulated, config, settings.neverCloud],
+    [resolveRunners, nano, nanoImage, simulatedNano, simulated, config, settings.neverCloud],
   );
 
   const followUp = useCallback(
@@ -138,6 +143,7 @@ export function AppProvider({ children, override, surface = "web" }: { children:
     device,
     cloud,
     nano,
+    nanoImage: simulatedNano ? nano : nanoImage,
     simulatedNano,
     refreshNano,
     setNano,

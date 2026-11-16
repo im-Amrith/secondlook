@@ -7,7 +7,7 @@
 // response.inferenceSource ("on_device" | "in_cloud"), HybridParams.{onDeviceParams,inCloudParams}.
 import { getGenerativeModel, InferenceMode, InferenceSource, type AI, type GenerativeModel, type Part } from "firebase/ai";
 import { AI_VERDICT_JSON_SCHEMA, FOLLOWUP_SYSTEM_PROMPT, MAX_OUTPUT_TOKENS, NAMES_JSON_SCHEMA, NAMES_SYSTEM_PROMPT, parseNames, SYSTEM_PROMPT, type ImageInput, type ModelReply, type ModelRunner } from "@secondlook/shared";
-import { NANO_CREATE_OPTIONS } from "./nano";
+import { NANO_IMAGE_OPTIONS, NANO_TEXT_OPTIONS } from "./nano";
 import { DEFAULT_CLOUD_MODEL, type DeviceRunner } from "./models";
 
 export { DEFAULT_CLOUD_MODEL, type DeviceRunner };
@@ -23,23 +23,53 @@ async function run(model: GenerativeModel, prompt: string, image: ImageInput | u
   return { text: result.response.text(), source };
 }
 
-export function makeDeviceRunner(ai: AI, cloudModelName = DEFAULT_CLOUD_MODEL): DeviceRunner {
-  const model = getGenerativeModel(ai, {
+/**
+ * JSON-schema keywords beyond type/properties/required/enum/items may not be supported by every
+ * on-device constraint decoder, so the device gets a plain version (lengths are still capped by
+ * the prompt, the output token limit and parseAiVerdict()).
+ */
+export function plainSchema(schema: unknown): unknown {
+  if (Array.isArray(schema)) return schema.map(plainSchema);
+  if (schema && typeof schema === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(schema)) {
+      if (["maxLength", "minLength", "minimum", "maximum", "maxItems", "minItems"].includes(k)) continue;
+      out[k] = plainSchema(v);
+    }
+    return out;
+  }
+  return schema;
+}
+
+const DEVICE_VERDICT_SCHEMA = plainSchema(AI_VERDICT_JSON_SCHEMA) as object;
+
+function deviceModel(ai: AI, cloudModelName: string, withImages: boolean): GenerativeModel {
+  return getGenerativeModel(ai, {
     mode: InferenceMode.ONLY_ON_DEVICE,
     onDeviceParams: {
       createOptions: {
-        ...NANO_CREATE_OPTIONS,
+        ...(withImages ? NANO_IMAGE_OPTIONS : NANO_TEXT_OPTIONS),
         // The on-device adapter ignores systemInstruction, so the system prompt goes here.
         initialPrompts: [{ role: "system", content: [{ type: "text", value: SYSTEM_PROMPT }] }],
       },
-      promptOptions: { responseConstraint: AI_VERDICT_JSON_SCHEMA },
+      promptOptions: { responseConstraint: DEVICE_VERDICT_SCHEMA },
     },
     // Required by the SDK even in ONLY_ON_DEVICE mode; never called in this mode.
     inCloudParams: { model: cloudModelName },
   });
+}
+
+/** Two on-device models: text-only (works on every Nano-capable Chrome) and text+image. */
+export function makeDeviceRunner(ai: AI, cloudModelName = DEFAULT_CLOUD_MODEL): DeviceRunner {
+  const text = deviceModel(ai, cloudModelName, false);
+  const image = deviceModel(ai, cloudModelName, true);
   return {
-    initialize: (onProgress) => model.initializeDeviceModel(onProgress),
-    run: (prompt, image) => run(model, prompt, image, "ON_DEVICE"),
+    initialize: async (onProgress) => {
+      await text.initializeDeviceModel(onProgress);
+      // Same model weights; this just prepares a multimodal session if this Chrome supports it.
+      await image.initializeDeviceModel().catch(() => undefined);
+    },
+    run: (prompt, img) => run(img ? image : text, prompt, img, "ON_DEVICE"),
   };
 }
 
@@ -68,7 +98,7 @@ export function makeCloudRunner(ai: AI, modelName = DEFAULT_CLOUD_MODEL): ModelR
 export function makePreferOnDeviceModel(ai: AI, cloudModelName = DEFAULT_CLOUD_MODEL): GenerativeModel {
   return getGenerativeModel(ai, {
     mode: InferenceMode.PREFER_ON_DEVICE,
-    onDeviceParams: { createOptions: NANO_CREATE_OPTIONS },
+    onDeviceParams: { createOptions: NANO_TEXT_OPTIONS },
     inCloudParams: { model: cloudModelName },
   });
 }
@@ -79,7 +109,7 @@ export function makeFollowUpRunners(ai: AI, cloudModelName = DEFAULT_CLOUD_MODEL
     mode: InferenceMode.ONLY_ON_DEVICE,
     onDeviceParams: {
       createOptions: {
-        ...NANO_CREATE_OPTIONS,
+        ...NANO_TEXT_OPTIONS,
         initialPrompts: [{ role: "system", content: [{ type: "text", value: FOLLOWUP_SYSTEM_PROMPT }] }],
       },
     },
@@ -108,7 +138,7 @@ export function makeDeviceNameFinder(ai: AI, cloudModelName = DEFAULT_CLOUD_MODE
         expectedOutputs: [{ type: "text", languages: ["en"] }],
         initialPrompts: [{ role: "system", content: [{ type: "text", value: NAMES_SYSTEM_PROMPT }] }],
       },
-      promptOptions: { responseConstraint: NAMES_JSON_SCHEMA },
+      promptOptions: { responseConstraint: plainSchema(NAMES_JSON_SCHEMA) as object },
     },
     inCloudParams: { model: cloudModelName },
   });

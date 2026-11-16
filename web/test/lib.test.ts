@@ -52,3 +52,15 @@ describe("remote config parsing", () => {
     expect(scoreRules("renew your fastag", c.rules).signals[0]?.ruleId).toBe("fastag");
   });
 });
+
+import { plainSchema } from "../src/lib/ai";
+import { AI_VERDICT_JSON_SCHEMA } from "@secondlook/shared";
+
+describe("on-device schema", () => {
+  it("drops length/range keywords but keeps structure and enums", () => {
+    const s = JSON.stringify(plainSchema(AI_VERDICT_JSON_SCHEMA));
+    expect(s).not.toMatch(/maxLength|minimum|maximum|maxItems/);
+    expect(s).toContain('"enum":["low","medium","high"]');
+    expect(s).toContain('"required":["score","level","signals","explanation","advice"]');
+  });
+});

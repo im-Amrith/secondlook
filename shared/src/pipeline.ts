@@ -49,6 +49,8 @@ export interface PipelineDeps {
    * available, names it finds are masked as well. Never called without Nano.
    */
   findNames?: (text: string) => Promise<string[]>;
+  /** Can the on-device model read images right now? Defaults to nanoAvailable. */
+  nanoImageAvailable?: () => Promise<boolean> | boolean;
   now?: () => number;
 }
 
@@ -103,7 +105,9 @@ export async function checkMessage(input: CheckInput, deps: PipelineDeps): Promi
   const rulesOpts = deps.config?.rules;
   const rules = scoreRules(text, rulesOpts);
   const thresholds = rulesOpts?.thresholds;
-  const nano = !!deps.device && (await deps.nanoAvailable());
+  // Text and screenshots are checked separately: a Chrome may run text on device but not images.
+  const nanoText = !!deps.device && (await deps.nanoAvailable());
+  const nano = input.image && deps.nanoImageAvailable ? !!deps.device && (await deps.nanoImageAvailable()) : nanoText;
   const inputType = input.image ? "image" : (input.kind ?? "text");
 
   const decision = decideRoute({
@@ -138,7 +142,7 @@ export async function checkMessage(input: CheckInput, deps: PipelineDeps): Promi
       if (!ok) return rulesOnly("The screenshot stayed on your device, so we ran a quick check on any text instead.", d);
       image = input.image;
     }
-    const red = redact(text, { names: await deviceNames(deps, nano, text) });
+    const red = redact(text, { names: await deviceNames(deps, nanoText, text) });
     const prompt = image ? `${IMAGE_PROMPT}\n${buildUserPrompt(red.text, rules)}` : buildUserPrompt(red.text, rules);
     const reply = await deps.cloud.run(prompt, image);
     const ai = parseAiVerdict(reply.text);

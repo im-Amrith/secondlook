@@ -191,3 +191,17 @@ describe("honesty when the cloud answer is unusable", () => {
     expect(out.fallbackNote).toMatch(/couldn't be read/);
   });
 });
+
+describe("text vs image availability", () => {
+  it("keeps text on device even if this Chrome can't read images on device", async () => {
+    const d = deps({ nanoImageAvailable: () => false });
+    const out = await checkMessage({ text: SCAM }, d);
+    expect(out.verdict.source).toBe("ON_DEVICE");
+  });
+  it("routes a screenshot by image availability", async () => {
+    const d = deps({ nanoImageAvailable: () => false, confirmImageUpload: async () => true });
+    const out = await checkMessage({ image: { data: "AAAA", mimeType: "image/png" } }, d);
+    expect(out.decision.code).toBe("cloud_no_nano");
+    expect(out.sentImage).toBe(true);
+  });
+});
