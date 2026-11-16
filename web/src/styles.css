@@ -204,3 +204,6 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .route-table th { font-size: 0.85rem; color: var(--muted); }
 .nowrap { white-space: nowrap; }
 @media (max-width: 560px) { .route-table thead { display: none; } .route-table tr { display: grid; padding: 8px 0; border-bottom: 1px solid var(--line); } .route-table td { border: 0; padding: 2px 0; } .nowrap { white-space: normal; } }
+
+.lang-picker { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 4px; }
+.lang-picker button { flex: 1 1 110px; }

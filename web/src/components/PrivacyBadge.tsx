@@ -1,4 +1,6 @@
 import { describeRedactions, totalRedactions, type Redaction, type VerdictSource } from "@secondlook/shared";
+import { useT } from "../lib/useT";
+import { redactionsText } from "../lib/i18n";
 
 export interface PrivacyBadgeProps {
   source: VerdictSource;
@@ -11,15 +13,17 @@ export interface PrivacyBadgeProps {
 
 /** The visible privacy router: always shows which path produced the verdict, and whether anything left the device. */
 export function PrivacyBadge({ source, redactions, sentImage, simulated, sent }: PrivacyBadgeProps) {
+  const { t, lang } = useT();
+  const removed = () =>
+    totalRedactions(redactions) > 0 ? t("badge.removed", { list: redactionsText(redactions, lang, describeRedactions) }) : t("badge.noneFound");
+
   if (source === "RULES" && sent) {
-    const n = totalRedactions(redactions);
     return (
       <div className="badge badge-cloud" role="status" data-source="RULES_AFTER_CLOUD">
         <span className="badge-dot" aria-hidden>🔵</span>
         <span>
-          <strong>Sent to the cloud</strong>
-          {n > 0 ? <>, with personal details removed: {describeRedactions(redactions)}.</> : <>. No personal details were found to remove.</>}{" "}
-          Its answer couldn't be used, so this is a quick-check result.
+          <strong>{t("badge.sentTitle")}</strong>
+          {removed()} {t("badge.unusable")}
         </span>
       </div>
     );
@@ -29,21 +33,20 @@ export function PrivacyBadge({ source, redactions, sentImage, simulated, sent }:
       <div className="badge badge-device" role="status" data-source="ON_DEVICE">
         <span className="badge-dot" aria-hidden>🟢</span>
         <span>
-          <strong>Checked on this device.</strong> Nothing was sent anywhere.
-          {simulated && <em className="badge-sim"> (simulated model, dev only)</em>}
+          <strong>{t("badge.deviceTitle")}</strong> {t("badge.deviceBody")}
+          {simulated && <em className="badge-sim"> {t("badge.sim")}</em>}
         </span>
       </div>
     );
   }
   if (source === "IN_CLOUD") {
-    const n = totalRedactions(redactions);
     return (
       <div className="badge badge-cloud" role="status" data-source="IN_CLOUD">
         <span className="badge-dot" aria-hidden>🔵</span>
         <span>
-          <strong>Checked in the cloud</strong>
-          {n > 0 ? <>, with personal details removed: {describeRedactions(redactions)}.</> : <>. No personal details were found to remove.</>}
-          {sentImage && <> The screenshot was sent as you allowed.</>}
+          <strong>{t("badge.cloudTitle")}</strong>
+          {removed()}
+          {sentImage && <> {t("badge.image")}</>}
         </span>
       </div>
     );
@@ -52,7 +55,7 @@ export function PrivacyBadge({ source, redactions, sentImage, simulated, sent }:
     <div className="badge badge-rules" role="status" data-source="RULES">
       <span className="badge-dot" aria-hidden>⚪</span>
       <span>
-        <strong>Quick check.</strong> Rules only, on this device. No AI model was used.
+        <strong>{t("badge.rulesTitle")}</strong> {t("badge.rulesBody")}
       </span>
     </div>
   );

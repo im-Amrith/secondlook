@@ -1,5 +1,6 @@
 // Per-device settings in localStorage (a convenience; never security-relevant beyond this device).
 import { useCallback, useState } from "react";
+import type { UiLang } from "./i18n";
 
 export interface Settings {
   neverCloud: boolean;
@@ -7,9 +8,10 @@ export interface Settings {
   familyAlerts: boolean;
   onboarded: boolean;
   largeText: boolean;
+  uiLang: UiLang;
 }
 
-export const DEFAULT_SETTINGS: Settings = { neverCloud: false, familyAlerts: true, onboarded: false, largeText: false };
+export const DEFAULT_SETTINGS: Settings = { neverCloud: false, familyAlerts: true, onboarded: false, largeText: false, uiLang: "en" };
 const KEY = "sl.settings.v1";
 
 export function loadSettings(): Settings {

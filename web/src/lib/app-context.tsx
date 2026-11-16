@@ -36,6 +36,11 @@ export interface AppState {
 
 const Ctx = createContext<AppState | null>(null);
 
+/** Like useApp, but returns null outside AppProvider (for components that also render standalone). */
+export function useOptionalApp(): AppState | null {
+  return useContext(Ctx);
+}
+
 export function useApp(): AppState {
   const v = useContext(Ctx);
   if (!v) throw new Error("useApp outside AppProvider");

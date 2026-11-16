@@ -1,4 +1,6 @@
 import { useApp } from "../lib/app-context";
+import { useT } from "../lib/useT";
+import { LanguagePicker } from "../components/LanguagePicker";
 
 function Toggle({ id, label, help, checked, onChange }: { id: string; label: string; help: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -14,28 +16,34 @@ function Toggle({ id, label, help, checked, onChange }: { id: string; label: str
 
 export function SettingsPage() {
   const { settings, updateSettings, config, aiConfigured } = useApp();
+  const { t } = useT();
   return (
     <div className="page">
-      <h1>Settings</h1>
+      <h1>{t("settings.title")}</h1>
+      <section className="card">
+        <h2>{t("setup.language")}</h2>
+        <LanguagePicker />
+        <p className="muted">{t("settings.languageHelp")}</p>
+      </section>
       <section className="card">
         <Toggle
           id="never-cloud"
-          label="Never use the cloud"
-          help="Checks stay on this device. If the private model isn't available, you get a quick rules check instead."
+          label={t("settings.neverCloud")}
+          help={t("settings.neverCloudHelp")}
           checked={settings.neverCloud}
           onChange={(v) => updateSettings({ neverCloud: v })}
         />
         <Toggle
           id="family-alerts"
-          label="Offer to tell my family"
-          help="After a risky result, show a button to alert your family circle (warning signs only)."
+          label={t("settings.familyAlerts")}
+          help={t("settings.familyAlertsHelp")}
           checked={settings.familyAlerts}
           onChange={(v) => updateSettings({ familyAlerts: v })}
         />
         <Toggle
           id="large-text"
-          label="Extra large text"
-          help="Makes everything bigger."
+          label={t("settings.largeText")}
+          help={t("settings.largeTextHelp")}
           checked={settings.largeText}
           onChange={(v) => updateSettings({ largeText: v })}
         />

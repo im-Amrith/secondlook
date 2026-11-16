@@ -1,5 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { useApp } from "./lib/app-context";
+import { useT } from "./lib/useT";
+import type { Key } from "./lib/i18n";
 import { CheckPage } from "./pages/Check";
 import { SetupPage } from "./pages/Setup";
 import { SettingsPage } from "./pages/Settings";
@@ -19,22 +21,27 @@ function useHash(): string {
   return hash;
 }
 
-const NAV = [
-  { href: "#/", label: "Check" },
-  { href: "#/family", label: "Family" },
-  { href: "#/guardian", label: "Alerts" },
-  { href: "#/how", label: "Privacy" },
-  { href: "#/settings", label: "Settings" },
+const NAV: { href: string; label: Key }[] = [
+  { href: "#/", label: "nav.check" },
+  { href: "#/family", label: "nav.family" },
+  { href: "#/guardian", label: "nav.alerts" },
+  { href: "#/how", label: "nav.privacy" },
+  { href: "#/settings", label: "nav.settings" },
 ];
 
 export function App() {
   const hash = useHash();
   const { settings } = useApp();
+  const { t, lang } = useT();
   const path = hash.replace(/^#/, "") || "/";
 
   useEffect(() => {
     document.documentElement.classList.toggle("large-text", settings.largeText);
   }, [settings.largeText]);
+
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
 
   let page: React.ReactNode;
   if (path === "/" && !settings.onboarded) page = <SetupPage />;
@@ -57,7 +64,7 @@ export function App() {
         </a>
         <nav aria-label="Main">
           {NAV.map((n) => (
-            <a key={n.href} href={n.href} aria-current={(n.href === "#/" ? path === "/" : path.startsWith(n.href.slice(1))) ? "page" : undefined}>{n.label}</a>
+            <a key={n.href} href={n.href} aria-current={(n.href === "#/" ? path === "/" : path.startsWith(n.href.slice(1))) ? "page" : undefined}>{t(n.label)}</a>
           ))}
         </nav>
       </header>
@@ -65,7 +72,17 @@ export function App() {
         <Suspense fallback={<p className="muted">Loading…</p>}>{page}</Suspense>
       </main>
       <footer className="footer muted">
-        SecondLook gives a second opinion, not a guarantee. In India, report scams at <a href="https://cybercrime.gov.in" target="_blank" rel="noreferrer">cybercrime.gov.in</a> or call 1930.
+        {(() => {
+          // Keep the link clickable inside the translated sentence.
+          const [before, after] = t("footer").split("{site}");
+          return (
+            <>
+              {before}
+              <a href="https://cybercrime.gov.in" target="_blank" rel="noreferrer">cybercrime.gov.in</a>
+              {after}
+            </>
+          );
+        })()}
       </footer>
     </>
   );

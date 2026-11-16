@@ -6,7 +6,7 @@ import { ResultCard } from "../components/ResultCard";
 import { FamilyAlertButton } from "../components/FamilyAlertButton";
 import { FollowUp } from "../components/FollowUp";
 import { RoutePreview } from "../components/RoutePreview";
-import { NANO_STATUS_TEXT } from "../lib/nano";
+import { useT } from "../lib/useT";
 
 export const EXAMPLES = [
   { label: "\"CBI officer\" call", text: "This is Inspector Rajesh Sharma from CBI Mumbai. A parcel in your name has drugs and fake passports. You are under digital arrest. Stay on the video call and do not tell your family. Transfer Rs 4,50,000 to the RBI verification account 50100234567891 immediately. Call 9876543210." },
@@ -25,6 +25,7 @@ export interface CheckPageProps {
 
 export function CheckPage({ initialText, initialKind = "text", requestId, compact }: CheckPageProps = {}) {
   const app = useApp();
+  const { t } = useT();
   const [text, setText] = useState(initialText ?? "");
   const [image, setImage] = useState<{ input: ImageInput; previewUrl: string; name: string } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -74,7 +75,7 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
       const p = await prepareImage(f);
       setImage({ ...p, name: f.name });
     } catch {
-      setError("We couldn't open that picture. Try a PNG or JPEG screenshot.");
+      setError(t("check.badImage"));
     }
   }
 
@@ -82,51 +83,48 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
     <div className="page">
       {!app.aiConfigured && (
         <div className="notice" role="note">
-          <strong>AI not configured.</strong>{" "}
-          {app.simulatedNano
-            ? "Using a simulated on-device model (developer mode). The cloud check is off."
-            : "SecondLook is running quick checks (rules only, on this device). Add the Firebase settings to turn on the AI check."}
+          <strong>{t("notice.aiOff")}</strong> {app.simulatedNano ? t("notice.simulated") : t("notice.rulesOnly")}
         </div>
       )}
       {app.config.scamOfTheWeek && (
-        <div className="notice notice-week" role="note"><strong>Scam of the week:</strong> {app.config.scamOfTheWeek}</div>
+        <div className="notice notice-week" role="note"><strong>{t("notice.week")}</strong> {app.config.scamOfTheWeek}</div>
       )}
 
       {!compact && (
         <>
-          <h1>Is this a scam?</h1>
-          <p className="lead">Paste a message you're unsure about, or add a screenshot. We check it on your device first.</p>
+          <h1>{t("check.title")}</h1>
+          <p className="lead">{t("check.lead")}</p>
         </>
       )}
 
       <form onSubmit={onCheck} className="check-form">
-        <label htmlFor="msg" className="label">The message</label>
-        <textarea id="msg" rows={7} value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste the message here…" />
+        <label htmlFor="msg" className="label">{t("check.label")}</label>
+        <textarea id="msg" rows={7} value={text} onChange={(e) => setText(e.target.value)} placeholder={t("check.placeholder")} />
         <div className="row">
           <label className="file-button">
             <input type="file" accept="image/png,image/jpeg,image/webp,image/*" onChange={(e) => void onFile(e.target.files?.[0])} />
-            📷 {image ? "Change screenshot" : "Add a screenshot"}
+            📷 {image ? t("check.changeShot") : t("check.addShot")}
           </label>
           {image && (
             <span className="thumb">
-              <img src={image.previewUrl} alt="Screenshot to check" />
-              <button type="button" className="link-button" onClick={() => setImage(null)}>Remove</button>
+              <img src={image.previewUrl} alt={t("check.shotAlt")} />
+              <button type="button" className="link-button" onClick={() => setImage(null)}>{t("check.remove")}</button>
             </span>
           )}
         </div>
         <button className="primary big" type="submit" disabled={busy || (!text.trim() && !image)}>
-          {busy ? "Checking…" : "Check this message"}
+          {busy ? t("check.checking") : t("check.button")}
         </button>
         <RoutePreview text={text} hasImage={!!image} />
         <p className="model-status muted">
-          Private model: {app.simulatedNano ? `${NANO_STATUS_TEXT[app.nano]} (simulated, dev only)` : NANO_STATUS_TEXT[app.nano]}{" "}
-          {app.nano !== "available" && <a href="#/setup">Set up</a>}
-          {app.settings.neverCloud && <> · Cloud is off</>}
+          {t("check.privateModel")} {t(`nano.${app.nano}`)}{app.simulatedNano && ` ${t("check.simulated")}`}{" "}
+          {app.nano !== "available" && <a href="#/setup">{t("check.setUp")}</a>}
+          {app.settings.neverCloud && <> · {t("check.cloudOff")}</>}
         </p>
       </form>
 
       {!compact && <div className="examples">
-        <span className="muted">Try an example:</span>
+        <span className="muted">{t("check.tryExample")}</span>
         {EXAMPLES.map((ex) => (
           <button key={ex.label} type="button" className="chip" onClick={() => { setText(ex.text); setImage(null); setOutcome(null); }}>{ex.label}</button>
         ))}
@@ -148,11 +146,11 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
       {consent && (
         <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="consent-title">
           <div className="modal">
-            <h2 id="consent-title">Send this screenshot to the cloud?</h2>
-            <p>The private model isn't available on this device. We can remove personal details from typed text, but <strong>not from pictures</strong>. If you send it, the whole screenshot goes to Google's Gemini model to be checked.</p>
+            <h2 id="consent-title">{t("consent.title")}</h2>
+            <p>{t("consent.body")}</p>
             <div className="row">
-              <button className="primary" onClick={() => consent(true)}>Send the screenshot</button>
-              <button className="secondary" onClick={() => consent(false)}>Keep it on my device</button>
+              <button className="primary" onClick={() => consent(true)}>{t("consent.send")}</button>
+              <button className="secondary" onClick={() => consent(false)}>{t("consent.keep")}</button>
             </div>
           </div>
         </div>
