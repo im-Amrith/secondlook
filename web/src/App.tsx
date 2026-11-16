@@ -3,6 +3,7 @@ import { useApp } from "./lib/app-context";
 import { CheckPage } from "./pages/Check";
 import { SetupPage } from "./pages/Setup";
 import { SettingsPage } from "./pages/Settings";
+import { HowPage } from "./pages/How";
 // Pages that need Firestore/Auth (or big eval data) load on demand.
 const FamilyPage = lazy(() => import("./pages/Family").then((m) => ({ default: m.FamilyPage })));
 const GuardianPage = lazy(() => import("./pages/Guardian").then((m) => ({ default: m.GuardianPage })));
@@ -22,6 +23,7 @@ const NAV = [
   { href: "#/", label: "Check" },
   { href: "#/family", label: "Family" },
   { href: "#/guardian", label: "Alerts" },
+  { href: "#/how", label: "Privacy" },
   { href: "#/settings", label: "Settings" },
 ];
 
@@ -39,6 +41,7 @@ export function App() {
   else if (path === "/" ) page = <CheckPage />;
   else if (path === "/setup") page = <SetupPage />;
   else if (path === "/settings") page = <SettingsPage />;
+  else if (path === "/how") page = <HowPage />;
   else if (path === "/family") page = <FamilyPage />;
   else if (path.startsWith("/join/")) page = <FamilyPage joinId={path.slice("/join/".length)} />;
   else if (path === "/guardian") page = <GuardianPage />;

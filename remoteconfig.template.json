@@ -1,0 +1,44 @@
+{
+  "parameters": {
+    "risk_threshold_medium": {
+      "defaultValue": { "value": "30" },
+      "description": "Score at which a message is shown as 'Be careful'.",
+      "valueType": "NUMBER"
+    },
+    "risk_threshold_high": {
+      "defaultValue": { "value": "60" },
+      "description": "Score at which a message is shown as 'This looks like a scam'.",
+      "valueType": "NUMBER"
+    },
+    "rule_weight_overrides": {
+      "defaultValue": { "value": "{}" },
+      "description": "JSON object of rule id -> weight (0 to 0.95), e.g. {\"urgency\":0.3}. 0 disables a rule.",
+      "valueType": "JSON"
+    },
+    "cloud_enabled": {
+      "defaultValue": { "value": "true" },
+      "description": "Kill switch for the cloud route. false = device or rules only, for everyone.",
+      "valueType": "BOOLEAN"
+    },
+    "cloud_model": {
+      "defaultValue": { "value": "gemini-3.5-flash-lite" },
+      "description": "Gemini model used for the cloud fallback.",
+      "valueType": "STRING"
+    },
+    "prompt_version": {
+      "defaultValue": { "value": "v1" },
+      "description": "Shown in Settings; bump when the prompt changes.",
+      "valueType": "STRING"
+    },
+    "extra_rules": {
+      "defaultValue": { "value": "[]" },
+      "description": "JSON array of live rules: {id, category, label, why, weight, pattern}. See README 'Scam of the week'.",
+      "valueType": "JSON"
+    },
+    "scam_of_the_week": {
+      "defaultValue": { "value": "" },
+      "description": "Short warning shown on the check screen.",
+      "valueType": "STRING"
+    }
+  }
+}

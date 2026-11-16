@@ -15,7 +15,9 @@
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "evals": "tsx evals/run.ts",
-    "test:rules": "npx -y -p node@22 -p firebase-tools firebase emulators:exec --only firestore --project demo-secondlook \"npm run test:rules -w web\""
+    "test:rules": "npx -y -p node@22 -p firebase-tools firebase emulators:exec --only firestore --project demo-secondlook \"npm run test:rules -w web\"",
+    "emulators": "npx -y -p node@22 -p firebase-tools firebase emulators:start --only firestore,auth --project demo-secondlook",
+    "deploy": "npm run build && npx -y -p node@22 -p firebase-tools firebase deploy --only hosting,firestore,remoteconfig"
   },
   "engines": {
     "node": ">=20"
