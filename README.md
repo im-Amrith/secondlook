@@ -77,7 +77,9 @@ flowchart TD
 
 **SDK use.** Two models from one `getAI(app, { backend: new GoogleAIBackend() })`: one with `InferenceMode.ONLY_ON_DEVICE` and one with `InferenceMode.ONLY_IN_CLOUD` (`web/src/lib/ai.ts`). The router picks between them so it can redact *before* the cloud. A third model with `PREFER_ON_DEVICE` is used where the SDK's own choice is fine. The badge reads `response.inferenceSource` rather than assuming. `initializeDeviceModel()` is called from the onboarding button click (it needs a user gesture).
 
-Notes from the installed typings (`firebase@13.3.0`) that differ from older docs: `InferenceSource` values are lowercase (`"on_device"`, `"in_cloud"`); the on-device adapter ignores `systemInstruction`, so the system prompt goes in `onDeviceParams.createOptions.initialPrompts`; inline image parts need `type: "inlineData"`; the cloud model takes plain JSON Schema through `generationConfig.responseJsonSchema`.
+Notes from the installed typings (`firebase@13.3.0`) that differ from older docs: `InferenceSource` values are lowercase (`"on_device"`, `"in_cloud"`); the on-device adapter ignores `systemInstruction`, so the system prompt goes in `onDeviceParams.createOptions.initialPrompts`; inline image parts need `type: "inlineData"`; the cloud model takes plain JSON Schema through `generationConfig.responseJsonSchema`. Text and image availability are checked separately (a Chrome can run Nano on text without multimodal input), and the on-device JSON constraint drops length/range keywords.
+
+**A privacy pitfall we found and guard against.** In `firebase@13.3.0`, an `ONLY_ON_DEVICE` model only gets its on-device adapter if Chrome's `LanguageModel` exists at the moment `getGenerativeModel()` runs (and never in the SDK's Node build). Without it, `generateContent()` quietly sends the request **to the cloud**, unredacted, despite the mode. SecondLook's on-device runners are created lazily only when the Prompt API is present, re-check before every call, and reject any answer whose `inferenceSource` isn't `on_device`. This matters most for the Nano name-finder, which sees unredacted text. Contract tests drive the real SDK with a fake Prompt API and a stubbed `fetch` to prove no request leaves (`web/test/sdk-contract.test.ts`).
 
 ### Firebase products
 
@@ -90,7 +92,13 @@ Notes from the installed typings (`firebase@13.3.0`) that differ from older docs
 | **Remote Config** | Risk thresholds, per-rule weight overrides, cloud on/off switch, cloud model, prompt version, live extra rules and a "scam of the week" banner (`remoteconfig.template.json`) |
 | **Hosting** | The web app and family dashboard (`firebase.json`) |
 
-The Firebase SDK is loaded lazily, only when a config exists: the first screen is 90 KB gzipped and works offline with rules alone.
+The Firebase SDK is loaded lazily, only when a config exists: the first screen is 90 KB gzipped. The web app is an installable **PWA** whose service worker keeps the app shell available offline (it never caches API calls), so quick checks and Gemini Nano keep working with no connection.
+
+### Made for older people
+
+- Large type (20 px base, an *Extra large text* switch), high contrast in light and dark mode, 52–60 px tap targets, plain words, one clear "What to do" line on every result.
+- **Hindi and Malayalam UI** for the core flow (language buttons on the welcome screen and in Settings). Rule-based advice, warning signs, badges and router reasons are translated; cloud answers come back in the person's language. The on-device model only answers in English, so the app says when an AI explanation is in English. Translations are first drafts awaiting native review.
+- No horizontal scrolling at 375 px, and **axe-core** accessibility tests on the main screens (`web/test/a11y.test.tsx`).
 
 ### Scam of the week (Remote Config)
 
@@ -141,7 +149,7 @@ Requirements: Node 20+ (tested on Node 26), desktop Chrome 139+ for Gemini Nano.
 
 ```bash
 npm install
-npm test            # shared, evals, web and extension tests
+npm test            # shared, evals, web (incl. SDK contract + a11y) and extension tests
 npm run build       # typecheck + web build + extension build
 npm run dev         # web app on http://localhost:5173
 npm run evals       # eval tables (add -- --write to update evals/RESULTS.md)
