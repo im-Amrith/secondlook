@@ -18,3 +18,14 @@ export const MENU_PAGE_ID = "secondlook-check-page";
 
 /** Clip page text so a whole web page doesn't blow up the on-device context. */
 export const MAX_PAGE_CHARS = 12000;
+
+/** Page address without query string or fragment (they can carry emails, tokens or ids). */
+export function safePageUrl(url: string | undefined): string {
+  if (!url) return "";
+  try {
+    const u = new URL(url);
+    return `${u.origin}${u.pathname}`;
+  } catch {
+    return "";
+  }
+}

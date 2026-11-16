@@ -1,7 +1,7 @@
 // Content script: shows a calm warning banner on risky login or payment pages.
 // Runs only local rules (shared/url.ts). It never sends page content anywhere by itself.
 import { detectPageSignals, scoreUrl } from "@secondlook/shared";
-import { MAX_PAGE_CHARS, type ContentToBackground } from "./messages";
+import { MAX_PAGE_CHARS, safePageUrl, type ContentToBackground } from "./messages";
 import { bannerHtml } from "./banner";
 
 const BANNER_ID = "secondlook-banner-host";
@@ -37,13 +37,18 @@ function check() {
     else location.href = "about:blank";
   });
   root.getElementById("sl-check")?.addEventListener("click", () => {
-    const msg: ContentToBackground = { type: "open-panel-check", url: location.href, text: `Page: ${location.href}\n\n${(document.body?.innerText ?? "").slice(0, MAX_PAGE_CHARS)}` };
+    const msg: ContentToBackground = { type: "open-panel-check", url: location.href, text: `Page: ${safePageUrl(location.href)}\n\n${(document.body?.innerText ?? "").slice(0, MAX_PAGE_CHARS)}` };
     void chrome.runtime.sendMessage(msg);
   });
 }
 
 check();
 // Single-page apps often render the login form after load.
-const obs = new MutationObserver(() => check());
+// Debounced: chat apps mutate the DOM constantly.
+let pendingCheck: ReturnType<typeof setTimeout> | undefined;
+const obs = new MutationObserver(() => {
+  clearTimeout(pendingCheck);
+  pendingCheck = setTimeout(check, 400);
+});
 obs.observe(document.documentElement, { childList: true, subtree: true });
 setTimeout(() => obs.disconnect(), 15000);

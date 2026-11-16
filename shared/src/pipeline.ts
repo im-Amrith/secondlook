@@ -142,12 +142,16 @@ export async function checkMessage(input: CheckInput, deps: PipelineDeps): Promi
     const prompt = image ? `${IMAGE_PROMPT}\n${buildUserPrompt(red.text, rules)}` : buildUserPrompt(red.text, rules);
     const reply = await deps.cloud.run(prompt, image);
     const ai = parseAiVerdict(reply.text);
+    const verdict = combine(rules, ai, { source: ai ? reply.source : "RULES", redactions: red.redactions, thresholds });
+    // Text DID leave the device even if the answer was unusable: keep the redaction list so the
+    // badge and drawer stay truthful about what was sent.
+    if (!ai) verdict.redactions = red.redactions;
     return done({
-      verdict: combine(rules, ai, { source: ai ? reply.source : "RULES", redactions: red.redactions, thresholds }),
+      verdict,
       sentText: prompt,
       sentImage: !!image,
       redactionItems: red.items,
-      fallbackNote: note,
+      fallbackNote: ai ? note : "The cloud's answer couldn't be read, so this result is from the quick check. Personal details were removed before anything was sent.",
       decision: d,
     });
   };
@@ -245,11 +249,11 @@ export async function askFollowUp(question: string, original: string, verdict: V
       const [rOriginal = "", rQuestion = ""] = joined.text.split("\n\u0000\n");
       const prompt = buildFollowUpPrompt(rOriginal, summary, rQuestion);
       const reply = await deps.cloud.run(prompt);
-      return { answer: reply.text.trim(), source: reply.source, decision, sentText: prompt, redactions: joined.redactions, redactionItems: joined.items };
+      return { answer: reply.text.trim() || CANNED_FOLLOWUP, source: reply.source, decision, sentText: prompt, redactions: joined.redactions, redactionItems: joined.items };
     }
     if (decision.route === "device" && deps.device) {
       const reply = await deps.device.run(buildFollowUpPrompt(original, summary, question));
-      return { answer: reply.text.trim(), source: "ON_DEVICE", decision, sentText: null, redactions: [], redactionItems: [] };
+      return { answer: reply.text.trim() || CANNED_FOLLOWUP, source: "ON_DEVICE", decision, sentText: null, redactions: [], redactionItems: [] };
     }
   } catch {
     return canned({ route: "rules", code: "rules_offline", chunks: 1, reason: "The AI didn't answer, so here is our standard advice." });

@@ -5,10 +5,25 @@ export interface PrivacyBadgeProps {
   redactions: Redaction[];
   sentImage?: boolean;
   simulated?: boolean;
+  /** Something left the device (even if the cloud's answer was unusable). The badge must say so. */
+  sent?: boolean;
 }
 
-/** The visible privacy router: always shows which path produced the verdict. */
-export function PrivacyBadge({ source, redactions, sentImage, simulated }: PrivacyBadgeProps) {
+/** The visible privacy router: always shows which path produced the verdict, and whether anything left the device. */
+export function PrivacyBadge({ source, redactions, sentImage, simulated, sent }: PrivacyBadgeProps) {
+  if (source === "RULES" && sent) {
+    const n = totalRedactions(redactions);
+    return (
+      <div className="badge badge-cloud" role="status" data-source="RULES_AFTER_CLOUD">
+        <span className="badge-dot" aria-hidden>🔵</span>
+        <span>
+          <strong>Sent to the cloud</strong>
+          {n > 0 ? <>, with personal details removed: {describeRedactions(redactions)}.</> : <>. No personal details were found to remove.</>}{" "}
+          Its answer couldn't be used, so this is a quick-check result.
+        </span>
+      </div>
+    );
+  }
   if (source === "ON_DEVICE") {
     return (
       <div className="badge badge-device" role="status" data-source="ON_DEVICE">

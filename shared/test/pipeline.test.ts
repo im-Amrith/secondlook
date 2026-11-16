@@ -180,3 +180,14 @@ describe("on-device name masking before the cloud", () => {
     expect(parseNames("nope", "x")).toEqual([]);
   });
 });
+
+describe("honesty when the cloud answer is unusable", () => {
+  it("still reports what was sent and the redactions", async () => {
+    const cloud = { run: vi.fn(async () => ({ text: "not json at all", source: "IN_CLOUD" as const })) };
+    const out = await checkMessage({ text: SCAM }, deps({ nanoAvailable: () => false, cloud }));
+    expect(out.verdict.source).toBe("RULES");
+    expect(out.sentText).not.toBeNull();
+    expect(out.verdict.redactions.length).toBeGreaterThan(0);
+    expect(out.fallbackNote).toMatch(/couldn't be read/);
+  });
+});

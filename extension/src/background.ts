@@ -1,7 +1,7 @@
 // MV3 service worker. Deliberately does NO AI work: the Prompt API and Firebase AI Logic run in
 // the side panel page (a full document), as the plan requires. This worker only wires up the
 // right-click menu and opens the side panel with the text to check.
-import { MAX_PAGE_CHARS, MENU_ID, MENU_PAGE_ID, PENDING_KEY, type ContentToBackground, type PendingCheck } from "./messages";
+import { MAX_PAGE_CHARS, MENU_ID, MENU_PAGE_ID, PENDING_KEY, safePageUrl, type ContentToBackground, type PendingCheck } from "./messages";
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({ id: MENU_ID, title: "Check with SecondLook", contexts: ["selection"] });
@@ -24,7 +24,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   } else if (info.menuItemId === MENU_PAGE_ID && tab?.id !== undefined) {
     void chrome.scripting
       .executeScript({ target: { tabId: tab.id }, func: (max: number) => (document.body?.innerText ?? "").slice(0, max), args: [MAX_PAGE_CHARS] })
-      .then(([res]) => queue({ text: `Page: ${tab.url ?? ""}\n\n${String(res?.result ?? "")}`, kind: "page", url: tab.url }));
+      .then(([res]) => queue({ text: `Page: ${safePageUrl(tab.url)}\n\n${String(res?.result ?? "")}`, kind: "page", url: tab.url }));
   }
 });
 

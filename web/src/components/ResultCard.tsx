@@ -55,7 +55,7 @@ export function ResultCard({ outcome, simulated, actions }: ResultCardProps) {
       {actions}
 
       <div className="privacy">
-        <PrivacyBadge source={v.source} redactions={v.redactions} sentImage={outcome.sentImage} simulated={simulated && v.source === "ON_DEVICE"} />
+        <PrivacyBadge source={v.source} redactions={v.redactions} sentImage={outcome.sentImage} sent={outcome.sentText !== null} simulated={simulated && v.source === "ON_DEVICE"} />
         {(outcome.fallbackNote || outcome.decision.code !== "device_default") && <p className="route-reason" data-testid="route-reason">{outcome.fallbackNote ?? outcome.decision.reason}</p>}
         <SentDrawer sentText={outcome.sentText} sentImage={outcome.sentImage} items={outcome.redactionItems} />
       </div>

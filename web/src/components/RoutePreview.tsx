@@ -13,14 +13,14 @@ export function RoutePreview({ text, hasImage }: { text: string; hasImage: boole
   if (!text.trim() && !hasImage) return null;
   const d = decideRoute({
     platform: "web",
-    nanoAvailable: !!app.device && app.nano === "available",
+    nanoAvailable: (app.aiConfigured || app.simulatedNano) && app.nano === "available",
     lang: guessLang(text),
     estTokens: estimateTokens(text),
     inputType: hasImage ? "image" : "text",
     multiTurn: false,
     userNeverCloud: app.settings.neverCloud,
     online: typeof navigator === "undefined" ? true : navigator.onLine,
-    cloudEnabled: app.config.cloudEnabled && !!app.cloud,
+    cloudEnabled: app.config.cloudEnabled && app.aiConfigured,
   });
   const p = PREVIEW[d.route];
   const extra = d.route === "cloud" && hasImage ? " We'll ask before sending the screenshot." : "";

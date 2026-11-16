@@ -39,7 +39,7 @@ export function FollowUp({ original, verdict }: { original: string; verdict: Ver
         <div className="followup-answer" data-testid="followup-answer">
           <p className="muted">You asked: {out.question}</p>
           <p className="answer">{out.answer}</p>
-          <PrivacyBadge source={out.source} redactions={out.redactions} simulated={simulatedNano && out.source === "ON_DEVICE"} />
+          <PrivacyBadge source={out.source} redactions={out.redactions} sent={out.sentText !== null} simulated={simulatedNano && out.source === "ON_DEVICE"} />
           <p className="route-reason">{out.decision.reason}</p>
           <SentDrawer sentText={out.sentText} sentImage={false} items={out.redactionItems} />
         </div>

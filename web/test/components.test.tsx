@@ -58,3 +58,12 @@ describe("ResultCard", () => {
     expect(screen.getByRole("status")).toHaveTextContent("Quick check");
   });
 });
+
+describe("PrivacyBadge after an unusable cloud answer", () => {
+  it("says data was sent even though the result is a quick check", () => {
+    render(<PrivacyBadge source="RULES" sent redactions={[{ type: "PHONE", count: 1 }]} />);
+    expect(screen.getByRole("status")).toHaveTextContent("Sent to the cloud");
+    expect(screen.getByRole("status")).toHaveTextContent("1 phone number");
+    expect(screen.getByRole("status")).not.toHaveTextContent("No AI model was used");
+  });
+});
