@@ -1,6 +1,6 @@
 // SecondLook service worker: keeps the app shell available offline so quick checks (and Gemini
 // Nano, where available) work with no connection. It never caches API calls or message content. Voice
-// model caches (secondlook-voices-v1, transformers-cache) are left alone on update.
+// model caches (secondlook-voices-v1) are left alone on update.
 const CACHE = "secondlook-shell-v3";
 const SHELL = ["/", "/index.html", "/icon.svg", "/manifest.webmanifest"];
 

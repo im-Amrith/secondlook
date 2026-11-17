@@ -9,6 +9,12 @@ import { DEFAULT_VOICE, VOICES, voiceById, voicesFor, type TtsLang } from "../li
 const LANGS: TtsLang[] = ["en", "hi", "ml"];
 
 /** Settings → Read aloud: pick, download, try and remove the on-device voices per language. */
+/** The saved choice, or the default if it names a voice that no longer exists (e.g. a removed Kokoro voice). */
+function pickedId(voices: Partial<Record<TtsLang, string>>, lang: TtsLang): string {
+  const id = voices[lang];
+  return id === "system" || voiceById(id) ? id! : DEFAULT_VOICE[lang];
+}
+
 export function VoiceSettings() {
   const { settings, updateSettings } = useApp();
   const { t } = useT();
@@ -30,7 +36,7 @@ export function VoiceSettings() {
   const choose = (lang: TtsLang, id: string) => updateSettings({ voices: { ...settings.voices, [lang]: id } });
 
   async function tryVoice(lang: TtsLang) {
-    const id = settings.voices[lang] ?? DEFAULT_VOICE[lang];
+    const id = pickedId(settings.voices, lang);
     // The sample is in the voice's language, whatever the UI language is.
     const text = translate(lang, "settings.sample");
     if (id === "system") {
@@ -52,10 +58,9 @@ export function VoiceSettings() {
   }
 
   async function remove(lang: TtsLang) {
-    const v = voiceById(settings.voices[lang] ?? DEFAULT_VOICE[lang]);
+    const v = voiceById(pickedId(settings.voices, lang));
     if (!v) return;
-    const otherKokoro = VOICES.some((x) => x.engine === "kokoro" && x.id !== v.id && have[x.id]);
-    await deleteVoice(v, otherKokoro);
+    await deleteVoice(v);
     await refresh();
   }
 
@@ -65,7 +70,7 @@ export function VoiceSettings() {
       <p className="muted">{t("settings.voiceHelp")}</p>
       {LANGS.map((lang) => {
         const langName = t(`tts.lang.${lang}`);
-        const id = settings.voices[lang] ?? DEFAULT_VOICE[lang];
+        const id = pickedId(settings.voices, lang);
         const v = voiceById(id);
         const sys = systemVoiceFor(lang);
         const anyDownloaded = Object.values(have).some(Boolean);
@@ -83,7 +88,7 @@ export function VoiceSettings() {
             </select>
             {v && (
               <p className="muted small">
-                {v.licence} · <a href={v.source} target="_blank" rel="noreferrer">{v.engine === "kokoro" ? "Kokoro-82M" : "Piper"}</a>
+                {v.licence} · <a href={v.source} target="_blank" rel="noreferrer">Piper</a>
                 {!have[v.id] && !anyDownloaded && ` · +${SHARED_DOWNLOAD_MB} MB speech data (once)`}
               </p>
             )}

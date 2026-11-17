@@ -33,7 +33,7 @@ const pw = dirname(require.resolve("@diffusionstudio/piper-wasm/build/piper_phon
 const file = (p: string) => { const b = readFileSync(join(pw, p)); return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer; };
 
 const synth = createSynthesizer({
-  kokoroDevice: "cpu",
+  device: "cpu",
   loadBytes,
   phonemize: async () => createPhonemizer({ factory: require(join(pw, "piper_phonemize.js")) as PhonemizeFactory, wasm: file("piper_phonemize.wasm"), data: file("piper_phonemize.data") }),
   piperOrt: async () => require("onnxruntime-node") as OrtLike,

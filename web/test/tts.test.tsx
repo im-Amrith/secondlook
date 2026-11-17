@@ -6,7 +6,6 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { chunkForSpeech, cleanForSpeech } from "../src/lib/tts/text";
 import { detectLang, speaker, systemVoiceFor } from "../src/lib/tts/speaker";
 import { splitByLang } from "../src/lib/tts/useReadAloud";
-import { toKokoroPhonemes } from "../src/lib/tts/kokoro";
 import { DEFAULT_VOICE, VOICES, voiceById, voiceFiles } from "../src/lib/tts/voices";
 import { toWav } from "../src/lib/tts/engine";
 import { ReadAloud } from "../src/components/ReadAloud";
@@ -72,8 +71,9 @@ describe("voice catalogue", () => {
 });
 
 describe("engine helpers", () => {
-  it("maps espeak symbols to Kokoro's set", () => {
-    expect(toKokoroPhonemes(["ʃ", "ˈ", "ɛ", "r", " ", "x"], "en-us")).toBe("ʃˈɛɹ k");
+  it("only offers the fast Piper voices, two per language", () => {
+    expect(VOICES.every((v) => v.engine === "piper")).toBe(true);
+    for (const lang of ["en", "hi", "ml"]) expect(VOICES.filter((v) => v.lang === lang)).toHaveLength(2);
   });
   it("writes a valid 16-bit WAV", () => {
     const wav = toWav(new Float32Array([0, 0.5, -1, 1]), 22050);

@@ -53,7 +53,7 @@ for (const v of VOICES) {
   const heard = v.lang === "ml" ? toMalayalam(out.text) : out.text;
   const c = cer(SAMPLE_TEXT[v.lang], heard);
   console.log(v.id, (c * 100).toFixed(1) + "%", heard.trim());
-  rows.push(`| ${v.lang} | \`${v.id}\` | ${v.engine === "kokoro" ? "Kokoro-82M" : "Piper medium"} | ${v.sizeMB} MB | ${v.licence} | **${(c * 100).toFixed(1)}%** | ${heard.trim().replace(/\|/g, "/")} |`);
+  rows.push(`| ${v.lang} | \`${v.id}\` | Piper medium | ${v.sizeMB} MB | ${v.licence} | **${(c * 100).toFixed(1)}%** | ${heard.trim().replace(/\|/g, "/")} |`);
 }
 writeFileSync(join(root, "evals", "TTS.md"), `# Read-aloud voices: intelligibility check
 
@@ -76,9 +76,9 @@ What decides the default for an older person is how long they wait for the first
 | Kokoro \`kokoro-hi-alpha\` | 8.3 s | 21.8 s | **2.6** (slower than real time) |
 | Kokoro \`kokoro-en-heart\` | 6.2 s | 60.9 s (worker still busy with an earlier long text) | up to 9.9 |
 
-So the defaults are Piper (\`DEFAULT_VOICE\` in \`web/src/lib/tts/voices.ts\`): LJ Speech for English, Priyamvada for Hindi, Meera for Malayalam, picked by the CER above. Kokoro stays in Settings as the most natural option for people with a fast computer. The first chunk is one short sentence, so speech starts while the rest is being made.
+Kokoro was dropped: an older person can't wait 20-60 s for the first word. The app ships only Piper voices (\`VOICES\` in \`web/src/lib/tts/voices.ts\`), with defaults LJ Speech for English, Priyamvada for Hindi and Meera for Malayalam, picked by the CER above. The first chunk is one short sentence, so speech starts while the rest is being made.
 
-First use downloads the voice (60 MB Piper / 93 MB Kokoro) plus about 30 MB of shared speech data (espeak-ng phonemizer data and the ONNX Runtime WASM). In the test the Hindi voice started speaking 33 s after the click, download included.
+First use downloads the voice (about 60 MB) plus about 30 MB of shared speech data (espeak-ng phonemizer data and the ONNX Runtime WASM). In the test the Hindi voice started speaking 33 s after the click, download included; after that it starts in about a second.
 
-Licences: Kokoro-82M is Apache-2.0. Piper's code is MIT and the English voices are trained on public-domain data, but the **Hindi and Malayalam Piper voices are trained on non-commercial datasets**; a commercial release would need Kokoro Hindi (Apache-2.0, slower) or a licensed Malayalam voice.
+Licences: Piper's code is MIT and the English voices are trained on public-domain data, but the **Hindi and Malayalam Piper voices are trained on non-commercial datasets**; a commercial release would need licensed Hindi and Malayalam voices.
 `);

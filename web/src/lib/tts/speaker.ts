@@ -14,8 +14,6 @@ export interface DownloadProgress {
 /** Shared espeak-ng data + runtime downloaded with the first neural voice. */
 export const SHARED_DOWNLOAD_MB = 30;
 
-const TRANSFORMERS_CACHE = "transformers-cache";
-
 /** Which language a piece of text is in, by script. */
 export function detectLang(text: string): TtsLang {
   const deva = (text.match(/[ऀ-ॿ]/g) ?? []).length;
@@ -38,29 +36,19 @@ export function systemVoiceFor(lang: TtsLang): SpeechSynthesisVoice | undefined 
 export async function isDownloaded(v: VoiceInfo): Promise<boolean> {
   if (typeof caches === "undefined") return false;
   try {
-    const [model, extra] = voiceFiles(v);
-    if (v.engine === "piper") {
-      const c = await caches.open(VOICE_CACHE);
-      return Boolean((await c.match(model!)) && (await c.match(extra!)));
-    }
-    const [tc, vc] = await Promise.all([caches.open(TRANSFORMERS_CACHE), caches.open(VOICE_CACHE)]);
-    return Boolean((await tc.match(model!)) && (await vc.match(extra!)));
+    const c = await caches.open(VOICE_CACHE);
+    const hits = await Promise.all(voiceFiles(v).map((u) => c.match(u)));
+    return hits.every(Boolean);
   } catch {
     return false;
   }
 }
 
-/** Remove a voice's files (the shared Kokoro model only if no other Kokoro voice needs it). */
-export async function deleteVoice(v: VoiceInfo, keepKokoroModel: boolean): Promise<void> {
+/** Remove a voice's files. */
+export async function deleteVoice(v: VoiceInfo): Promise<void> {
   if (typeof caches === "undefined") return;
-  const [model, extra] = voiceFiles(v);
-  const vc = await caches.open(VOICE_CACHE);
-  if (v.engine === "piper") {
-    await Promise.all([vc.delete(model!), vc.delete(extra!)]);
-  } else {
-    await vc.delete(extra!);
-    if (!keepKokoroModel) await caches.delete(TRANSFORMERS_CACHE);
-  }
+  const c = await caches.open(VOICE_CACHE);
+  await Promise.all(voiceFiles(v).map((u) => c.delete(u)));
 }
 
 type Listener = (state: SpeakerState) => void;

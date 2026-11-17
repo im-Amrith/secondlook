@@ -1,5 +1,5 @@
 // Text preparation for speech: tidy symbols that read badly and split into sentence-sized chunks
-// (Kokoro takes at most ~510 phoneme tokens per call; short chunks also start playing sooner).
+// (short chunks start playing sooner).
 
 const EMOJI = /[\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu;
 

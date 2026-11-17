@@ -3,7 +3,7 @@
 // not compiled into SecondLook). The bundled espeak data covers English, Hindi and Malayalam.
 
 export interface Phonemes {
-  /** IPA symbols, one per entry (what Kokoro's tokenizer reads). */
+  /** IPA symbols, one per entry. */
   phonemes: string[];
   /** Piper phoneme ids, already padded for VITS. */
   ids: number[];

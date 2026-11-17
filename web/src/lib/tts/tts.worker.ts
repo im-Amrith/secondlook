@@ -17,8 +17,7 @@ let current = 0;
 
 /**
  * Use the runtime WASM Vite bundled with the app (no CDN, so it also works in the MV3 extension),
- * single-threaded since the page isn't cross-origin isolated. Transformers.js would otherwise
- * point wasmPaths at jsDelivr.
+ * single-threaded since the page isn't cross-origin isolated.
  */
 function configureOrt(env: { wasm: { wasmPaths?: unknown; numThreads?: number } }) {
   delete env.wasm.wasmPaths;
@@ -64,7 +63,6 @@ async function loadBytes(url: string): Promise<ArrayBuffer> {
 
 const synth = createSynthesizer({
   loadBytes,
-  configureKokoro: (env) => configureOrt(env.backends.onnx as never),
   progress: (p) => post({ id: progressId, type: "progress", ...p }),
   phonemize: async () => {
     const abs = (u: string) => new URL(u, self.location.href).href;

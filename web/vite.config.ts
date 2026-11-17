@@ -12,7 +12,7 @@ const firebaseAiBrowser = join(dirname(require.resolve("@firebase/ai/package.jso
 
 export default defineConfig({
   plugins: [react()],
-  // Kokoro (Transformers.js) and Piper share one ONNX Runtime; Vite bundles its WASM.
+  // One copy of ONNX Runtime Web; Vite bundles its WASM.
   resolve: { dedupe: ["onnxruntime-web", "onnxruntime-common"] },
   worker: { format: "es" },
   build: { target: "es2022", sourcemap: true },

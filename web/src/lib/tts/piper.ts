@@ -1,7 +1,9 @@
 // Piper (VITS) voices through ONNX Runtime. The runtime is injected so the same code runs on
 // onnxruntime-web in the browser worker and onnxruntime-node in the sample script.
 import { PIPER_BASE, type VoiceInfo } from "./voices";
-import type { LoadBytes } from "./kokoro";
+
+export type LoadBytes = (url: string) => Promise<ArrayBuffer>;
+export type Progress = (p: { file: string; loaded: number; total: number }) => void;
 
 interface OrtTensorCtor { new (type: string, data: unknown, dims?: number[]): unknown }
 export interface OrtLike {

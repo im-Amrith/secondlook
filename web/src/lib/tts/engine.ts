@@ -1,8 +1,7 @@
 // Text → audio for any catalogue voice. Environment-agnostic: the browser worker and the Node
 // sample script inject the phonemizer, the byte loader and the ONNX runtime.
 import { chunkForSpeech } from "./text";
-import { createKokoro, KOKORO_RATE, toKokoroPhonemes, type KokoroEngine, type LoadBytes, type Progress } from "./kokoro";
-import { createPiperVoice, type OrtLike, type PiperVoice } from "./piper";
+import { createPiperVoice, type LoadBytes, type OrtLike, type PiperVoice, type Progress } from "./piper";
 import type { Phonemizer } from "./phonemize";
 import type { VoiceInfo } from "./voices";
 
@@ -11,10 +10,8 @@ export interface EngineDeps {
   loadBytes: LoadBytes;
   piperOrt: () => Promise<OrtLike>;
   progress?: Progress;
-  /** ONNX device: "wasm" in the browser, "cpu" in Node. */
-  kokoroDevice?: "wasm" | "cpu";
-  /** Adjust Transformers.js settings (e.g. where the runtime WASM lives). */
-  configureKokoro?: (env: { backends: { onnx: unknown }; allowLocalModels: boolean }) => void;
+  /** ONNX execution provider: "wasm" in the browser, "cpu" in Node. */
+  device?: "wasm" | "cpu";
 }
 
 export interface Audio {
@@ -30,20 +27,14 @@ export interface Synthesizer {
 }
 
 export function createSynthesizer(deps: EngineDeps): Synthesizer {
-  let kokoro: Promise<KokoroEngine> | null = null;
   const piper = new Map<string, Promise<PiperVoice>>();
   let phon: Promise<Phonemizer> | null = null;
 
   const getPhon = () => (phon ??= deps.phonemize());
-  const getKokoro = () => {
-    kokoro ??= createKokoro(deps.loadBytes, deps.progress, deps.kokoroDevice, deps.configureKokoro);
-    kokoro.catch(() => (kokoro = null));
-    return kokoro;
-  };
   const getPiper = (v: VoiceInfo) => {
     let p = piper.get(v.id);
     if (!p) {
-      p = deps.piperOrt().then((ort) => createPiperVoice(ort, v, deps.loadBytes, deps.kokoroDevice === "cpu" ? ["cpu"] : ["wasm"]));
+      p = deps.piperOrt().then((ort) => createPiperVoice(ort, v, deps.loadBytes, [deps.device ?? "wasm"]));
       p.catch(() => piper.delete(v.id));
       piper.set(v.id, p);
     }
@@ -53,23 +44,14 @@ export function createSynthesizer(deps: EngineDeps): Synthesizer {
   return {
     async prepare(v) {
       await getPhon();
-      if (v.engine === "kokoro") {
-        const k = await getKokoro();
-        // Warm up with a word so the style vector is fetched too.
-        await k.synth("hˈɛloʊ", v.kokoroVoice!);
-      } else await getPiper(v);
+      await getPiper(v);
     },
     async *stream(v, text, speed = 1) {
       const phonemize = await getPhon();
       for (const chunk of chunkForSpeech(text)) {
         const ph = await phonemize(chunk, v.espeak);
-        if (v.engine === "kokoro") {
-          const k = await getKokoro();
-          yield { pcm: await k.synth(toKokoroPhonemes(ph.phonemes, v.espeak), v.kokoroVoice!, speed), sampleRate: KOKORO_RATE };
-        } else {
-          const p = await getPiper(v);
-          yield { pcm: await p.synth(ph.ids, speed), sampleRate: p.sampleRate };
-        }
+        const p = await getPiper(v);
+        yield { pcm: await p.synth(ph.ids, speed), sampleRate: p.sampleRate };
       }
     },
   };
