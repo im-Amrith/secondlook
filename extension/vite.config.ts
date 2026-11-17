@@ -32,6 +32,7 @@ function manifest(mode: string): Plugin {
 // because content scripts can't be ES modules.
 export default defineConfig(({ mode }) => ({
   plugins: [react(), manifest(mode)],
+  worker: { format: "es" },
   // Share web/.env.local so one Firebase config drives both the web app and the extension.
   envDir,
   define: {
@@ -42,6 +43,7 @@ export default defineConfig(({ mode }) => ({
     "import.meta.env.VITE_APPCHECK_DEBUG": JSON.stringify("true"),
   },
   resolve: {
+    dedupe: ["onnxruntime-web", "onnxruntime-common"],
     alias: [
       // MV3: no remote code or popups. Use Firebase Auth's web-extension build and chrome.identity sign-in.
       { find: /^firebase\/auth$/, replacement: "firebase/auth/web-extension" },

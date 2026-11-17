@@ -13,8 +13,11 @@
     "test:rules": "vitest run --config vitest.rules.config.ts"
   },
   "dependencies": {
+    "@diffusionstudio/piper-wasm": "^1.0.0",
+    "@huggingface/transformers": "^3.8.1",
     "@secondlook/shared": "*",
     "firebase": "^13.3.0",
+    "onnxruntime-web": "^1.22.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
