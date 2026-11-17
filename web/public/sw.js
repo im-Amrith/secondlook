@@ -1,6 +1,7 @@
 // SecondLook service worker: keeps the app shell available offline so quick checks (and Gemini
-// Nano, where available) work with no connection. It never caches API calls or message content.
-const CACHE = "secondlook-shell-v2";
+// Nano, where available) work with no connection. It never caches API calls or message content. Voice
+// model caches (secondlook-voices-v1, transformers-cache) are left alone on update.
+const CACHE = "secondlook-shell-v3";
 const SHELL = ["/", "/index.html", "/icon.svg", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
@@ -24,7 +25,7 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()),
+    caches.keys().then((keys) => Promise.all(keys.filter((k) => k.startsWith("secondlook-shell-") && k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()),
   );
 });
 
@@ -47,6 +48,9 @@ self.addEventListener("fetch", (event) => {
     );
     return;
   }
+
+  // The read-aloud phonemizer's .wasm/.data are cached by the voice worker itself (secondlook-voices-v1).
+  if (/piper_phonemize/.test(url.pathname)) return;
 
   if (url.pathname.startsWith("/assets/") || /\.(png|svg|webmanifest)$/.test(url.pathname)) {
     // Hashed build assets never change: cache first.

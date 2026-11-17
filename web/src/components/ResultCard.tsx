@@ -2,6 +2,8 @@ import type { CheckOutcome } from "@secondlook/shared";
 import { PrivacyBadge } from "./PrivacyBadge";
 import { SentDrawer } from "./SentDrawer";
 import { useT } from "../lib/useT";
+import { useOptionalApp } from "../lib/app-context";
+import { ReadAloud } from "./ReadAloud";
 import { adviceText, noteText, reasonText, rulesExplanation, signalText } from "../lib/i18n";
 
 const LEVEL_ICON = { high: "⛔", medium: "⚠️", low: "✅", unknown: "❔" } as const;
@@ -15,6 +17,7 @@ export interface ResultCardProps {
 
 export function ResultCard({ outcome, simulated, actions }: ResultCardProps) {
   const { t, lang } = useT();
+  const autoRead = useOptionalApp()?.settings.autoRead ?? false;
   const v = outcome.verdict;
   const levelKey = outcome.inconclusive ? "unknown" : v.level;
   const title = t(`result.${levelKey}`);
@@ -23,6 +26,8 @@ export function ResultCard({ outcome, simulated, actions }: ResultCardProps) {
   const aiInEnglish = lang !== "en" && v.source !== "RULES" && /^[\x00-\x7F\s“”‘’…—–]*$/.test(v.explanation);
   // Translations are per category, so show one entry per category outside English.
   const signals = lang === "en" ? v.signals : v.signals.filter((s, i, all) => all.findIndex((x) => x.id === s.id) === i);
+
+  const spoken = `${title}. ${t("result.whatToDo")} ${adviceText(v.advice, lang)} ${explanation}`;
 
   return (
     <section className={`result result-${levelKey}`} aria-live="polite" data-testid="result">
@@ -38,6 +43,8 @@ export function ResultCard({ outcome, simulated, actions }: ResultCardProps) {
           )}
         </div>
       </header>
+
+      <ReadAloud text={spoken} autoPlay={autoRead} />
 
       <p className="advice"><strong>{t("result.whatToDo")}</strong> {adviceText(v.advice, lang)}</p>
       <p className="explanation">

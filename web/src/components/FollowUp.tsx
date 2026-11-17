@@ -5,6 +5,7 @@ import { useT } from "../lib/useT";
 import { noteText, reasonText } from "../lib/i18n";
 import { PrivacyBadge } from "./PrivacyBadge";
 import { SentDrawer } from "./SentDrawer";
+import { ReadAloud } from "./ReadAloud";
 
 /** "Have a question?": multi-turn, so the router sends it to the cloud (redacted) when allowed. */
 export function FollowUp({ original, verdict }: { original: string; verdict: Verdict }) {
@@ -41,6 +42,7 @@ export function FollowUp({ original, verdict }: { original: string; verdict: Ver
         <div className="followup-answer" data-testid="followup-answer">
           <p className="muted">{t("followup.youAsked", { q: out.question })}</p>
           <p className="answer">{out.source === "RULES" ? noteText(out.answer, lang) : out.answer}</p>
+          <ReadAloud key={out.question} text={out.source === "RULES" ? noteText(out.answer, lang) : out.answer} />
           <PrivacyBadge source={out.source} redactions={out.redactions} sent={out.sentText !== null} simulated={simulatedNano && out.source === "ON_DEVICE"} />
           <p className="route-reason">{out.source === "RULES" && out.decision.route !== "rules" ? noteText(out.decision.reason, lang) : reasonText(out.decision, lang)}</p>
           <SentDrawer sentText={out.sentText} sentImage={false} items={out.redactionItems} />

@@ -1,6 +1,7 @@
 // Per-device settings in localStorage (a convenience; never security-relevant beyond this device).
 import { useCallback, useState } from "react";
 import type { UiLang } from "./i18n";
+import type { TtsLang } from "./tts/voices";
 
 export interface Settings {
   neverCloud: boolean;
@@ -9,9 +10,15 @@ export interface Settings {
   onboarded: boolean;
   largeText: boolean;
   uiLang: UiLang;
+  /** Chosen neural read-aloud voice per language (ids from tts/voices.ts). */
+  voices: Partial<Record<TtsLang, string>>;
+  /** Read-aloud speed: 1 normal, 0.85 slower. */
+  speechRate: number;
+  /** Read the result aloud as soon as it appears. */
+  autoRead: boolean;
 }
 
-export const DEFAULT_SETTINGS: Settings = { neverCloud: false, familyAlerts: true, onboarded: false, largeText: false, uiLang: "en" };
+export const DEFAULT_SETTINGS: Settings = { neverCloud: false, familyAlerts: true, onboarded: false, largeText: false, uiLang: "en", voices: {}, speechRate: 1, autoRead: false };
 const KEY = "sl.settings.v1";
 
 export function loadSettings(): Settings {
