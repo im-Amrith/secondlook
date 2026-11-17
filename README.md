@@ -35,6 +35,18 @@ Under the badge, one sentence from the router says *why* that path was chosen. T
 - **Follow-up questions** ("I already paid. What now?") are multi-turn, which the on-device model can't do, so they go to the cloud with the original message and the question redacted together, with the same badge and "what was sent" view. With the cloud off they're answered on device as a fresh question.
 - **The Privacy page** runs the real router against *this device's* current state for typical cases (short text, screenshot, Hindi, long chat, follow-up, offline) and lists exactly what leaves the device on each path.
 
+### Read aloud, on the device
+
+Every result and follow-up answer has a big **🔊 Read aloud** button (and an "always read results aloud" setting), because many older people find a spoken verdict easier than small text. The voices are open-source models from Hugging Face running **in the browser** (ONNX Runtime Web in a Web Worker), so the text is never sent anywhere to be spoken:
+
+| Language | Default voice (fast) | Also available | Intelligibility (Whisper CER) |
+|---|---|---|---|
+| English | Piper `en_US-ljspeech-medium` (public-domain data) | Piper Kristin; **Kokoro-82M** Heart/Michael (Apache-2.0, most natural, slow) | 2.7% (Kokoro 0.0%) |
+| Hindi | Piper `hi_IN-priyamvada-medium` | Piper Rohan; **Kokoro-82M** Alpha/Omega (Apache-2.0, slow) | 10.8% (Kokoro Alpha 5.7%) |
+| Malayalam | Piper `ml_IN-meera-medium` | Piper Arjun | 38.6% (mostly Whisper's own Malayalam errors) |
+
+One phonemizer (espeak-ng compiled to WASM) feeds both engines, which is how Kokoro speaks Hindi in the browser even though kokoro-js only supports English. Piper is the default because it ran about 4x faster than real time on one WASM thread, while Kokoro ran 2.6x *slower* than real time. Each voice downloads once (60 to 93 MB plus 30 MB shared) after the person agrees. If no voice is downloaded, the device's own **local** voice is used; network voices such as Chrome's "Google हिन्दी" are skipped because they send the text to a server. Mixed results (a Hindi verdict with an English AI explanation) switch voice per sentence. The Hindi and Malayalam Piper voices are trained on **non-commercial** datasets; Settings marks them. Method, numbers and samples: [evals/TTS.md](evals/TTS.md).
+
 **Nano helps even when the cloud runs.** When a check must go to the cloud but Gemini Nano is on the device (Hindi text, very long chats, follow-ups), the on-device model first lists people's names so they're masked along with the regex redactions.
 
 ## Routing rules
@@ -117,7 +129,9 @@ shared/     rules, verdict schema, redactor, prompt, router, combiner, check pip
 web/        Vite + React app: check, onboarding/model download, privacy page, settings, family circle, guardian alerts, #/evals
             rules-test/ Firestore security rules tests (emulator)
 extension/  Chrome MV3: side panel (reuses the web UI), right-click check, look-alike page banner, chrome.identity sign-in
-evals/      labelled datasets (scam + redaction), runner, RESULTS.md
+            src/lib/tts/ read-aloud: voice catalogue, phonemizer, Kokoro + Piper engines, Web Worker, player
+evals/      labelled datasets (scam + redaction), runner, RESULTS.md, TTS.md (voice intelligibility + speed)
+scripts/    tts-samples.mts (WAV for every voice, in Node), tts-eval.mts (Whisper round-trip check)
 firebase.json, firestore.rules, firestore.indexes.json, remoteconfig.template.json
 ```
 
@@ -142,6 +156,8 @@ To add the AI rows: open the web app at `#/evals` in Chrome, run on-device and c
 ```bash
 npm run evals -- --recorded device=predictions-device.json --recorded cloud=predictions-cloud.json --write
 ```
+
+**Read-aloud voices:** each voice says the same scam warning, Whisper large-v3-turbo transcribes it back, and we score the character error rate. Results and browser speed are in [evals/TTS.md](evals/TTS.md); `npm run tts:samples` writes the WAV files to `tts-samples/` so you can listen.
 
 ## Setup
 

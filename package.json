@@ -17,7 +17,9 @@
     "evals": "tsx evals/run.ts",
     "test:rules": "npx -y -p node@22 -p firebase-tools firebase emulators:exec --only firestore --project demo-secondlook \"npm run test:rules -w web\"",
     "emulators": "npx -y -p node@22 -p firebase-tools firebase emulators:start --only firestore,auth --project demo-secondlook",
-    "deploy": "npm run build && npx -y -p node@22 -p firebase-tools firebase deploy --only hosting,firestore,remoteconfig"
+    "deploy": "npm run build && npx -y -p node@22 -p firebase-tools firebase deploy --only hosting,firestore,remoteconfig",
+    "tts:samples": "tsx scripts/tts-samples.mts",
+    "tts:eval": "tsx scripts/tts-eval.mts"
   },
   "engines": {
     "node": ">=20"
