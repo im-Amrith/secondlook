@@ -8,6 +8,17 @@ While testing against the real Firebase AI Logic SDK (13.3.0) I found that an **
 
 Related: one of those tests briefly made a **real request** to `firebasevertexai.googleapis.com` with a fake API key, the fake project id `demo-secondlook` and the text "first call creates the model" (no user data). Google rejected it (`API_KEY_INVALID`). Web tests now block all network access.
 
+## Added later: read aloud (open-source TTS from Hugging Face)
+
+A **🔊 Read aloud** button on every result and follow-up answer, plus a *Read aloud* section in Settings (pick/download/try/remove a voice per language, slower speech, read results automatically). Everything runs in the browser in a Web Worker: nothing is sent anywhere to be spoken.
+
+- **Voices:** Piper (fast, default): English LJ Speech, Hindi Priyamvada, Malayalam Meera, plus Kristin/Rohan/Arjun. **Kokoro-82M** (Apache-2.0, most natural): English Heart/Michael and Hindi Alpha/Omega. One espeak-ng WASM phonemizer feeds both, which is how Kokoro speaks Hindi in the browser.
+- **Measured** (`evals/TTS.md`): Whisper large-v3-turbo transcribed each voice back. Error rate: Kokoro English 0%, Piper English 2.7%, Kokoro Hindi 5.7%, Piper Hindi 10.8%, Piper Malayalam 38.6% (mostly Whisper's own Malayalam weakness). In Chrome on one WASM thread Piper ran ~4x faster than real time, while Kokoro was 2.6x *slower*, so Piper is the default.
+- **Verified in the browser:** downloaded and played English Kokoro, Hindi Kokoro, Hindi Piper and Malayalam Piper (audio buffers checked, I can't listen); the download offer on a Hindi result spoke 33 s after the click, download included.
+- **Listen yourself:** `npm run tts:samples` writes `tts-samples/*.wav` (I also sent them to you). Tell me which voices you prefer and I'll change `DEFAULT_VOICE` in `web/src/lib/tts/voices.ts`.
+- **Licences to know:** the Hindi and Malayalam **Piper** voices are trained on **non-commercial** datasets (fine for the contest; Settings labels them). Kokoro is Apache-2.0; the English Piper voices use public-domain data.
+- **Not verified:** the extension side panel's read-aloud (built with `wasm-unsafe-eval` in its CSP, not loaded in Chrome); Kokoro with WebGPU (not used, the CPU numbers above are why Piper is default).
+
 ## What got built
 
 **`shared/`** (core, all unit-tested): rules engine (16 shield-paypal-ai rules made generic + secrecy, digital-arrest/video custody, account/KYC block, payment demand; Hinglish/Manglish/Devanagari terms), verdict schema + tolerant parser, redactor (phones, emails, UPI, cards, IBAN, accounts, OTPs, Aadhaar, PAN, names), prompts, privacy router (routing table as a pure function with reasons), combiner, the full check pipeline (fallbacks both ways, screenshot consent, chunking, Nano name masking, follow-ups, answers in Hindi/Malayalam from the cloud), local URL/page scorer.
