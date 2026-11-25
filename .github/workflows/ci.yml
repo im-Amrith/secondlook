@@ -8,6 +8,12 @@ on:
 permissions:
   contents: read
 
+# onnxruntime-node (used only by the local Whisper/TTS eval scripts) tries to download CUDA
+# binaries on Linux during install; CI never needs them, and that download can 404.
+env:
+  npm_config_onnxruntime_node_install_cuda: skip
+  ONNXRUNTIME_NODE_INSTALL_CUDA: skip
+
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
