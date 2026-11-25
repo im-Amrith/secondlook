@@ -3,6 +3,7 @@ import { useT } from "../lib/useT";
 import { LanguagePicker } from "../components/LanguagePicker";
 import { VoiceSettings } from "../components/VoiceSettings";
 import { TrustedSettings } from "../components/TrustedContact";
+import { RADAR_REGIONS } from "@secondlook/shared";
 
 function Toggle({ id, label, help, checked, onChange }: { id: string; label: string; help: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -52,6 +53,13 @@ export function SettingsPage() {
       </section>
 
       <TrustedSettings />
+      <section className="card" aria-labelledby="radar-region-title">
+        <h2 id="radar-region-title">{t("radar.settingsTitle")}</h2>
+        <p className="muted">{t("radar.settingsHelp")}</p>
+        <select aria-labelledby="radar-region-title" value={settings.radarRegion} onChange={(e) => updateSettings({ radarRegion: e.target.value })}>
+          {RADAR_REGIONS.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+        </select>
+      </section>
       <VoiceSettings />
 
       <section className="card">

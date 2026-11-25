@@ -3,7 +3,7 @@
 import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, beforeEach, describe, it } from "vitest";
 import { assertFails, assertSucceeds, initializeTestEnvironment, type RulesTestEnvironment } from "@firebase/rules-unit-testing";
-import { addDoc, arrayUnion, collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
+import { addDoc, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
 
 let env: RulesTestEnvironment;
 
@@ -86,5 +86,33 @@ describe("alerts: metadata only", () => {
     await assertFails(getDoc(doc(db("eve"), "alerts", id)));
     await assertFails(getDocs(query(collection(db("eve"), "alerts"))));
     await assertFails(updateDoc(doc(db("dad"), "alerts", id), { level: "low" }));
+  });
+});
+
+describe("radar: weekly counters only", () => {
+  const anon = () => env.unauthenticatedContext().firestore();
+  const id = "2026-W48_digital_arrest_KL";
+  const counter = (count: unknown, extra: Record<string, unknown> = {}) => ({ week: "2026-W48", pattern: "digital_arrest", region: "KL", count, updatedAt: serverTimestamp(), ...extra });
+
+  it("anyone can start a counter at 1 and add 1, and anyone can read", async () => {
+    await assertSucceeds(setDoc(doc(anon(), "radar", id), counter(1)));
+    await assertSucceeds(updateDoc(doc(anon(), "radar", id), { count: 2, updatedAt: serverTimestamp() }));
+    await assertSucceeds(getDoc(doc(anon(), "radar", id)));
+  });
+
+  it("can't jump the count, reset it, or delete it", async () => {
+    await assertFails(setDoc(doc(anon(), "radar", id), counter(50)));
+    await assertSucceeds(setDoc(doc(anon(), "radar", id), counter(1)));
+    await assertFails(updateDoc(doc(anon(), "radar", id), { count: 10, updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(anon(), "radar", id), { count: 0, updatedAt: serverTimestamp() }));
+    await assertFails(deleteDoc(doc(anon(), "radar", id)));
+  });
+
+  it("never stores text: extra fields, unknown patterns or regions, and mismatched ids are refused", async () => {
+    await assertFails(setDoc(doc(anon(), "radar", id), counter(1, { message: "You are under digital arrest" })));
+    await assertFails(setDoc(doc(anon(), "radar", "2026-W48_made_up_KL"), counter(1, { pattern: "made_up" })));
+    await assertFails(setDoc(doc(anon(), "radar", "2026-W48_digital_arrest_XX"), counter(1, { region: "XX" })));
+    await assertFails(setDoc(doc(anon(), "radar", "2026-W48_digital_arrest_MH"), counter(1)));
+    await assertFails(setDoc(doc(anon(), "radar", "last week_digital_arrest_KL"), counter(1, { week: "last week" })));
   });
 });

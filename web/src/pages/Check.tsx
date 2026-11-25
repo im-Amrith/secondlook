@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import type { CheckOutcome, ImageInput } from "@secondlook/shared";
+import { scoreRules, type CheckOutcome, type ImageInput } from "@secondlook/shared";
 import { useApp } from "../lib/app-context";
 import { prepareImage } from "../lib/image";
 import { ResultCard } from "../components/ResultCard";
 import { FamilyAlertButton } from "../components/FamilyAlertButton";
 import { FollowUp } from "../components/FollowUp";
 import { RoutePreview } from "../components/RoutePreview";
+import { RadarButton } from "../components/RadarButton";
+import { RadarTeaser } from "./Radar";
 import { useT } from "../lib/useT";
 
 export const EXAMPLES = [
@@ -132,7 +134,13 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
         ))}
       </div>}
 
-      {!compact && !outcome && <p><a href="#/practice">{t("practice.banner")}</a></p>}
+      {!compact && !outcome && (
+        <div className="check-links">
+          <RadarTeaser />
+          <p><a href="#/practice">{t("practice.banner")}</a></p>
+          <p><a href="#/radar">{t("radar.link")}</a></p>
+        </div>
+      )}
 
       {error && <div className="notice notice-error" role="alert">{error}</div>}
 
@@ -145,6 +153,13 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
               <>
                 {outcome.verdict.level !== "low" && !compact && <a className="secondary big call-button" href="#/pause">{t("pause.link")}</a>}
                 <FamilyAlertButton verdict={outcome.verdict} />
+                {!outcome.inconclusive && (
+                  <RadarButton
+                    level={outcome.verdict.level}
+                    // Rule ids are recomputed here on the device from the checked text; AI verdicts add categories.
+                    ids={[...scoreRules(checkedText).signals.map((s) => s.ruleId), ...outcome.verdict.signals.map((s) => s.id)]}
+                  />
+                )}
               </>
             }
           />

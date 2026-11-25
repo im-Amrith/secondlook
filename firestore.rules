@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// SecondLook family circle.
+// SecondLook family circle and scam radar.
 // - circles/{id}: who is in the circle. The id is a 20-char random invite code.
 // - alerts/{id}:  METADATA ONLY (level, score, signal ids, source, platform, time).
 //   The allow-list below means a message, excerpt or redacted text can never be stored.
@@ -55,6 +55,28 @@ service cloud.firestore {
 
       allow update: if false;
       allow delete: if signedIn() && request.auth.uid == resource.data.fromUid;
+    }
+
+    // Scam radar: public weekly COUNTERS of scam types per region. No text, no user, no time
+    // finer than the week. Anyone may add 1 (App Check keeps it to the real app); nobody may
+    // change a counter any other way or delete it. Pattern and region lists mirror shared/src/radar.ts.
+    function radarValid(id, d) {
+      return d.keys().hasOnly(['week', 'pattern', 'region', 'count', 'updatedAt'])
+        && d.week is string && d.week.matches('^20[0-9]{2}-W[0-5][0-9]$')
+        && d.pattern in ['digital_arrest', 'bank_kyc', 'electricity', 'job_task', 'prize_lottery', 'investment', 'family_emergency', 'romance', 'other']
+        && d.region in ['IN', 'AN', 'AP', 'AR', 'AS', 'BR', 'CH', 'CT', 'DH', 'DL', 'GA', 'GJ', 'HP', 'HR', 'JH', 'JK', 'KA', 'KL', 'LA', 'LD', 'MH', 'ML', 'MN', 'MP', 'MZ', 'NL', 'OR', 'PB', 'PY', 'RJ', 'SK', 'TG', 'TN', 'TR', 'UP', 'UT', 'WB']
+        && d.count is int
+        && d.updatedAt == request.time
+        && id == d.week + '_' + d.pattern + '_' + d.region;
+    }
+
+    match /radar/{id} {
+      allow read: if true;
+      allow create: if radarValid(id, request.resource.data) && request.resource.data.count == 1;
+      allow update: if radarValid(id, request.resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['count', 'updatedAt'])
+        && request.resource.data.count == resource.data.count + 1;
+      allow delete: if false;
     }
   }
 }

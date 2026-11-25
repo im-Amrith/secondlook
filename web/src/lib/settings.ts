@@ -21,9 +21,11 @@ export interface Settings {
   trustedPhone: string;
   /** Length of the pause-before-paying countdown. */
   pauseSeconds: number;
+  /** Region shared with scam-radar reports ("IN" = just India). */
+  radarRegion: string;
 }
 
-export const DEFAULT_SETTINGS: Settings = { neverCloud: false, familyAlerts: true, onboarded: false, largeText: false, uiLang: "en", voices: {}, speechRate: 1, autoRead: false, trustedName: "", trustedPhone: "", pauseSeconds: 60 };
+export const DEFAULT_SETTINGS: Settings = { neverCloud: false, familyAlerts: true, onboarded: false, largeText: false, uiLang: "en", voices: {}, speechRate: 1, autoRead: false, trustedName: "", trustedPhone: "", pauseSeconds: 60, radarRegion: "IN" };
 const KEY = "sl.settings.v1";
 
 export function loadSettings(): Settings {

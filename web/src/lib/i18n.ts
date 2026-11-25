@@ -1,7 +1,7 @@
 // UI language for the core flow used by older people: check, result, badges, follow-up, family
 // button, onboarding and settings. Hindi and Malayalam strings are first drafts and should be
 // reviewed by native speakers. Guardian/family/privacy/dev pages stay in English for now.
-import type { Level, Redaction, RedactionType, RouteDecision, SignalId, VerdictSignal } from "@secondlook/shared";
+import { RADAR_PATTERN_LABELS, type Level, type RadarPattern, type Redaction, type RedactionType, type RouteDecision, type SignalId, type VerdictSignal } from "@secondlook/shared";
 
 export type UiLang = "en" | "hi" | "ml";
 export const UI_LANGS: { id: UiLang; name: string }[] = [
@@ -294,6 +294,32 @@ const D = {
   "practice.yourReply": { en: "Your reply", hi: "आपका जवाब", ml: "നിങ്ങളുടെ മറുപടി" },
   "practice.send": { en: "Send", hi: "भेजें", ml: "അയയ്ക്കുക" },
   "practice.banner": { en: "🎓 Practise spotting a scam, safely", hi: "🎓 धोखाधड़ी पहचानने का सुरक्षित अभ्यास करें", ml: "🎓 തട്ടിപ്പ് തിരിച്ചറിയാൻ സുരക്ഷിതമായി പരിശീലിക്കാം" },
+
+  // Scam radar
+  "radar.title": { en: "Scam radar", hi: "स्कैम रडार", ml: "തട്ടിപ്പ് റഡാർ" },
+  "radar.lead": { en: "Which scams people are reporting this week, so you know what to watch out for.", hi: "इस हफ़्ते लोग किन धोखाधड़ियों की ख़बर दे रहे हैं, ताकि आप सावधान रहें।", ml: "ഈ ആഴ്ച ആളുകൾ ഏതൊക്കെ തട്ടിപ്പുകളാണ് റിപ്പോർട്ട് ചെയ്യുന്നത്, നിങ്ങൾ ശ്രദ്ധിക്കാൻ." },
+  "radar.private": { en: "Only the type of scam, the week and the state are shared. Never anyone's messages or names.", hi: "सिर्फ़ धोखाधड़ी का प्रकार, हफ़्ता और राज्य साझा होता है। किसी के संदेश या नाम कभी नहीं।", ml: "തട്ടിപ്പിന്റെ തരം, ആഴ്ച, സംസ്ഥാനം എന്നിവ മാത്രമേ പങ്കിടൂ. ആരുടെയും സന്ദേശങ്ങളോ പേരുകളോ ഒരിക്കലും ഇല്ല." },
+  "radar.region": { en: "Show reports for", hi: "किसकी रिपोर्ट देखें", ml: "ഏത് സ്ഥലത്തെ റിപ്പോർട്ടുകൾ കാണണം" },
+  "radar.allIndia": { en: "All of India", hi: "पूरा भारत", ml: "ഇന്ത്യ മുഴുവൻ" },
+  "radar.loading": { en: "Loading…", hi: "लोड हो रहा है…", ml: "ലോഡ് ചെയ്യുന്നു…" },
+  "radar.loadError": { en: "The radar couldn't be loaded right now.", hi: "रडार अभी लोड नहीं हो सका।", ml: "റഡാർ ഇപ്പോൾ ലോഡ് ചെയ്യാനായില്ല." },
+  "radar.offline": { en: "The scam radar needs the internet and the online part of SecondLook.", hi: "स्कैम रडार के लिए इंटरनेट और SecondLook का ऑनलाइन हिस्सा चाहिए।", ml: "തട്ടിപ്പ് റഡാറിന് ഇന്റർനെറ്റും SecondLook-ന്റെ ഓൺലൈൻ ഭാഗവും വേണം." },
+  "radar.empty": { en: "No reports yet this week.", hi: "इस हफ़्ते अभी तक कोई रिपोर्ट नहीं।", ml: "ഈ ആഴ്ച ഇതുവരെ റിപ്പോർട്ടുകളൊന്നുമില്ല." },
+  "radar.reports": { en: "{n} this week", hi: "इस हफ़्ते {n}", ml: "ഈ ആഴ്ച {n}" },
+  "radar.lastWeek": { en: "Last week: {n}", hi: "पिछले हफ़्ते: {n}", ml: "കഴിഞ്ഞ ആഴ്ച: {n}" },
+  "radar.inRegion": { en: "{n} in {region}", hi: "{region} में {n}", ml: "{region}-ൽ {n}" },
+  "radar.howTitle": { en: "How the radar works", hi: "रडार कैसे काम करता है", ml: "റഡാർ എങ്ങനെ പ്രവർത്തിക്കുന്നു" },
+  "radar.how": { en: "When SecondLook finds a scam, you can tap \"Add to the scam radar\". Your device works out the type of scam and adds 1 to this week's count for your state. The message itself never leaves your device for this.", hi: "जब SecondLook किसी धोखाधड़ी को पकड़ता है, तो आप \"स्कैम रडार में जोड़ें\" दबा सकते हैं। आपका डिवाइस धोखाधड़ी का प्रकार तय करता है और आपके राज्य की इस हफ़्ते की गिनती में 1 जोड़ता है। इसके लिए संदेश कभी आपके डिवाइस से बाहर नहीं जाता।", ml: "SecondLook ഒരു തട്ടിപ്പ് കണ്ടെത്തുമ്പോൾ \"തട്ടിപ്പ് റഡാറിൽ ചേർക്കുക\" അമർത്താം. നിങ്ങളുടെ ഉപകരണം തട്ടിപ്പിന്റെ തരം കണ്ടെത്തി, നിങ്ങളുടെ സംസ്ഥാനത്തിന്റെ ഈ ആഴ്ചത്തെ എണ്ണത്തിൽ 1 ചേർക്കും. ഇതിനായി സന്ദേശം ഒരിക്കലും ഉപകരണം വിട്ട് പോകില്ല." },
+  "radar.disclaimer": { en: "These are counts from SecondLook users, not official figures. To report a scam to the police, call 1930 or visit cybercrime.gov.in.", hi: "ये SecondLook इस्तेमाल करने वालों की गिनती है, सरकारी आँकड़े नहीं। पुलिस को शिकायत के लिए 1930 पर कॉल करें या cybercrime.gov.in पर जाएँ।", ml: "ഇവ SecondLook ഉപയോക്താക്കളുടെ എണ്ണമാണ്, ഔദ്യോഗിക കണക്കുകളല്ല. പോലീസിൽ പരാതിപ്പെടാൻ 1930-ൽ വിളിക്കുക, അല്ലെങ്കിൽ cybercrime.gov.in സന്ദർശിക്കുക." },
+  "radar.add": { en: "Add to the scam radar (warn others)", hi: "स्कैम रडार में जोड़ें (दूसरों को सावधान करें)", ml: "തട്ടിപ്പ് റഡാറിൽ ചേർക്കുക (മറ്റുള്ളവർക്ക് മുന്നറിയിപ്പ്)" },
+  "radar.addNote": { en: "Shares only \"{type}\", this week and your state. Not the message.", hi: "सिर्फ़ \"{type}\", यह हफ़्ता और आपका राज्य साझा होगा। संदेश नहीं।", ml: "\"{type}\", ഈ ആഴ്ച, നിങ്ങളുടെ സംസ്ഥാനം എന്നിവ മാത്രം പങ്കിടും. സന്ദേശം ഇല്ല." },
+  "radar.added": { en: "Added. Thank you for warning others.", hi: "जोड़ दिया गया। दूसरों को सावधान करने के लिए धन्यवाद।", ml: "ചേർത്തു. മറ്റുള്ളവർക്ക് മുന്നറിയിപ്പ് നൽകിയതിന് നന്ദി." },
+  "radar.see": { en: "See the radar", hi: "रडार देखें", ml: "റഡാർ കാണുക" },
+  "radar.error": { en: "Couldn't add it right now.", hi: "अभी जोड़ा नहीं जा सका।", ml: "ഇപ്പോൾ ചേർക്കാനായില്ല." },
+  "radar.teaser": { en: "Most reported this week: {type} ({n})", hi: "इस हफ़्ते सबसे ज़्यादा रिपोर्ट: {type} ({n})", ml: "ഈ ആഴ്ച ഏറ്റവും കൂടുതൽ റിപ്പോർട്ട് ചെയ്തത്: {type} ({n})" },
+  "radar.link": { en: "📡 See which scams are going around this week", hi: "📡 देखें इस हफ़्ते कौन-सी धोखाधड़ी चल रही है", ml: "📡 ഈ ആഴ്ച ഏതൊക്കെ തട്ടിപ്പുകൾ നടക്കുന്നുവെന്ന് കാണുക" },
+  "radar.settingsTitle": { en: "Your state, for the scam radar", hi: "स्कैम रडार के लिए आपका राज्य", ml: "തട്ടിപ്പ് റഡാറിനായി നിങ്ങളുടെ സംസ്ഥാനം" },
+  "radar.settingsHelp": { en: "Only used when you tap \"Add to the scam radar\". Saved on this device.", hi: "सिर्फ़ तब इस्तेमाल होता है जब आप \"स्कैम रडार में जोड़ें\" दबाते हैं। इसी डिवाइस पर सेव होता है।", ml: "\"തട്ടിപ്പ് റഡാറിൽ ചേർക്കുക\" അമർത്തുമ്പോൾ മാത്രം ഉപയോഗിക്കും. ഈ ഉപകരണത്തിൽ സേവ് ചെയ്യുന്നു." },
 } satisfies Record<string, Entry>;
 
 export type Key = keyof typeof D;
@@ -480,4 +506,22 @@ export function callWarningText(ruleId: string | null, english: string, lang: Ui
   if (lang === "en" || !ruleId) return english;
   const key = ruleId === "advance_fee" || ruleId === "ff_request" ? "payment_demand" : ruleId === "account_block" ? "utility_threat" : ruleId;
   return CALL_W[key]?.[lang] ?? english;
+}
+
+// ---- Scam radar ----
+const RADAR_P: Record<RadarPattern, Loc> = {
+  digital_arrest: { hi: "\"डिजिटल अरेस्ट\" / नकली पुलिस कॉल", ml: "\"ഡിജിറ്റൽ അറസ്റ്റ്\" / വ്യാജ പോലീസ് കോളുകൾ" },
+  bank_kyc: { hi: "बैंक या KYC बंद होने की धमकी, OTP की माँग", ml: "ബാങ്ക് അല്ലെങ്കിൽ KYC ബ്ലോക്ക്, OTP ആവശ്യപ്പെടൽ" },
+  electricity: { hi: "बिजली या फ़ोन काटने की धमकी", ml: "വൈദ്യുതി അല്ലെങ്കിൽ ഫോൺ വിച്ഛേദിക്കുമെന്ന ഭീഷണി" },
+  job_task: { hi: "आसान कमाई वाली नौकरी और टास्क", ml: "എളുപ്പ വരുമാന ജോലികളും ടാസ്കുകളും" },
+  prize_lottery: { hi: "इनाम और लॉटरी", ml: "സമ്മാനങ്ങളും ലോട്ടറികളും" },
+  investment: { hi: "निवेश, क्रिप्टो और गिफ़्ट कार्ड", ml: "നിക്ഷേപം, ക്രിപ്റ്റോ, ഗിഫ്റ്റ് കാർഡുകൾ" },
+  family_emergency: { hi: "\"नया नंबर\" वाली पारिवारिक मुसीबत", ml: "\"പുതിയ നമ്പർ\" കുടുംബ അത്യാവശ്യങ്ങൾ" },
+  romance: { hi: "प्यार और ऑनलाइन दोस्तों की पैसे की माँग", ml: "പ്രണയവും ഓൺലൈൻ സുഹൃത്തുക്കളുടെ പണം ആവശ്യപ്പെടലും" },
+  other: { hi: "दूसरी धोखाधड़ी", ml: "മറ്റ് തട്ടിപ്പുകൾ" },
+};
+
+/** A scam-radar pattern name in the UI language. */
+export function radarPatternText(p: RadarPattern, lang: UiLang): string {
+  return lang === "en" ? RADAR_PATTERN_LABELS[p] : RADAR_P[p][lang];
 }

@@ -8,6 +8,7 @@ import type { TtsLang } from "../lib/tts/voices";
 import { TrustedContact } from "../components/TrustedContact";
 import { FamilyAlertButton } from "../components/FamilyAlertButton";
 import { ReadAloud } from "../components/ReadAloud";
+import { RadarButton } from "../components/RadarButton";
 
 type Mode = "idle" | "preparing" | "listening" | "demo";
 
@@ -217,6 +218,7 @@ export function CallGuardPage() {
           <TrustedContact />
           <a className="secondary big call-button" href="#/pause">{t("pause.link")}</a>
           <FamilyAlertButton verdict={verdict} />
+          <RadarButton level={combined.level} ids={combined.signals.map((s) => s.ruleId)} />
         </div>
       )}
 

@@ -34,6 +34,15 @@ Two features to make SecondLook stand out from paste-a-message checkers. They st
 - **`#/practice`** (*Practise* in the menu, and a link on the check screen): three guided practice calls (CBI "digital arrest", KYC block, "new number" son) in English, Hindi and Malayalam. Pick replies, see the trick named and explained, get a score and three things to remember.
 - **Free practice:** Gemini Nano plays the scammer on the device (`makePracticeRunner` in `web/src/lib/ai.ts`, `ONLY_ON_DEVICE`, with the same refuse-if-not-on-device guard). Tricks are highlighted by the rules engine. **Not verified with real Nano**: Nano may refuse to play a scammer or write weak lines; tried only with the dev simulator (`?mockNano`). Try it in your Chrome once Nano shows "Ready".
 
+## Added later: Scam radar
+
+- **`#/radar`**: weekly counts of scam *types* per state, this week vs last week; teaser on the check screen; **📡 Add to the scam radar** on medium/high results and in Call Guard; your state in Settings (default: just "India").
+- Privacy: the type is worked out on the device; Firestore gets `{week, pattern, region, count +1, updatedAt}` and nothing else. `firestore.rules` enforces it (11/11 rules tests pass in the emulator, 3 of them new for the radar).
+- **You need to redeploy the Firestore rules** for the radar to work in your project (the live rules don't have `radar` yet, so the page says "couldn't be loaded"):
+  `npx -y -p node@22 -p firebase-tools firebase deploy --only firestore --project secondlook-21f24`
+- Writes are allowed without sign-in (so anyone can warn others), which makes **App Check enforcement for Firestore** important before going public.
+- Rules tests on this laptop need `JAVA_TOOL_OPTIONS=-Djdk.net.unixdomain.tmpdir=<a folder path without spaces>` (see step 12 below).
+
 ## What got built
 
 **`shared/`** (core, all unit-tested): rules engine (16 shield-paypal-ai rules made generic + secrecy, digital-arrest/video custody, account/KYC block, payment demand; Hinglish/Manglish/Devanagari terms), verdict schema + tolerant parser, redactor (phones, emails, UPI, cards, IBAN, accounts, OTPs, Aadhaar, PAN, names), prompts, privacy router (routing table as a pure function with reasons), combiner, the full check pipeline (fallbacks both ways, screenshot consent, chunking, Nano name masking, follow-ups, answers in Hindi/Malayalam from the cloud), local URL/page scorer.

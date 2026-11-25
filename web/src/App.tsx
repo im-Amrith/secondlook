@@ -11,6 +11,7 @@ const FamilyPage = lazy(() => import("./pages/Family").then((m) => ({ default: m
 const GuardianPage = lazy(() => import("./pages/Guardian").then((m) => ({ default: m.GuardianPage })));
 const CallGuardPage = lazy(() => import("./pages/CallGuard").then((m) => ({ default: m.CallGuardPage })));
 const PracticePage = lazy(() => import("./pages/Practice").then((m) => ({ default: m.PracticePage })));
+const RadarPage = lazy(() => import("./pages/Radar").then((m) => ({ default: m.RadarPage })));
 const PausePage = lazy(() => import("./pages/Pause").then((m) => ({ default: m.PausePage })));
 const EvalsPage = lazy(() => import("./pages/Evals").then((m) => ({ default: m.EvalsPage })));
 
@@ -61,6 +62,7 @@ export function App() {
   else if (path === "/call") page = <CallGuardPage />;
   else if (path === "/pause") page = <PausePage />;
   else if (path === "/practice") page = <PracticePage />;
+  else if (path === "/radar") page = <RadarPage />;
   else page = <CheckPage />;
 
   return (
