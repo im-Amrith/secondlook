@@ -8,6 +8,7 @@
 import { getGenerativeModel, InferenceMode, InferenceSource, type AI, type GenerativeModel, type Part } from "firebase/ai";
 import { AI_VERDICT_JSON_SCHEMA, FOLLOWUP_SYSTEM_PROMPT, MAX_OUTPUT_TOKENS, NAMES_JSON_SCHEMA, NAMES_SYSTEM_PROMPT, parseNames, SYSTEM_PROMPT, type ImageInput, type ModelReply, type ModelRunner } from "@secondlook/shared";
 import { NANO_IMAGE_OPTIONS, NANO_TEXT_OPTIONS } from "./nano";
+import { PRACTICE_SYSTEM_PROMPT } from "./practice";
 import { DEFAULT_CLOUD_MODEL, type DeviceRunner } from "./models";
 
 export { DEFAULT_CLOUD_MODEL, type DeviceRunner };
@@ -186,3 +187,21 @@ export function makeDeviceNameFinder(ai: AI, cloudModelName = DEFAULT_CLOUD_MODE
   };
 }
 
+
+/**
+ * The scam-practice partner (lib/practice.ts): Gemini Nano plays a scam caller so the learner can
+ * practise saying no. On-device only; the learner's replies never leave the device.
+ */
+export function makePracticeRunner(ai: AI, cloudModelName = DEFAULT_CLOUD_MODEL): ModelRunner {
+  const model = lazyDevice(() => getGenerativeModel(ai, {
+    mode: InferenceMode.ONLY_ON_DEVICE,
+    onDeviceParams: {
+      createOptions: {
+        ...NANO_TEXT_OPTIONS,
+        initialPrompts: [{ role: "system", content: [{ type: "text", value: PRACTICE_SYSTEM_PROMPT }] }],
+      },
+    },
+    inCloudParams: { model: cloudModelName },
+  }));
+  return { run: async (p) => runOnDevice(model(), p) };
+}

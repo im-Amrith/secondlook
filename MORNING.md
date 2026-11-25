@@ -29,6 +29,11 @@ Two features to make SecondLook stand out from paste-a-message checkers. They st
 - **Verified:** unit tests (shared call/payment logic, privacy guards in `listen.ts`, the pages, the extension banner), and in the browser: demo call in English and Hindi, pause screen, result → pause link.
 - **Not verified (needs your Chrome and a microphone):** real listening. Check `#/call` in your Chrome: if it says listening is off, Chrome has no on-device speech pack for that language and Nano audio isn't available; the questions still work. Hindi/Malayalam on-device speech packs may not exist yet in Chrome; English (en-US/en-IN) is the most likely to work. Microphone access inside the extension side panel is also untested (Chrome may not show the permission prompt there; the web app is the main surface).
 
+## Added later: Practise saying no
+
+- **`#/practice`** (*Practise* in the menu, and a link on the check screen): three guided practice calls (CBI "digital arrest", KYC block, "new number" son) in English, Hindi and Malayalam. Pick replies, see the trick named and explained, get a score and three things to remember.
+- **Free practice:** Gemini Nano plays the scammer on the device (`makePracticeRunner` in `web/src/lib/ai.ts`, `ONLY_ON_DEVICE`, with the same refuse-if-not-on-device guard). Tricks are highlighted by the rules engine. **Not verified with real Nano**: Nano may refuse to play a scammer or write weak lines; tried only with the dev simulator (`?mockNano`). Try it in your Chrome once Nano shows "Ready".
+
 ## What got built
 
 **`shared/`** (core, all unit-tested): rules engine (16 shield-paypal-ai rules made generic + secrecy, digital-arrest/video custody, account/KYC block, payment demand; Hinglish/Manglish/Devanagari terms), verdict schema + tolerant parser, redactor (phones, emails, UPI, cards, IBAN, accounts, OTPs, Aadhaar, PAN, names), prompts, privacy router (routing table as a pure function with reasons), combiner, the full check pipeline (fallbacks both ways, screenshot consent, chunking, Nano name masking, follow-ups, answers in Hindi/Malayalam from the cloud), local URL/page scorer.

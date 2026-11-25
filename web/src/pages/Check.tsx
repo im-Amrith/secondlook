@@ -132,6 +132,8 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
         ))}
       </div>}
 
+      {!compact && !outcome && <p><a href="#/practice">{t("practice.banner")}</a></p>}
+
       {error && <div className="notice notice-error" role="alert">{error}</div>}
 
       <div ref={resultRef}>

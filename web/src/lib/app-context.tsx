@@ -3,7 +3,7 @@ import type { User } from "firebase/auth";
 import { askFollowUp, checkMessage, type CheckInput, type CheckOutcome, type FollowUpOutcome, type ModelRunner, type Verdict } from "@secondlook/shared";
 import type { Services } from "./firebase";
 import type { Runtime } from "./runtime";
-import { makeSimulatedDeviceRunner, makeSimulatedFollowUpRunner, type DeviceRunner } from "./models";
+import { makeSimulatedDeviceRunner, makeSimulatedFollowUpRunner, makeSimulatedPracticeRunner, type DeviceRunner } from "./models";
 import { nanoImageStatus, nanoStatus, type NanoStatus } from "./nano";
 import { DEFAULT_CONFIG, type AppConfig } from "./config";
 import { useSettings, type Settings } from "./settings";
@@ -20,6 +20,8 @@ export interface AppState {
   aiConfigured: boolean;
   device: DeviceRunner | null;
   cloud: ModelRunner | null;
+  /** On-device scam-practice partner (null without the Firebase runtime). */
+  practice: ModelRunner | null;
   nano: NanoStatus;
   /** Separate status for screenshots (multimodal input can be unavailable while text works). */
   nanoImage: NanoStatus;
@@ -67,7 +69,7 @@ export function AppProvider({ children, override, surface = "web" }: { children:
   // Cloud answers follow the UI language (the on-device model can only answer in English).
   const replyIn = settings.uiLang === "hi" ? ("Hindi" as const) : settings.uiLang === "ml" ? ("Malayalam" as const) : undefined;
 
-  const simulated = useMemo(() => (simulatedNano ? { device: makeSimulatedDeviceRunner(), followUp: makeSimulatedFollowUpRunner() } : null), [simulatedNano]);
+  const simulated = useMemo(() => (simulatedNano ? { device: makeSimulatedDeviceRunner(), followUp: makeSimulatedFollowUpRunner(), practice: makeSimulatedPracticeRunner() } : null), [simulatedNano]);
   const runners = runtime?.runners(config.cloudModel) ?? null;
   const device: DeviceRunner | null = simulated?.device ?? runners?.device ?? null;
   const cloud: ModelRunner | null = runners?.cloud ?? null;
@@ -150,6 +152,7 @@ export function AppProvider({ children, override, surface = "web" }: { children:
     aiConfigured: isFirebaseConfigured,
     device,
     cloud,
+    practice: simulated?.practice ?? runners?.practice ?? null,
     nano,
     nanoImage: simulatedNano ? nano : nanoImage,
     simulatedNano,

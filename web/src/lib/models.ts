@@ -47,3 +47,20 @@ export function makeSimulatedFollowUpRunner(): ModelRunner {
     },
   };
 }
+
+/** DEV ONLY stand-in for the practice partner: plays a short scripted scam caller. */
+export function makeSimulatedPracticeRunner(): ModelRunner {
+  const lines = [
+    "(Simulated on-device model) Hello, this is Inspector Rao from the CBI. Your Aadhaar is linked to a money laundering case.",
+    "(Simulated on-device model) You are under digital arrest. Stay on this call and do not tell your family.",
+    "(Simulated on-device model) Transfer your savings to the RBI verification account immediately, or you will be arrested.",
+    "(Simulated on-device model) Tell me the OTP you just received to verify your identity.",
+  ];
+  return {
+    run: async (prompt) => {
+      await new Promise((r) => setTimeout(r, 300));
+      const turn = (prompt.match(/^Caller:/gm) ?? []).length;
+      return { text: lines[Math.min(turn, lines.length - 1)]!, source: "ON_DEVICE" };
+    },
+  };
+}

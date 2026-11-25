@@ -3,7 +3,7 @@
 import type { User } from "firebase/auth";
 import type { ModelRunner } from "@secondlook/shared";
 import { getServices, type Services } from "./firebase";
-import { makeCloudRunner, makeDeviceNameFinder, makeDeviceRunner, makeFollowUpRunners, makePreferOnDeviceModel } from "./ai";
+import { makeCloudRunner, makeDeviceNameFinder, makeDeviceRunner, makeFollowUpRunners, makePracticeRunner, makePreferOnDeviceModel } from "./ai";
 import type { DeviceRunner } from "./models";
 import { loadRemoteConfig } from "./remoteConfig";
 import type { AppConfig } from "./config";
@@ -14,6 +14,8 @@ export interface Runners {
   cloud: ModelRunner;
   findNames: (text: string) => Promise<string[]>;
   followUp: { device: ModelRunner; cloud: ModelRunner };
+  /** On-device scam-practice partner. */
+  practice: ModelRunner;
 }
 
 export interface Runtime {
@@ -40,6 +42,7 @@ export function loadRuntime(): Runtime | null {
           cloud: makeCloudRunner(services.ai, cloudModel),
           findNames: makeDeviceNameFinder(services.ai, cloudModel),
           followUp: makeFollowUpRunners(services.ai, cloudModel),
+          practice: makePracticeRunner(services.ai, cloudModel),
         };
         cache.set(cloudModel, r);
       }

@@ -21,6 +21,7 @@ Built for the Firebase **#BuildHybridAI** hackathon. Platforms: **Web (Chrome)**
 | **Chrome extension** | Select text in WhatsApp Web or Gmail → right-click → *Check with SecondLook* | Same check in the side panel. A warning banner appears on look-alike login and payment pages. |
 | **Call Guard** | Put a suspicious call on speaker (or tap a few yes/no questions) | Listens **on the device** and shows a big *Hang up now* warning the moment it hears "digital arrest", "don't tell your family", "move your money to a safe account"… Call audio is never sent anywhere. |
 | **Pause before paying** | Open a bank-transfer or send-money page, or tap *Take a 1-minute pause* | A countdown, four honest questions, and one big button to call someone you trust. |
+| **Practise** | Pick a practice call | A safe, scripted scam call where you choose replies and learn each trick, or a free chat where Gemini Nano plays the scammer on your device. |
 | **Family circle** | Link someone you trust | On a risky result you can send *"Dad: 3 scam signals (fake authority, urgency, money request), 2 min ago"*. **No message text is ever stored or shared.** |
 
 ### The visible privacy router
@@ -56,6 +57,12 @@ Scams work by rushing people, so SecondLook adds friction at the moment of payme
 
 - **A 1-minute pause screen** (`#/pause`, linked from every medium/high result and from Call Guard): a countdown, four honest questions (*"Is someone on the phone telling you to make this payment?"*), and if any answer is yes, *"Please don't pay. This is how scams work."* with the specific reason, the call button and the family alert.
 - **In the extension**, a gentle banner appears on bank-transfer, add-payee, UPI send-money and gift-card pages (`shared/src/payment.ts`; shopping checkouts are deliberately ignored): *"✋ About to send money? Is someone on the phone or a video call telling you to do this?"* Answering yes shows *"Please stop. Don't pay."* and can open the pause screen in the side panel. Detected locally; nothing is sent.
+
+### Practise saying no
+
+Teaching people a scam's tricks *before* they meet them ("prebunking") works better than warning them afterwards. **Practise** (`#/practice`) has short, safe practice calls: a fake CBI officer, a "your bank account will be blocked" message, and a "Hi Ma, this is my new number" chat. At each line you pick a reply; SecondLook names the trick ("Secrecy", "A 'safe account'") and explains why it works on people. At the end: *"You spotted 3 of 4 tricks"* and three things to remember, read aloud if you like. Scripted, so it works offline in English, Hindi and Malayalam, and every scammer line in the CBI and KYC calls is one the rules engine flags.
+
+**Free practice with the private AI:** with Gemini Nano available, the on-device model plays the scam caller (`ONLY_ON_DEVICE` through Firebase AI Logic) and you type replies. Each caller message shows the tricks the rules engine finds in it, and saying no firmly ("I'm hanging up and calling my son") wins. Your replies never leave the device.
 
 ### Read aloud, on the device
 

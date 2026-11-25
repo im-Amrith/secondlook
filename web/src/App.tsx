@@ -10,6 +10,7 @@ import { HowPage } from "./pages/How";
 const FamilyPage = lazy(() => import("./pages/Family").then((m) => ({ default: m.FamilyPage })));
 const GuardianPage = lazy(() => import("./pages/Guardian").then((m) => ({ default: m.GuardianPage })));
 const CallGuardPage = lazy(() => import("./pages/CallGuard").then((m) => ({ default: m.CallGuardPage })));
+const PracticePage = lazy(() => import("./pages/Practice").then((m) => ({ default: m.PracticePage })));
 const PausePage = lazy(() => import("./pages/Pause").then((m) => ({ default: m.PausePage })));
 const EvalsPage = lazy(() => import("./pages/Evals").then((m) => ({ default: m.EvalsPage })));
 
@@ -26,6 +27,7 @@ function useHash(): string {
 const NAV: { href: string; label: Key }[] = [
   { href: "#/", label: "nav.check" },
   { href: "#/call", label: "nav.call" },
+  { href: "#/practice", label: "nav.practice" },
   { href: "#/family", label: "nav.family" },
   { href: "#/guardian", label: "nav.alerts" },
   { href: "#/how", label: "nav.privacy" },
@@ -58,6 +60,7 @@ export function App() {
   else if (path === "/evals") page = <EvalsPage />;
   else if (path === "/call") page = <CallGuardPage />;
   else if (path === "/pause") page = <PausePage />;
+  else if (path === "/practice") page = <PracticePage />;
   else page = <CheckPage />;
 
   return (
