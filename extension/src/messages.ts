@@ -11,7 +11,10 @@ export interface PendingCheck {
 
 export const PENDING_KEY = "pendingCheck";
 
-export type ContentToBackground = { type: "open-panel-check"; text: string; url: string };
+export type ContentToBackground = { type: "open-panel-check"; text: string; url: string } | { type: "open-panel-pause" };
+
+/** Set by the pause banner so the side panel opens on the pause screen. */
+export const PANEL_TAB_KEY = "panelTab";
 
 export const MENU_ID = "secondlook-check-selection";
 export const MENU_PAGE_ID = "secondlook-check-page";

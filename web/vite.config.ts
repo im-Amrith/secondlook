@@ -10,8 +10,10 @@ const require = createRequire(import.meta.url);
 // Point it at the browser build so tests exercise the same code paths as Chrome.
 const firebaseAiBrowser = join(dirname(require.resolve("@firebase/ai/package.json")), "dist/esm/index.esm.js");
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
+  // Tests never read the real Firebase config in web/.env.local (they must behave the same on every machine and in CI).
+  ...(mode === "test" ? { envDir: "test" } : {}),
   // One copy of ONNX Runtime Web; Vite bundles its WASM.
   resolve: { dedupe: ["onnxruntime-web", "onnxruntime-common"] },
   worker: { format: "es" },
@@ -25,4 +27,4 @@ export default defineConfig({
     // Firestore rules tests need the emulator: run them with `npm run test:rules` at the root.
     exclude: [...configDefaults.exclude, "rules-test/**"],
   },
-});
+}));

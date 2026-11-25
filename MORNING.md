@@ -19,6 +19,16 @@ A **🔊 Read aloud** button on every result and follow-up answer, plus a *Read 
 - **Licences to know:** the Hindi and Malayalam **Piper** voices are trained on **non-commercial** datasets (fine for the contest; Settings labels them). The English Piper voices use public-domain data.
 - **Not verified:** the extension side panel's read-aloud (built with `wasm-unsafe-eval` in its CSP, not loaded in Chrome).
 
+## Added later: Call Guard and pause before paying
+
+Two features to make SecondLook stand out from paste-a-message checkers. They step in *during* a scam, not after it.
+
+- **Call Guard** (`#/call`, **On a call** in the menu): put a call on speaker; SecondLook recognises speech **on the device** and shows a big *Hang up now* warning as soon as it hears a scam pattern, in English, Hindi or Malayalam. Engines: Chrome's on-device Web Speech (`processLocally`), else Gemini Nano audio (Prompt API directly, since the Firebase SDK's on-device adapter turns all inline data into images). **No cloud path for audio at all.** Also tap-to-answer questions, typing, a labelled demo call, and a Nano second opinion.
+- **Pause before paying** (`#/pause`, linked from medium/high results and Call Guard): countdown, four questions, a big *Call [trusted person]* button (stored only on the device, set in Settings), 1930, family alert. **Extension:** a banner on bank-transfer / add-payee / UPI send / gift-card pages asks *"Is someone on the phone telling you to do this?"*
+- New rules: `safe_account` ("transfer to the RBI verification account") and `remote_access` (AnyDesk, screen sharing), plus Hindi and Malayalam terms for spoken calls. Rules-only eval numbers unchanged.
+- **Verified:** unit tests (shared call/payment logic, privacy guards in `listen.ts`, the pages, the extension banner), and in the browser: demo call in English and Hindi, pause screen, result → pause link.
+- **Not verified (needs your Chrome and a microphone):** real listening. Check `#/call` in your Chrome: if it says listening is off, Chrome has no on-device speech pack for that language and Nano audio isn't available; the questions still work. Hindi/Malayalam on-device speech packs may not exist yet in Chrome; English (en-US/en-IN) is the most likely to work. Microphone access inside the extension side panel is also untested (Chrome may not show the permission prompt there; the web app is the main surface).
+
 ## What got built
 
 **`shared/`** (core, all unit-tested): rules engine (16 shield-paypal-ai rules made generic + secrecy, digital-arrest/video custody, account/KYC block, payment demand; Hinglish/Manglish/Devanagari terms), verdict schema + tolerant parser, redactor (phones, emails, UPI, cards, IBAN, accounts, OTPs, Aadhaar, PAN, names), prompts, privacy router (routing table as a pure function with reasons), combiner, the full check pipeline (fallbacks both ways, screenshot consent, chunking, Nano name masking, follow-ups, answers in Hindi/Malayalam from the cloud), local URL/page scorer.

@@ -60,7 +60,7 @@ export const RULES: Rule[] = [
   {
     id: "credentials", category: "credentials", label: "Asks for a code or password", weight: 0.6,
     why: "No real bank, company, official or buyer ever needs your OTP, PIN or password.",
-    re: /\b(otp|one[- ]time (password|code)|verification code|security code|upi pin|atm pin|share (your|the) pin|passwords?|login details|cvv)\b|otp (batao|bhejo|bata do|share karo|paranju tharu)|ओटीपी/i,
+    re: /\b(otp|one[- ]time (password|code)|verification code|security code|upi pin|atm pin|share (your|the) pin|passwords?|login details|cvv)\b|otp (batao|bhejo|bata do|share karo|paranju tharu)|ओटीपी|ഒടിപി/i,
   },
   {
     id: "overpayment", category: "overpayment", label: "Overpayment or refund-the-difference", weight: 0.5,
@@ -75,7 +75,7 @@ export const RULES: Rule[] = [
   {
     id: "authority", category: "authority", label: "Claims to be police, court or government", weight: 0.45,
     why: "Police, courts, customs and tax offices never demand money over chat or a call, and never threaten arrest to get it.",
-    re: /tax (office|department|officer)|income tax|\birs\b|\bhmrc\b|\bpolice\b|arrest|warrant|customs (fee|duty|clearance|department|officer)|\bcourt\b|legal action|\bcbi\b|\bnarcotics\b|\bncb\b|\btrai\b|enforcement directorate|\bed officer|money laundering|digital arrest|parcel (has been |was |is )?(seized|held)|giraft?aar?|पुलिस|गिरफ्तार|सीबीआई|वारंट/i,
+    re: /tax (office|department|officer)|income tax|\birs\b|\bhmrc\b|\bpolice\b|arrest|warrant|customs (fee|duty|clearance|department|officer)|\bcourt\b|legal action|\bcbi\b|\bnarcotics\b|\bncb\b|\btrai\b|enforcement directorate|\bed officer|money laundering|digital arrest|parcel (has been |was |is )?(seized|held)|giraft?aar?|पुलिस|गिरफ्तार|सीबीआई|वारंट|मनी लॉन्ड्रिंग|ड्रग्स|पार्सल|കസ്റ്റംസ്|പോലീസ്|അറസ്റ്റ|സിബിഐ/i,
   },
   {
     id: "prize", category: "prize", label: "Prize or lottery", weight: 0.45,
@@ -137,17 +137,27 @@ export const RULES: Rule[] = [
   {
     id: "secrecy", category: "secrecy", label: "Tells you to keep it secret", weight: 0.5,
     why: "Being told not to tell your family or bank, or to stay on the call, is how scammers stop anyone from warning you.",
-    re: /(don'?t|do not|never) (tell|inform|share (this )?with|discuss (this )?with) (anyone|anybody|your (family|son|daughter|wife|husband|children|bank|relatives|friends))|keep (this|it) (a )?(secret|confidential|between us)|(stay|remain) on (the )?(call|line|video)|(do not|don'?t) (disconnect|hang up|cut the call|leave the call)|confidential (investigation|matter|case)|kisi ko (bhi )?(mat|na|nahi) bata|kisi se (bhi )?(baat )?mat kar|aarod(um|o) parayar?uth|aarodum parayalle|किसी को (भी )?(मत|न|ना) बता|किसी से (बात )?मत/i,
+    re: /(don'?t|do not|never) (tell|inform|share (this )?with|discuss (this )?with) (anyone|anybody|your (family|son|daughter|wife|husband|children|bank|relatives|friends))|keep (this|it) (a )?(secret|confidential|between us)|(stay|remain) on (the )?(call|line|video)|(do not|don'?t) (disconnect|hang up|cut the call|leave the call)|confidential (investigation|matter|case)|kisi ko (bhi )?(mat|na|nahi) bata|kisi se (bhi )?(baat )?mat kar|aarod(um|o) parayar?uth|aarodum parayalle|किसी को (भी )?(मत|न|ना) बता|किसी से (बात )?मत|(फ़ोन|फोन|कॉल) (मत|न) काट|वीडियो (कॉल )?(पर|में) (ही )?रह|ആരോടും പറയരുത്|ഫോൺ കട്ട് ചെയ്യരുത്/i,
   },
   {
     id: "video_custody", category: "authority", label: "\"Digital arrest\" or video-call custody", weight: 0.55,
     why: "There is no such thing as a 'digital arrest'. Real police never keep you on a video call or hold you 'in custody' online.",
-    re: /digital(ly)? arrest|(video|skype|zoom|whatsapp) (call )?(custody|interrogation|verification|statement)|under (online |video |digital )?(surveillance|custody|investigation)|(keep|turn) (your )?camera on|virtual (custody|arrest|court)|डिजिटल अरेस्ट/i,
+    re: /digital(ly)? arrest|(video|skype|zoom|whatsapp) (call )?(custody|interrogation|verification|statement)|under (online |video |digital )?(surveillance|custody|investigation)|(keep|turn) (your )?camera on|virtual (custody|arrest|court)|डिजिटल अरेस्ट|कैमरा (ऑन|चालू)|ഡിജിറ്റൽ അറസ്റ്റ/i,
   },
   {
     id: "account_block", category: "urgency", label: "Says your account will be blocked", weight: 0.35,
     why: "Banks don't block accounts by SMS or ask you to 'update KYC' through a link or a call.",
     re: /(account|card|kyc|pan|aadhaar|wallet)( number)? (has been |will be |is |shall be )?(blocked|suspended|frozen|deactivated|closed|expired|on hold)|(update|complete|verify) (your )?kyc|kyc (update|pending|verification)|re-?kyc/i,
+  },
+  {
+    id: "safe_account", category: "money_request", label: "Asks you to move money to a \"safe\" account", weight: 0.55,
+    why: "No police, court, RBI or bank ever asks you to move your savings to a 'safe', 'secret' or 'verification' account. That money is gone.",
+    re: /(safe|secure|secret|rbi|government|verification|escrow|supervision) (bank )?account|(money|funds?|amount|savings) will be (returned|refunded|released|sent back) after (the )?(verification|investigation|checking)|transfer (all )?(of )?your (savings|money|funds|fixed deposits?) (to|into)|सुरक्षित खाते|आरबीआई (के )?खाते/i,
+  },
+  {
+    id: "remote_access", category: "credentials", label: "Asks you to install an app or share your screen", weight: 0.45,
+    why: "Screen-sharing apps like AnyDesk let a stranger see your codes and move your money while you watch.",
+    re: /\b(anydesk|any desk|teamviewer|team viewer|rustdesk|quick ?support|airdroid)\b|share (your )?screen|screen ?shar(e|ing)|(install|download) (this|the|an?) (app|application|apk)|\.apk\b/i,
   },
   {
     id: "payment_demand", category: "money_request", label: "Asks you to send money", weight: 0.15,

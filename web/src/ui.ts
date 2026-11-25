@@ -8,3 +8,5 @@ export { PrivacyBadge } from "./components/PrivacyBadge";
 export { FamilyPage } from "./pages/Family";
 export { GuardianPage } from "./pages/Guardian";
 export { HowPage } from "./pages/How";
+export { CallGuardPage } from "./pages/CallGuard";
+export { PausePage } from "./pages/Pause";

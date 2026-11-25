@@ -19,6 +19,8 @@ Built for the Firebase **#BuildHybridAI** hackathon. Platforms: **Web (Chrome)**
 |---|---|---|
 | **Web app** | Paste a message or add a screenshot | Rules check instantly, then Gemini Nano on your device (or redacted cloud fallback). Plain-language verdict, the warning signs it found, what to do now. |
 | **Chrome extension** | Select text in WhatsApp Web or Gmail → right-click → *Check with SecondLook* | Same check in the side panel. A warning banner appears on look-alike login and payment pages. |
+| **Call Guard** | Put a suspicious call on speaker (or tap a few yes/no questions) | Listens **on the device** and shows a big *Hang up now* warning the moment it hears "digital arrest", "don't tell your family", "move your money to a safe account"… Call audio is never sent anywhere. |
+| **Pause before paying** | Open a bank-transfer or send-money page, or tap *Take a 1-minute pause* | A countdown, four honest questions, and one big button to call someone you trust. |
 | **Family circle** | Link someone you trust | On a risky result you can send *"Dad: 3 scam signals (fake authority, urgency, money request), 2 min ago"*. **No message text is ever stored or shared.** |
 
 ### The visible privacy router
@@ -34,6 +36,26 @@ Under the badge, one sentence from the router says *why* that path was chosen. T
 - **Before you check:** as you type, a line under the box says where the check *will* run (e.g. *"Hindi detected: will remove personal details, then check in the cloud"*).
 - **Follow-up questions** ("I already paid. What now?") are multi-turn, which the on-device model can't do, so they go to the cloud with the original message and the question redacted together, with the same badge and "what was sent" view. With the cloud off they're answered on device as a fresh question.
 - **The Privacy page** runs the real router against *this device's* current state for typical cases (short text, screenshot, Hindi, long chat, follow-up, offline) and lists exactly what leaves the device on each path.
+
+### Call Guard: warnings while the call is still going on
+
+"Digital arrest" and bank-fraud scams happen **live**: a fake officer keeps someone on a video call for hours until they transfer their savings. A checker you paste a message into comes too late, so SecondLook also works *during* the call (**On a call** in the menu, and a banner on the check screen):
+
+- **Put the call on speaker and press *Start listening*.** Speech is recognised **on the device**: Chrome's on-device Web Speech (`processLocally: true`), or Gemini Nano with audio input a few seconds at a time. As the caller talks, the rules run on every phrase, and a big warning appears the moment a scam pattern shows up: *"⛔ Hang up now. There is no such thing as a 'digital arrest'…"*, in English, Hindi or Malayalam, with **Read aloud**. Signals stay on screen after the words scroll past, with the exact phrase that triggered them.
+- **Call audio never goes to the cloud.** There is no cloud path in the code (`web/src/lib/listen.ts`). If neither on-device engine is available, listening stays off and says why. We also refuse to start Chrome's recogniser unless it confirms `processLocally`, because the default Web Speech API sends audio to a server. The words live only in the page's memory and disappear when you leave.
+- **With Gemini Nano**, the private model gives a second opinion on the conversation every ~15 s, again on the device only.
+- **No microphone? Tap instead.** Six yes/no questions ("Did they tell you not to tell your family?") feed the same warning, and you can type what they said.
+- **Then act:** one big **📞 Call [your trusted person]** button (name and number saved only on this device), **📞 1930**, *Let my family know*, and the pause screen below.
+- **Demo mode:** *Watch a demo call* plays a made-up digital-arrest call line by line (clearly labelled, no microphone), so the feature can be shown anywhere.
+
+Firebase AI Logic 13.3's on-device adapter converts every `inlineData` part to an image, so audio can't go through the SDK yet. The Nano audio path calls Chrome's Prompt API directly, which is on-device by definition.
+
+### Pause before paying
+
+Scams work by rushing people, so SecondLook adds friction at the moment of payment:
+
+- **A 1-minute pause screen** (`#/pause`, linked from every medium/high result and from Call Guard): a countdown, four honest questions (*"Is someone on the phone telling you to make this payment?"*), and if any answer is yes, *"Please don't pay. This is how scams work."* with the specific reason, the call button and the family alert.
+- **In the extension**, a gentle banner appears on bank-transfer, add-payee, UPI send-money and gift-card pages (`shared/src/payment.ts`; shopping checkouts are deliberately ignored): *"✋ About to send money? Is someone on the phone or a video call telling you to do this?"* Answering yes shows *"Please stop. Don't pay."* and can open the pause screen in the side panel. Detected locally; nothing is sent.
 
 ### Read aloud, on the device
 
@@ -125,11 +147,14 @@ and `scam_of_the_week` to *"Fake FASTag renewal messages are going around"*. The
 ## Repository layout
 
 ```
-shared/     rules, verdict schema, redactor, prompt, router, combiner, check pipeline, URL scorer (all unit-tested)
+shared/     rules, verdict schema, redactor, prompt, router, combiner, check pipeline, URL scorer,
+            call guard (live transcript + questions), payment-page detector (all unit-tested)
 web/        Vite + React app: check, onboarding/model download, privacy page, settings, family circle, guardian alerts, #/evals
             rules-test/ Firestore security rules tests (emulator)
-extension/  Chrome MV3: side panel (reuses the web UI), right-click check, look-alike page banner, chrome.identity sign-in
+extension/  Chrome MV3: side panel (reuses the web UI), right-click check, look-alike page banner,
+            pause banner on payment pages, chrome.identity sign-in
             src/lib/tts/ read-aloud: voice catalogue, phonemizer, Piper engine, Web Worker, player
+            src/lib/listen.ts on-device speech for Call Guard (Web Speech processLocally, Nano audio, demo)
 evals/      labelled datasets (scam + redaction), runner, RESULTS.md, TTS.md (voice intelligibility + speed)
 scripts/    tts-samples.mts (WAV for every voice, in Node), tts-eval.mts (Whisper round-trip check)
 firebase.json, firestore.rules, firestore.indexes.json, remoteconfig.template.json

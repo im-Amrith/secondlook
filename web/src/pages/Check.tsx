@@ -90,6 +90,8 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
         <div className="notice notice-week" role="note"><strong>{t("notice.week")}</strong> {app.config.scamOfTheWeek}</div>
       )}
 
+      {!compact && <a className="call-banner" href="#/call">{t("call.banner")}</a>}
+
       {!compact && (
         <>
           <h1>{t("check.title")}</h1>
@@ -137,7 +139,12 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
           <ResultCard
             outcome={outcome}
             simulated={app.simulatedNano}
-            actions={<FamilyAlertButton verdict={outcome.verdict} />}
+            actions={
+              <>
+                {outcome.verdict.level !== "low" && !compact && <a className="secondary big call-button" href="#/pause">{t("pause.link")}</a>}
+                <FamilyAlertButton verdict={outcome.verdict} />
+              </>
+            }
           />
         )}
         {outcome && !outcome.inconclusive && checkedText && <FollowUp key={outcome.latencyMs} original={checkedText} verdict={outcome.verdict} />}

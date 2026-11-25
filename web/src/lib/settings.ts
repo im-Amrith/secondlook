@@ -16,9 +16,14 @@ export interface Settings {
   speechRate: number;
   /** Read the result aloud as soon as it appears. */
   autoRead: boolean;
+  /** Someone to call before paying (pause screen, Call Guard). Stored only on this device. */
+  trustedName: string;
+  trustedPhone: string;
+  /** Length of the pause-before-paying countdown. */
+  pauseSeconds: number;
 }
 
-export const DEFAULT_SETTINGS: Settings = { neverCloud: false, familyAlerts: true, onboarded: false, largeText: false, uiLang: "en", voices: {}, speechRate: 1, autoRead: false };
+export const DEFAULT_SETTINGS: Settings = { neverCloud: false, familyAlerts: true, onboarded: false, largeText: false, uiLang: "en", voices: {}, speechRate: 1, autoRead: false, trustedName: "", trustedPhone: "", pauseSeconds: 60 };
 const KEY = "sl.settings.v1";
 
 export function loadSettings(): Settings {

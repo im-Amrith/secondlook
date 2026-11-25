@@ -2,10 +2,10 @@
 // Prompt API / Firebase AI Logic calls run in this page, not in the service worker.
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { AppProvider, CheckPage, FamilyPage, GuardianPage, SettingsPage, SetupPage, useApp } from "@secondlook/web/ui";
+import { AppProvider, CallGuardPage, CheckPage, FamilyPage, GuardianPage, PausePage, SettingsPage, SetupPage, useApp } from "@secondlook/web/ui";
 import "@secondlook/web/styles.css";
 import "./sidepanel.css";
-import { PENDING_KEY, readActiveTab, type PendingCheck } from "./messages";
+import { PANEL_TAB_KEY, PENDING_KEY, readActiveTab, type PendingCheck } from "./messages";
 
 function usePending(): [PendingCheck | null, (p: PendingCheck) => void] {
   const [pending, setPending] = useState<PendingCheck | null>(null);
@@ -20,7 +20,7 @@ function usePending(): [PendingCheck | null, (p: PendingCheck) => void] {
   return [pending, setPending];
 }
 
-type Tab = "check" | "family" | "alerts" | "setup" | "settings";
+type Tab = "check" | "call" | "pause" | "family" | "alerts" | "setup" | "settings";
 
 /** Hash routes used by the shared web pages (e.g. "#/family", "#/guardian") map onto panel tabs. */
 function tabFromHash(hash: string): Tab | null {
@@ -29,12 +29,15 @@ function tabFromHash(hash: string): Tab | null {
   if (p.startsWith("guardian")) return "alerts";
   if (p.startsWith("setup")) return "setup";
   if (p.startsWith("settings")) return "settings";
+  if (p.startsWith("call")) return "call";
+  if (p.startsWith("pause")) return "pause";
   if (p === "" || p === "check") return "check";
   return null;
 }
 
 const TABS: { id: Tab; label: string; hash: string }[] = [
   { id: "check", label: "Check", hash: "#/" },
+  { id: "call", label: "On a call", hash: "#/call" },
   { id: "family", label: "Family", hash: "#/family" },
   { id: "alerts", label: "Alerts", hash: "#/guardian" },
   { id: "setup", label: "Model", hash: "#/setup" },
@@ -68,6 +71,22 @@ function Panel() {
     if (pending) setTab("check");
   }, [pending]);
 
+  // The payment-page banner asks the panel to open on the pause screen.
+  useEffect(() => {
+    const open = (v: unknown) => {
+      if ((v as { tab?: string } | undefined)?.tab === "pause") {
+        setTab("pause");
+        void chrome.storage.session.remove(PANEL_TAB_KEY);
+      }
+    };
+    void chrome.storage.session.get(PANEL_TAB_KEY).then((r) => open(r[PANEL_TAB_KEY]));
+    const on = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
+      if (area === "session" && changes[PANEL_TAB_KEY]?.newValue) open(changes[PANEL_TAB_KEY].newValue);
+    };
+    chrome.storage.onChanged.addListener(on);
+    return () => chrome.storage.onChanged.removeListener(on);
+  }, []);
+
   return (
     <>
       <header className="topbar">
@@ -88,6 +107,8 @@ function Panel() {
             {!pending && <p className="muted">Tip: select text on any page (WhatsApp Web, Gmail…), right-click, and choose <strong>Check with SecondLook</strong>.</p>}
           </>
         )}
+        {tab === "call" && <CallGuardPage />}
+        {tab === "pause" && <PausePage />}
         {tab === "family" && <FamilyPage />}
         {tab === "alerts" && <GuardianPage />}
         {tab === "setup" && <SetupPage />}

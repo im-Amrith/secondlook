@@ -9,6 +9,8 @@ import { HowPage } from "./pages/How";
 // Pages that need Firestore/Auth (or big eval data) load on demand.
 const FamilyPage = lazy(() => import("./pages/Family").then((m) => ({ default: m.FamilyPage })));
 const GuardianPage = lazy(() => import("./pages/Guardian").then((m) => ({ default: m.GuardianPage })));
+const CallGuardPage = lazy(() => import("./pages/CallGuard").then((m) => ({ default: m.CallGuardPage })));
+const PausePage = lazy(() => import("./pages/Pause").then((m) => ({ default: m.PausePage })));
 const EvalsPage = lazy(() => import("./pages/Evals").then((m) => ({ default: m.EvalsPage })));
 
 function useHash(): string {
@@ -23,6 +25,7 @@ function useHash(): string {
 
 const NAV: { href: string; label: Key }[] = [
   { href: "#/", label: "nav.check" },
+  { href: "#/call", label: "nav.call" },
   { href: "#/family", label: "nav.family" },
   { href: "#/guardian", label: "nav.alerts" },
   { href: "#/how", label: "nav.privacy" },
@@ -53,6 +56,8 @@ export function App() {
   else if (path.startsWith("/join/")) page = <FamilyPage joinId={path.slice("/join/".length)} />;
   else if (path === "/guardian") page = <GuardianPage />;
   else if (path === "/evals") page = <EvalsPage />;
+  else if (path === "/call") page = <CallGuardPage />;
+  else if (path === "/pause") page = <PausePage />;
   else page = <CheckPage />;
 
   return (

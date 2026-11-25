@@ -1,7 +1,7 @@
 // MV3 service worker. Deliberately does NO AI work: the Prompt API and Firebase AI Logic run in
 // the side panel page (a full document), as the plan requires. This worker only wires up the
 // right-click menu and opens the side panel with the text to check.
-import { MAX_PAGE_CHARS, MENU_ID, MENU_PAGE_ID, PENDING_KEY, safePageUrl, type ContentToBackground, type PendingCheck } from "./messages";
+import { MAX_PAGE_CHARS, MENU_ID, MENU_PAGE_ID, PANEL_TAB_KEY, PENDING_KEY, safePageUrl, type ContentToBackground, type PendingCheck } from "./messages";
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({ id: MENU_ID, title: "Check with SecondLook", contexts: ["selection"] });
@@ -30,7 +30,8 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 // The in-page banner's "Check with SecondLook" button.
 chrome.runtime.onMessage.addListener((msg: ContentToBackground, sender) => {
-  if (msg?.type !== "open-panel-check") return;
+  if (msg?.type !== "open-panel-check" && msg?.type !== "open-panel-pause") return;
   if (sender.tab?.windowId !== undefined) void chrome.sidePanel.open({ windowId: sender.tab.windowId }).catch(() => undefined);
+  if (msg.type === "open-panel-pause") return void chrome.storage.session.set({ [PANEL_TAB_KEY]: { tab: "pause", at: Date.now() } });
   void queue({ text: msg.text, kind: "page", url: msg.url });
 });

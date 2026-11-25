@@ -218,3 +218,38 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .voice-row select { font-size: 1rem; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); max-width: 100%; }
 .voice-row .row { margin: 4px 0 0; }
 .small { font-size: 0.9rem; margin: 0; }
+
+/* ---- Call Guard, pause before paying, trusted person ---- */
+.call-banner { display: block; text-align: center; text-decoration: none; padding: 14px 16px; margin: 12px 0; border-radius: var(--radius); background: var(--primary-soft); color: var(--primary); font-weight: 700; border: 2px solid var(--primary); }
+.call-private { margin: 8px 0 4px; font-size: 0.95rem; }
+.call-alert { border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; border: 2px solid var(--line); background: var(--surface); }
+.call-alert-high { border-color: var(--high); background: var(--high-bg); color: var(--high); }
+.call-alert-medium { border-color: var(--medium); background: var(--medium-bg); color: var(--medium); }
+.call-alert-low { color: var(--ink); }
+.call-alert-head { font-size: 1.8rem; font-weight: 800; margin: 0 0 6px; line-height: 1.2; }
+.call-alert-text { font-size: 1.35rem; font-weight: 700; margin: 0 0 8px; line-height: 1.35; }
+.call-ai { color: var(--ink); font-size: 0.95rem; margin: 10px 0 0; }
+.call-actions { display: grid; gap: 8px; margin: 12px 0; }
+.call-button { display: flex; align-items: center; justify-content: center; text-align: center; text-decoration: none; border-radius: var(--radius); border: 2px solid var(--primary); font-weight: 700; padding: 12px 16px; }
+.listening-line { display: flex; gap: 10px; align-items: center; }
+.mic-level { display: inline-block; width: 60px; height: 10px; border-radius: 5px; background: var(--line); overflow: hidden; flex: none; }
+.mic-level span { display: block; height: 100%; width: 100%; background: var(--low); transform-origin: left; transition: transform 0.1s linear; }
+.questions { padding-left: 1.2em; margin: 0; }
+.question { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.question > span:first-child { flex: 1 1 260px; }
+.yesno { display: flex; gap: 8px; }
+.yesno .chip { min-width: 72px; min-height: 44px; font-size: 1rem; }
+.chip-on { background: var(--primary); color: var(--primary-ink); border-color: var(--primary); }
+.chip-yes.chip-on { background: var(--high); border-color: var(--high); color: #fff; }
+.transcript ol { padding-left: 1.2em; }
+.transcript summary { cursor: pointer; font-weight: 700; }
+.trusted { display: grid; gap: 8px; margin: 12px 0; }
+.trusted-add summary { cursor: pointer; color: var(--primary); text-decoration: underline; }
+.trusted-form label { flex: 1 1 200px; }
+.pause-page h1 { color: var(--high); }
+.countdown { position: relative; width: 140px; height: 140px; margin: 12px auto; }
+.countdown svg { transform: rotate(-90deg); }
+.countdown-track { fill: none; stroke: var(--line); stroke-width: 10; }
+.countdown-fill { fill: none; stroke: var(--primary); stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+.countdown-num { position: absolute; inset: 0; display: grid; place-items: center; font-size: 2.4rem; font-weight: 800; }
+@media (prefers-reduced-motion: reduce) { .countdown-fill, .mic-level span { transition: none; } }

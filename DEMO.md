@@ -24,6 +24,17 @@ How to record each shot from PLAN.md section 8 with this build. Everything below
 | 2:20–2:40 | Remote Config | Check the FASTag message: *"Your FASTag will be blocked today. Renew KYC now at fastag-renew.top"* → ✅ no strong signs (score 0). In the Remote Config console, publish the FASTag rule from the README and a *scam_of_the_week*. Reload and check again. | The banner *Scam of the week* appears and the same message now shows ⚠️ *Be careful* with *Fake FASTag renewal* as a warning sign. |
 | 2:40–3:00 | Evidence | Show the **Privacy** page (live routing table for this device), the eval table in the README, the architecture diagram, the repo and the Hosting URL. | Rules vs on-device vs cloud accuracy and latency; redaction 26/26. |
 
+## Call Guard and pause before paying (new; can replace the Remote Config shot)
+
+| Shot | What to do | What the viewer sees |
+|---|---|---|
+| Live call | Settings: add a trusted person (e.g. "Anu"). Open **On a call** → *Start listening*. On a phone next to the laptop, play a recording of the digital-arrest script below on speaker (or read it out). | Words appear; within a sentence of "digital arrest", a big red **⛔ Hang up now. There is no such thing as a "digital arrest"…**, *What we heard* with the exact phrases, **📞 Call Anu**, **📞 1930**, and *🟢 Everything stays on this device*. |
+| No microphone | *Watch a demo call* (Hindi works too: pick हिंदी). | The same warnings build up line by line, labelled as a demo. |
+| Pause | Tap *About to pay someone? Take a 1-minute pause first*. Answer "Yes" to *Is someone on the phone telling you to make this payment?* | Countdown ring, **Please don't pay. This is how scams work.**, the reason, and the call button. |
+| Extension | Open a bank's fund-transfer page (or any page with "Fund Transfer" + "Add New Beneficiary"). | Banner: *✋ About to send money? Is someone on the phone or a video call telling you to do this?* → *Yes* → *Please stop. Don't pay.* |
+
+Script to play or read (English): *"This is Inspector Vikram Rathore from Mumbai Cyber Crime. A parcel in your name was seized at customs with drugs. There is an arrest warrant against you. From now you are under digital arrest. Keep your camera on and stay on this video call. Do not tell your family. To prove you are innocent, transfer your savings to the RBI verification account. The money will be returned after verification."*
+
 ## Good extra moments (if time allows)
 
 - **Follow-up:** after the CBI result, tap *I already paid. What now?* The answer comes from the cloud (follow-ups are multi-turn) with the original message redacted; the badge and the drawer prove it.

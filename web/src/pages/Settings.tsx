@@ -2,6 +2,7 @@ import { useApp } from "../lib/app-context";
 import { useT } from "../lib/useT";
 import { LanguagePicker } from "../components/LanguagePicker";
 import { VoiceSettings } from "../components/VoiceSettings";
+import { TrustedSettings } from "../components/TrustedContact";
 
 function Toggle({ id, label, help, checked, onChange }: { id: string; label: string; help: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -50,6 +51,7 @@ export function SettingsPage() {
         />
       </section>
 
+      <TrustedSettings />
       <VoiceSettings />
 
       <section className="card">

@@ -214,6 +214,55 @@ const D = {
     ml: "നമസ്കാരം. SecondLook നിങ്ങളുടെ ഫലങ്ങൾ ഇങ്ങനെയാണ് വായിച്ചു കേൾപ്പിക്കുക.",
   },
   "settings.nonCommercial": { en: "Non-commercial licence", hi: "गैर-व्यावसायिक लाइसेंस", ml: "വാണിജ്യേതര ലൈസൻസ്" },
+
+  // Call Guard, pause before paying, trusted person
+  "nav.call": { en: "On a call", hi: "कॉल पर", ml: "കോളിൽ" },
+  "call.title": { en: "On a call right now?", hi: "क्या आप अभी किसी कॉल पर हैं?", ml: "നിങ്ങൾ ഇപ്പോൾ ഒരു കോളിലാണോ?" },
+  "call.lead": { en: "Put the call on speaker near this computer. SecondLook listens and warns you in big letters if it sounds like a scam.", hi: "कॉल को स्पीकर पर रखें और फ़ोन इस कंप्यूटर के पास रखें। अगर बात धोखाधड़ी जैसी लगी, तो SecondLook बड़े अक्षरों में चेतावनी देगा।", ml: "കോൾ സ്പീക്കറിലിട്ട് ഫോൺ ഈ കമ്പ്യൂട്ടറിന് അടുത്ത് വയ്ക്കുക. തട്ടിപ്പ് പോലെ തോന്നിയാൽ SecondLook വലിയ അക്ഷരങ്ങളിൽ മുന്നറിയിപ്പ് നൽകും." },
+  "call.private": { en: "Everything stays on this device. Nothing you or the caller say is recorded or sent anywhere.", hi: "सब कुछ इसी डिवाइस पर रहता है। आपकी या कॉल करने वाले की कोई बात रिकॉर्ड नहीं होती, न कहीं भेजी जाती है।", ml: "എല്ലാം ഈ ഉപകരണത്തിൽ തന്നെ. നിങ്ങളോ വിളിക്കുന്നയാളോ പറയുന്നതൊന്നും റെക്കോർഡ് ചെയ്യുകയോ എവിടേക്കും അയയ്ക്കുകയോ ഇല്ല." },
+  "call.langQ": { en: "Which language is the caller speaking?", hi: "कॉल करने वाला किस भाषा में बोल रहा है?", ml: "വിളിക്കുന്നയാൾ ഏത് ഭാഷയിലാണ് സംസാരിക്കുന്നത്?" },
+  "call.start": { en: "🎙️ Start listening", hi: "🎙️ सुनना शुरू करें", ml: "🎙️ കേൾക്കാൻ തുടങ്ങുക" },
+  "call.stop": { en: "⏹ Stop listening", hi: "⏹ सुनना बंद करें", ml: "⏹ കേൾക്കുന്നത് നിർത്തുക" },
+  "call.listening": { en: "Listening… keep the call on speaker.", hi: "सुन रहे हैं… कॉल स्पीकर पर रखें।", ml: "കേൾക്കുന്നു… കോൾ സ്പീക്കറിൽ തന്നെ വയ്ക്കുക." },
+  "call.preparing": { en: "Getting the speech model ready on this device…", hi: "इस डिवाइस पर बोली पहचानने का मॉडल तैयार हो रहा है…", ml: "ഈ ഉപകരണത്തിൽ സംസാരം തിരിച്ചറിയുന്ന മോഡൽ തയ്യാറാക്കുന്നു…" },
+  "call.engineSpeech": { en: "Listening with Chrome's on-device speech recognition.", hi: "Chrome की ऑन-डिवाइस बोली पहचान से सुन रहे हैं।", ml: "Chrome-ന്റെ ഉപകരണത്തിലെ സംസാര തിരിച്ചറിയൽ ഉപയോഗിച്ച് കേൾക്കുന്നു." },
+  "call.engineNano": { en: "Listening with the private model (Gemini Nano), a few seconds at a time.", hi: "निजी मॉडल (Gemini Nano) से सुन रहे हैं, कुछ-कुछ सेकंड करके।", ml: "സ്വകാര്യ മോഡൽ (Gemini Nano) ഉപയോഗിച്ച് കേൾക്കുന്നു, കുറച്ച് സെക്കൻഡുകൾ വീതം." },
+  "call.engineNone": { en: "This browser can't listen on the device, so listening is off. We never send call audio to the cloud. Answer the questions below instead.", hi: "यह ब्राउज़र डिवाइस पर सुन नहीं सकता, इसलिए सुनना बंद है। हम कॉल की आवाज़ कभी क्लाउड पर नहीं भेजते। इसकी जगह नीचे के सवालों के जवाब दें।", ml: "ഈ ബ്രൗസറിന് ഉപകരണത്തിൽ കേൾക്കാൻ കഴിയില്ല, അതിനാൽ കേൾക്കൽ ഓഫാണ്. കോളിന്റെ ശബ്ദം ഞങ്ങൾ ഒരിക്കലും ക്ലൗഡിലേക്ക് അയയ്ക്കില്ല. പകരം താഴെയുള്ള ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകുക." },
+  "call.demo": { en: "▶ Watch a demo call", hi: "▶ डेमो कॉल देखें", ml: "▶ ഡെമോ കോൾ കാണുക" },
+  "call.demoNote": { en: "Demo: a made-up scam call, typed in. The microphone is not used.", hi: "डेमो: एक बनावटी धोखाधड़ी कॉल, लिखी हुई। माइक्रोफ़ोन इस्तेमाल नहीं हो रहा।", ml: "ഡെമോ: എഴുതിത്തയ്യാറാക്കിയ ഒരു വ്യാജ തട്ടിപ്പ് കോൾ. മൈക്രോഫോൺ ഉപയോഗിക്കുന്നില്ല." },
+  "call.allClear": { en: "Nothing worrying heard yet.", hi: "अभी तक कुछ चिंता वाली बात नहीं सुनी।", ml: "ഇതുവരെ ആശങ്കപ്പെടേണ്ടതൊന്നും കേട്ടില്ല." },
+  "call.heard": { en: "What we heard", hi: "हमने क्या सुना", ml: "ഞങ്ങൾ കേട്ടത്" },
+  "call.transcript": { en: "Show the words we heard", hi: "सुने गए शब्द दिखाएँ", ml: "കേട്ട വാക്കുകൾ കാണിക്കുക" },
+  "call.transcriptNote": { en: "Only on this screen. Deleted when you leave this page.", hi: "सिर्फ़ इसी स्क्रीन पर। यह पेज छोड़ते ही मिट जाता है।", ml: "ഈ സ്ക്രീനിൽ മാത്രം. ഈ പേജ് വിട്ടാൽ മായ്ക്കപ്പെടും." },
+  "call.hangUp": { en: "Hang up now.", hi: "अभी फ़ोन काट दें।", ml: "ഇപ്പോൾ ഫോൺ കട്ട് ചെയ്യുക." },
+  "call.careful": { en: "Be careful. Don't pay or share anything yet.", hi: "सावधान रहें। अभी न पैसे दें, न कुछ बताएँ।", ml: "ശ്രദ്ധിക്കുക. ഇപ്പോൾ പണം നൽകുകയോ ഒന്നും പറയുകയോ ചെയ്യരുത്." },
+  "call.questions": { en: "Or answer a few quick questions", hi: "या कुछ आसान सवालों के जवाब दें", ml: "അല്ലെങ്കിൽ കുറച്ച് ചെറിയ ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകുക" },
+  "call.yes": { en: "Yes", hi: "हाँ", ml: "അതെ" },
+  "call.no": { en: "No", hi: "नहीं", ml: "ഇല്ല" },
+  "call.aiSays": { en: "Private AI on this device:", hi: "इस डिवाइस का निजी AI:", ml: "ഈ ഉപകരണത്തിലെ സ്വകാര്യ AI:" },
+  "call.typeLabel": { en: "Or type what they said", hi: "या लिखें कि उन्होंने क्या कहा", ml: "അല്ലെങ്കിൽ അവർ പറഞ്ഞത് എഴുതുക" },
+  "call.add": { en: "Add", hi: "जोड़ें", ml: "ചേർക്കുക" },
+  "call.reset": { en: "Start over", hi: "फिर से शुरू करें", ml: "വീണ്ടും തുടങ്ങുക" },
+  "call.banner": { en: "📞 Someone on the phone with you right now? Turn on Call Guard", hi: "📞 क्या अभी कोई आपसे फ़ोन पर बात कर रहा है? कॉल गार्ड चालू करें", ml: "📞 ഇപ്പോൾ ആരെങ്കിലും ഫോണിൽ സംസാരിക്കുന്നുണ്ടോ? കോൾ ഗാർഡ് ഓണാക്കുക" },
+  "call.micError": { en: "Couldn't use the microphone. Allow it in the address bar, or answer the questions below.", hi: "माइक्रोफ़ोन इस्तेमाल नहीं हो सका। एड्रेस बार में अनुमति दें, या नीचे के सवालों के जवाब दें।", ml: "മൈക്രോഫോൺ ഉപയോഗിക്കാനായില്ല. അഡ്രസ് ബാറിൽ അനുവദിക്കുക, അല്ലെങ്കിൽ താഴെയുള്ള ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകുക." },
+  "trusted.call": { en: "📞 Call {name}", hi: "📞 {name} को फ़ोन करें", ml: "📞 {name}-നെ വിളിക്കുക" },
+  "trusted.call1930": { en: "📞 Call 1930 (cyber crime helpline)", hi: "📞 1930 पर कॉल करें (साइबर क्राइम हेल्पलाइन)", ml: "📞 1930-ൽ വിളിക്കുക (സൈബർ ക്രൈം ഹെൽപ്‌ലൈൻ)" },
+  "trusted.title": { en: "Your trusted person", hi: "आपका भरोसेमंद व्यक्ति", ml: "നിങ്ങൾ വിശ്വസിക്കുന്ന ആൾ" },
+  "trusted.help": { en: "Someone to call before you pay anyone. Saved only on this device.", hi: "किसी को पैसे देने से पहले जिसे फ़ोन करें। सिर्फ़ इसी डिवाइस पर सेव होता है।", ml: "ആർക്കെങ്കിലും പണം നൽകും മുമ്പ് വിളിക്കേണ്ടയാൾ. ഈ ഉപകരണത്തിൽ മാത്രം സേവ് ചെയ്യുന്നു." },
+  "trusted.name": { en: "Name", hi: "नाम", ml: "പേര്" },
+  "trusted.phone": { en: "Phone number", hi: "फ़ोन नंबर", ml: "ഫോൺ നമ്പർ" },
+  "trusted.save": { en: "Save", hi: "सेव करें", ml: "സേവ് ചെയ്യുക" },
+  "trusted.edit": { en: "Change", hi: "बदलें", ml: "മാറ്റുക" },
+  "trusted.add": { en: "Add someone to call", hi: "फ़ोन करने के लिए किसी को जोड़ें", ml: "വിളിക്കാൻ ഒരാളെ ചേർക്കുക" },
+  "pause.title": { en: "Stop. Take one minute before you pay.", hi: "रुकिए। पैसे देने से पहले एक मिनट लीजिए।", ml: "നിൽക്കൂ. പണം നൽകും മുമ്പ് ഒരു മിനിറ്റ് എടുക്കൂ." },
+  "pause.lead": { en: "Scammers rush you. Anyone genuine will wait one minute.", hi: "धोखेबाज़ जल्दी मचाते हैं। जो सच्चा है, वह एक मिनट रुक सकता है।", ml: "തട്ടിപ്പുകാർ തിടുക്കം കൂട്ടും. യഥാർത്ഥ ആളാണെങ്കിൽ ഒരു മിനിറ്റ് കാത്തിരിക്കും." },
+  "pause.seconds": { en: "{n} seconds", hi: "{n} सेकंड", ml: "{n} സെക്കൻഡ്" },
+  "pause.answer": { en: "Answer honestly. Only you see this.", hi: "ईमानदारी से जवाब दें। यह सिर्फ़ आप देख रहे हैं।", ml: "സത്യസന്ധമായി ഉത്തരം നൽകുക. ഇത് നിങ്ങൾ മാത്രമേ കാണൂ." },
+  "pause.stop": { en: "Please don't pay. This is how scams work.", hi: "कृपया पैसे न दें। धोखाधड़ी ऐसे ही होती है।", ml: "ദയവായി പണം നൽകരുത്. തട്ടിപ്പുകൾ ഇങ്ങനെയാണ് നടക്കുന്നത്." },
+  "pause.ok": { en: "Your answers don't match the usual scam pattern. If you're still unsure, ask someone you trust first.", hi: "आपके जवाब आम धोखाधड़ी जैसे नहीं लगते। फिर भी शक हो, तो पहले किसी भरोसेमंद व्यक्ति से पूछें।", ml: "നിങ്ങളുടെ ഉത്തരങ്ങൾ സാധാരണ തട്ടിപ്പ് പോലെയല്ല. എന്നിട്ടും സംശയമുണ്ടെങ്കിൽ ആദ്യം വിശ്വസിക്കുന്ന ഒരാളോട് ചോദിക്കുക." },
+  "pause.done": { en: "Thank you for waiting.", hi: "रुकने के लिए धन्यवाद।", ml: "കാത്തിരുന്നതിന് നന്ദി." },
+  "pause.close": { en: "I've checked. Close this.", hi: "मैंने जाँच ली है। इसे बंद करें।", ml: "ഞാൻ പരിശോധിച്ചു. ഇത് അടയ്ക്കുക." },
+  "pause.link": { en: "About to pay someone? Take a 1-minute pause first", hi: "किसी को पैसे देने वाले हैं? पहले 1 मिनट रुकिए", ml: "ആർക്കെങ്കിലും പണം നൽകാൻ പോകുകയാണോ? ആദ്യം 1 മിനിറ്റ് നിൽക്കൂ" },
 } satisfies Record<string, Entry>;
 
 export type Key = keyof typeof D;
@@ -362,4 +411,42 @@ export function reasonText(d: RouteDecision, lang: UiLang): string {
 export function noteText(note: string, lang: UiLang): string {
   if (lang === "en") return note;
   return NOTES[note]?.[lang] ?? note;
+}
+
+// ---- Call Guard ----
+// Questions by CALL_QUESTIONS id; warnings by the first rule id of each CALL_WARNINGS entry.
+const CALL_Q: Record<string, Loc> = {
+  oncall: { hi: "क्या कोई फ़ोन या वीडियो कॉल पर आपसे यह पैसे भेजने को कह रहा है?", ml: "ഫോണിലോ വീഡിയോ കോളിലോ ആരെങ്കിലും ഈ പണം അയയ്ക്കാൻ നിങ്ങളോട് പറയുന്നുണ്ടോ?" },
+  authority: { hi: "क्या वे खुद को पुलिस, सीबीआई, कस्टम, अदालत या आपके बैंक से बता रहे हैं?", ml: "അവർ പോലീസ്, സിബിഐ, കസ്റ്റംസ്, കോടതി, അല്ലെങ്കിൽ നിങ്ങളുടെ ബാങ്കിൽ നിന്നാണെന്ന് പറയുന്നുണ്ടോ?" },
+  arrest: { hi: "क्या वे कह रहे हैं कि आप गिरफ़्तार हैं, या आपको वीडियो कॉल पर ही रहना होगा?", ml: "നിങ്ങൾ അറസ്റ്റിലാണെന്നോ വീഡിയോ കോളിൽ തന്നെ തുടരണമെന്നോ അവർ പറയുന്നുണ്ടോ?" },
+  secret: { hi: "क्या उन्होंने कहा कि परिवार को न बताएँ, या फ़ोन न काटें?", ml: "കുടുംബത്തോട് പറയരുതെന്നോ ഫോൺ കട്ട് ചെയ്യരുതെന്നോ അവർ പറഞ്ഞോ?" },
+  money: { hi: "क्या वे पैसे भेजने, या उन्हें किसी 'सुरक्षित' खाते में डालने को कह रहे हैं?", ml: "പണം അയയ്ക്കാനോ ഒരു 'സുരക്ഷിത' അക്കൗണ്ടിലേക്ക് മാറ്റാനോ അവർ ആവശ്യപ്പെടുന്നുണ്ടോ?" },
+  code: { hi: "क्या वे OTP, PIN या पासवर्ड माँग रहे हैं, या कोई ऐप डालने को कह रहे हैं?", ml: "അവർ OTP, PIN, പാസ്‌വേഡ് ചോദിക്കുന്നുണ്ടോ, അല്ലെങ്കിൽ ഒരു ആപ്പ് ഇൻസ്റ്റാൾ ചെയ്യാൻ പറയുന്നുണ്ടോ?" },
+  rush: { hi: "क्या वे जल्दी मचा रहे हैं, या अभी न करने पर कुछ बुरा होने की धमकी दे रहे हैं?", ml: "അവർ തിടുക്കം കൂട്ടുന്നുണ്ടോ, അല്ലെങ്കിൽ ഇപ്പോൾ ചെയ്തില്ലെങ്കിൽ എന്തെങ്കിലും ദോഷം വരുമെന്ന് ഭീഷണിപ്പെടുത്തുന്നുണ്ടോ?" },
+};
+
+const CALL_W: Record<string, Loc> = {
+  call_pressure: { hi: "फ़ोन पर कोई आपसे पैसे भेजने को कह रहा है। ज़्यादातर धोखाधड़ी ऐसे ही होती है। पहले फ़ोन काटें, फिर सोचें।", ml: "ഫോണിൽ ആരോ പണം അയയ്ക്കാൻ പറയുന്നു. മിക്ക തട്ടിപ്പുകളും ഇങ്ങനെയാണ്. ആദ്യം ഫോൺ കട്ട് ചെയ്യുക, പിന്നെ തീരുമാനിക്കുക." },
+  video_custody: { hi: "\"डिजिटल अरेस्ट\" जैसी कोई चीज़ नहीं होती। असली पुलिस कभी वीडियो कॉल पर गिरफ़्तार नहीं करती। फ़ोन काट दें।", ml: "\"ഡിജിറ്റൽ അറസ്റ്റ്\" എന്നൊന്നില്ല. യഥാർത്ഥ പോലീസ് ഒരിക്കലും വീഡിയോ കോളിൽ ആരെയും അറസ്റ്റ് ചെയ്യില്ല. ഫോൺ കട്ട് ചെയ്യുക." },
+  safe_account: { hi: "कोई पुलिस, अदालत या बैंक कभी पैसे 'सुरक्षित' खाते में डालने को नहीं कहता। कुछ भी ट्रांसफ़र न करें।", ml: "പോലീസോ കോടതിയോ ബാങ്കോ ഒരിക്കലും പണം 'സുരക്ഷിത' അക്കൗണ്ടിലേക്ക് മാറ്റാൻ പറയില്ല. ഒന്നും ട്രാൻസ്ഫർ ചെയ്യരുത്." },
+  credentials: { hi: "किसी को भी कोड, OTP, PIN या पासवर्ड न बताएँ, बैंक से होने का दावा करने वाले को भी नहीं।", ml: "ആരോടും കോഡോ OTP-യോ PIN-ഓ പാസ്‌വേഡോ പറയരുത്, ബാങ്കിൽ നിന്നാണെന്ന് പറയുന്നവരോടും." },
+  remote_access: { hi: "कॉल करने वाले के कहने पर कोई ऐप न डालें, न अपनी स्क्रीन शेयर करें।", ml: "വിളിക്കുന്നയാൾ പറഞ്ഞതുകൊണ്ട് ഒരു ആപ്പും ഇൻസ്റ്റാൾ ചെയ്യരുത്, സ്ക്രീൻ ഷെയർ ചെയ്യരുത്." },
+  secrecy: { hi: "उन्होंने बात छिपाने या कॉल पर बने रहने को कहा। धोखेबाज़ यही करते हैं ताकि कोई आपको चेतावनी न दे। आप फ़ोन काट सकते हैं।", ml: "രഹസ്യമാക്കാനോ കോളിൽ തുടരാനോ അവർ പറഞ്ഞു. ആരും മുന്നറിയിപ്പ് തരാതിരിക്കാൻ തട്ടിപ്പുകാർ ചെയ്യുന്നതാണിത്. നിങ്ങൾക്ക് ഫോൺ കട്ട് ചെയ്യാം." },
+  authority: { hi: "असली पुलिस, सीबीआई, कस्टम और अदालतें कभी कॉल पर पैसे नहीं माँगतीं।", ml: "യഥാർത്ഥ പോലീസും സിബിഐയും കസ്റ്റംസും കോടതിയും ഒരിക്കലും കോളിൽ പണം ചോദിക്കില്ല." },
+  gift_card_crypto: { hi: "कोई असली व्यक्ति गिफ़्ट कार्ड या क्रिप्टो में पैसे नहीं माँगता। कुछ न खरीदें।", ml: "യഥാർത്ഥ ആരും ഗിഫ്റ്റ് കാർഡിലോ ക്രിപ്റ്റോയിലോ പണം ചോദിക്കില്ല. ഒന്നും വാങ്ങരുത്." },
+  payment_demand: { hi: "इस कॉल के दौरान पैसे न भेजें। फ़ोन काटें और पहले जाँच करें।", ml: "ഈ കോളിനിടെ പണം അയയ്ക്കരുത്. ഫോൺ കട്ട് ചെയ്ത് ആദ്യം പരിശോധിക്കുക." },
+  utility_threat: { hi: "सेवा देने वाली कंपनियाँ और बैंक फ़ोन पर कनेक्शन नहीं काटते। फ़ोन काटें और बिल या कार्ड पर लिखे नंबर पर कॉल करें।", ml: "സേവനദാതാക്കളും ബാങ്കുകളും ഫോൺ കോളിലൂടെ കണക്ഷൻ വിച്ഛേദിക്കില്ല. ഫോൺ കട്ട് ചെയ്ത് ബില്ലിലോ കാർഡിലോ ഉള്ള നമ്പറിൽ വിളിക്കുക." },
+  urgency: { hi: "वे जल्दी मचा रहे हैं। धोखेबाज़ जल्दी मचाते हैं। आप आराम से सोच सकते हैं और फ़ोन काट सकते हैं।", ml: "അവർ തിടുക്കം കൂട്ടുന്നു. തട്ടിപ്പുകാരാണ് തിടുക്കം കൂട്ടുന്നത്. നിങ്ങൾക്ക് സാവധാനം ആലോചിക്കാം, ഫോൺ കട്ട് ചെയ്യാം." },
+};
+
+/** A Call Guard question in the UI language. */
+export function callQuestionText(id: string, english: string, lang: UiLang): string {
+  return lang === "en" ? english : CALL_Q[id]?.[lang] ?? english;
+}
+
+/** A Call Guard warning in the UI language (keyed by the rule that produced it). */
+export function callWarningText(ruleId: string | null, english: string, lang: UiLang): string {
+  if (lang === "en" || !ruleId) return english;
+  const key = ruleId === "advance_fee" || ruleId === "ff_request" ? "payment_demand" : ruleId === "account_block" ? "utility_threat" : ruleId;
+  return CALL_W[key]?.[lang] ?? english;
 }
