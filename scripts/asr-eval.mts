@@ -101,7 +101,9 @@ for (const spec of specs) {
     let state = createCallState();
     const heard: string[] = [];
     for (let i = 0; i < pcm.length; i += CHUNK) {
-      const out = (await asr(pcm.subarray(i, i + CHUNK), { language: LANG[lang], task: "transcribe" } as never)) as { text: string };
+      // Single-language fine-tunes (e.g. whisper-hindi-small) reject a language option.
+      const opts = /hindi/i.test(model) ? {} : { language: LANG[lang], task: "transcribe" };
+      const out = (await asr(pcm.subarray(i, i + CHUNK), opts as never)) as { text: string };
       const t = fixScript(out.text, lang).trim();
       heard.push(t);
       state = addTranscript(state, t, i);

@@ -10,6 +10,11 @@ export interface AsrModel {
   dtype: { webgpu: Dtype; wasm: Dtype };
   licence: string;
   source: string;
+  /**
+   * Pass Whisper's language/task options. False for single-language fine-tunes: their config marks
+   * them as not multilingual, and Transformers.js rejects a language for those.
+   */
+  languageHint: boolean;
 }
 
 const Q4: Dtype = { encoder_model: "q4", decoder_model_merged: "q4" };
@@ -21,9 +26,9 @@ const Q8: Dtype = { encoder_model: "q8", decoder_model_merged: "q8" };
  * so Hindi uses a Hindi fine-tune of Whisper small and Malayalam uses Whisper small.
  */
 export const ASR_MODELS: Record<TtsLang, AsrModel> = {
-  en: { id: "onnx-community/whisper-base", sizeMB: 80, dtype: { webgpu: Q8, wasm: Q8 }, licence: "MIT (OpenAI Whisper)", source: "https://huggingface.co/onnx-community/whisper-base" },
-  hi: { id: "onnx-community/whisper-hindi-small-ONNX", sizeMB: 300, dtype: { webgpu: Q4, wasm: Q4 }, licence: "Apache-2.0 (vasista22/whisper-hindi-small)", source: "https://huggingface.co/vasista22/whisper-hindi-small" },
-  ml: { id: "onnx-community/whisper-small", sizeMB: 300, dtype: { webgpu: Q4, wasm: Q4 }, licence: "MIT (OpenAI Whisper)", source: "https://huggingface.co/onnx-community/whisper-small" },
+  en: { id: "onnx-community/whisper-base", sizeMB: 80, dtype: { webgpu: Q8, wasm: Q8 }, licence: "MIT (OpenAI Whisper)", source: "https://huggingface.co/onnx-community/whisper-base", languageHint: true },
+  hi: { id: "onnx-community/whisper-hindi-small-ONNX", sizeMB: 300, dtype: { webgpu: Q4, wasm: Q4 }, licence: "Apache-2.0 (vasista22/whisper-hindi-small)", source: "https://huggingface.co/vasista22/whisper-hindi-small", languageHint: false },
+  ml: { id: "onnx-community/whisper-small", sizeMB: 300, dtype: { webgpu: Q4, wasm: Q4 }, licence: "MIT (OpenAI Whisper)", source: "https://huggingface.co/onnx-community/whisper-small", languageHint: true },
 };
 
 /** @deprecated single-model constant kept for older imports. */
