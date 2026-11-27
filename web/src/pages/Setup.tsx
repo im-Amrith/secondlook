@@ -20,7 +20,7 @@ export function SetupPage() {
       const model = app.runtime.preferOnDevice(app.config.cloudModel);
       const t0 = performance.now();
       const r = await model.generateContent("Reply with one word: ready");
-      const where = r.response.inferenceSource === "on_device" ? "🟢 on this device" : "🔵 in the cloud";
+      const where = r.response.inferenceSource === "on_device" ? "on this device" : "in the cloud";
       setTest(`Answered ${where} in ${Math.round(performance.now() - t0)} ms: "${r.response.text().trim().slice(0, 40)}" (inferenceSource: ${r.response.inferenceSource ?? "not set"})`);
     } catch (e) {
       setTest(`Test failed: ${e instanceof Error ? e.message : String(e)}`);

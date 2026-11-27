@@ -6,6 +6,7 @@ import { CheckPage } from "./pages/Check";
 import { SetupPage } from "./pages/Setup";
 import { SettingsPage } from "./pages/Settings";
 import { HowPage } from "./pages/How";
+import { GraduationCap, Ico, MessageSquareText, Phone, Settings, Users } from "./components/icons";
 // Pages that need Firestore/Auth (or big eval data) load on demand.
 const FamilyPage = lazy(() => import("./pages/Family").then((m) => ({ default: m.FamilyPage })));
 const GuardianPage = lazy(() => import("./pages/Guardian").then((m) => ({ default: m.GuardianPage })));
@@ -25,14 +26,7 @@ function useHash(): string {
   return hash;
 }
 
-// Simple line icons (inline, so they work offline and follow the text colour).
-const ICON: Record<string, React.ReactNode> = {
-  check: <><path d="M4 5h16v11H9l-5 4z" /><path d="m9 10 2 2 4-4" /></>,
-  call: <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" />,
-  practice: <><path d="M12 3 2 8l10 5 10-5z" /><path d="M6 10v5c0 1.5 3 3 6 3s6-1.5 6-3v-5" /></>,
-  family: <><circle cx="9" cy="8" r="3" /><circle cx="17" cy="9" r="2.5" /><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" /><path d="M15 15.5c.6-.3 1.3-.5 2-.5 2.8 0 4 2 4 5" /></>,
-  settings: <><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1" /></>,
-};
+const ICON = { check: MessageSquareText, call: Phone, practice: GraduationCap, family: Users, settings: Settings } as const;
 
 /** The five main places, also the phone's bottom tab bar. The rest is linked from the footer. */
 const NAV: { href: string; label: Key; icon: keyof typeof ICON }[] = [
@@ -89,7 +83,7 @@ export function App() {
         <nav aria-label="Main" className="mainnav">
           {NAV.map((n) => (
             <a key={n.href} href={n.href} aria-current={(n.href === "#/" ? path === "/" : path.startsWith(n.href.slice(1))) ? "page" : undefined}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>{ICON[n.icon]}</svg>
+              <Ico icon={ICON[n.icon]} size={22} />
               <span>{t(n.label)}</span>
             </a>
           ))}

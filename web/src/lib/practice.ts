@@ -16,7 +16,6 @@ export interface PracticeStep {
 
 export interface PracticeScenario {
   id: string;
-  icon: string;
   title: L;
   steps: PracticeStep[];
 }
@@ -24,7 +23,6 @@ export interface PracticeScenario {
 export const PRACTICE: PracticeScenario[] = [
   {
     id: "digital_arrest",
-    icon: "👮",
     title: { en: "A call from the \"CBI\"", hi: "\"सीबीआई\" का फ़ोन", ml: "\"സിബിഐ\"യിൽ നിന്നുള്ള കോൾ" },
     steps: [
       {
@@ -95,7 +93,6 @@ export const PRACTICE: PracticeScenario[] = [
   },
   {
     id: "kyc",
-    icon: "🏦",
     title: { en: "\"Your bank account will be blocked\"", hi: "\"आपका बैंक खाता बंद हो जाएगा\"", ml: "\"നിങ്ങളുടെ ബാങ്ക് അക്കൗണ്ട് ബ്ലോക്ക് ആകും\"" },
     steps: [
       {
@@ -166,7 +163,6 @@ export const PRACTICE: PracticeScenario[] = [
   },
   {
     id: "family",
-    icon: "👦",
     title: { en: "\"Hi Ma, this is my new number\"", hi: "\"हाय माँ, यह मेरा नया नंबर है\"", ml: "\"ഹായ് അമ്മേ, ഇതെന്റെ പുതിയ നമ്പറാണ്\"" },
     steps: [
       {

@@ -10,6 +10,7 @@ import { TrustedContact } from "../components/TrustedContact";
 import { FamilyAlertButton } from "../components/FamilyAlertButton";
 import { ReadAloud } from "../components/ReadAloud";
 import { RadarButton } from "../components/RadarButton";
+import { CircleCheck, Ico, Mic, OctagonX, Play, SourceIcon, Square, TriangleAlert } from "../components/icons";
 
 type Mode = "idle" | "preparing" | "listening" | "demo";
 
@@ -196,7 +197,7 @@ export function CallGuardPage() {
     <div className="page call-page">
       <h1>{t("call.title")}</h1>
       <p className="lead">{t("call.lead")}</p>
-      <p className="badge badge-device call-private">🟢 {t("call.private")}</p>
+      <p className="badge badge-device call-private"><SourceIcon route="device" /> {t("call.private")}</p>
 
       <div className="card">
         <p className="label" id="call-lang">{t("call.langQ")}</p>
@@ -209,7 +210,7 @@ export function CallGuardPage() {
         {!active ? (
           <>
             <button type="button" className="primary big" disabled={!canListen || mode === "preparing"} onClick={() => void start()}>
-              {mode === "preparing" ? (loadPct !== null ? t("call.downloading", { pct: Math.round(loadPct * 100) }) : t("call.preparing")) : t("call.start")}
+              {mode !== "preparing" && <Ico icon={Mic} />} {mode === "preparing" ? (loadPct !== null ? t("call.downloading", { pct: Math.round(loadPct * 100) }) : t("call.preparing")) : t("call.start")}
             </button>
             {loadPct !== null && <progress className="tts-progress" max={1} value={loadPct} aria-label={t("call.preparing")} />}
             {offer && (
@@ -223,11 +224,11 @@ export function CallGuardPage() {
               </div>
             )}
             {engine && !canListen && <p className="muted">{t("call.engineNone")}</p>}
-            <button type="button" className="link-button" onClick={demo}>{t("call.demo")}</button>
+            <button type="button" className="link-button" onClick={demo}><Ico icon={Play} /> {t("call.demo")}</button>
           </>
         ) : (
           <>
-            <div className="listening-pulse"><button type="button" className="secondary big" onClick={stop}>{t("call.stop")}</button></div>
+            <div className="listening-pulse"><button type="button" className="secondary big" onClick={stop}><Ico icon={Square} /> {t("call.stop")}</button></div>
             <p className="muted listening-line" role="status">
               {mode !== "demo" && <span className="mic-level" aria-hidden><span style={{ transform: `scaleX(${level})` }} /></span>}
               {mode === "demo" ? t("call.demoNote") : `${t("call.listening")} ${used === "nano" ? t("call.engineNano") : used === "whisper" ? t("call.engineWhisper") : t("call.engineSpeech")}`}
@@ -242,17 +243,17 @@ export function CallGuardPage() {
           <>
             {combined.level === "high" ? (
               <>
-                <span className="stamp stamp-high stamp-hero" aria-hidden>{t("stamp.hangUp")}</span>
+                <span className="stamp stamp-high stamp-hero" aria-hidden><Ico icon={OctagonX} /> {t("stamp.hangUp")}</span>
                 <p className="call-alert-head sr-only">{t("call.hangUp")}</p>
               </>
             ) : (
-              <p className="call-alert-head">{combined.level === "medium" ? t("call.careful") : "⚠️"}</p>
+              <p className="call-alert-head"><Ico icon={TriangleAlert} /> {combined.level === "medium" ? t("call.careful") : ""}</p>
             )}
             <p className="call-alert-text">{warningText}</p>
             <ReadAloud text={spoken} />
           </>
         ) : (
-          (active || state.lines.length > 0) && <p className="call-alert-text">✅ {t("call.allClear")}</p>
+          (active || state.lines.length > 0) && <p className="call-alert-text"><Ico icon={CircleCheck} className="ok" /> {t("call.allClear")}</p>
         )}
         {ai && <p className="call-ai"><strong>{t("call.aiSays")}</strong> {ai.explanation}</p>}
       </section>

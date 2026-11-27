@@ -6,6 +6,7 @@ import { callQuestionText, callWarningText } from "../lib/i18n";
 import { TrustedContact } from "../components/TrustedContact";
 import { FamilyAlertButton } from "../components/FamilyAlertButton";
 import { ReadAloud } from "../components/ReadAloud";
+import { Check, Ico, OctagonX } from "../components/icons";
 
 /**
  * "Pause before paying": scams work by rushing people, so this adds friction at the moment of
@@ -43,7 +44,7 @@ export function PausePage({ seconds: secondsProp }: { seconds?: number } = {}) {
           <circle cx="60" cy="60" r="52" className="countdown-track" />
           <circle cx="60" cy="60" r="52" className="countdown-fill" style={{ strokeDasharray: 327, strokeDashoffset: 327 * (1 - pct) }} />
         </svg>
-        <span className="countdown-num">{left > 0 ? left : "✓"}</span>
+        <span className="countdown-num">{left > 0 ? left : <Ico icon={Check} size={48} strokeWidth={2.5} />}</span>
       </div>
       {left <= 0 && <p className="ok">{t("pause.done")}</p>}
 
@@ -62,7 +63,7 @@ export function PausePage({ seconds: secondsProp }: { seconds?: number } = {}) {
         </ol>
         {risky && (
           <div className="call-alert call-alert-high" role="alert">
-            <p className="call-alert-head">⛔ {t("pause.stop")}</p>
+            <p className="call-alert-head"><Ico icon={OctagonX} /> {t("pause.stop")}</p>
             {result.warning && <p className="call-alert-text">{callWarningText(result.warningRule, result.warning, lang)}</p>}
             <ReadAloud text={`${t("pause.stop")} ${result.warning ? callWarningText(result.warningRule, result.warning, lang) : ""}`} />
           </div>

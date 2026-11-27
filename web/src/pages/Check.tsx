@@ -9,6 +9,7 @@ import { RoutePreview } from "../components/RoutePreview";
 import { RadarButton } from "../components/RadarButton";
 import { RadarTeaser } from "./Radar";
 import { useT } from "../lib/useT";
+import { Camera, ChevronRight, GraduationCap, Ico, PhoneCall, Radar } from "../components/icons";
 
 export const EXAMPLES = [
   { label: "\"CBI officer\" call", text: "This is Inspector Rajesh Sharma from CBI Mumbai. A parcel in your name has drugs and fake passports. You are under digital arrest. Stay on the video call and do not tell your family. Transfer Rs 4,50,000 to the RBI verification account 50100234567891 immediately. Call 9876543210." },
@@ -94,10 +95,10 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
 
       {!compact && (
         <a className="call-banner" href="#/call">
-          <span className="call-banner-icon" aria-hidden>📞</span>
+          <span className="call-banner-icon"><Ico icon={PhoneCall} size={26} /></span>
           <strong>{t("call.bannerTitle")}</strong>
           <span className="call-banner-action">{t("call.bannerAction")}</span>
-          <span className="call-banner-go" aria-hidden>›</span>
+          <span className="call-banner-go"><Ico icon={ChevronRight} size={26} /></span>
         </a>
       )}
 
@@ -114,7 +115,7 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
         <div className="row">
           <label className="file-button">
             <input type="file" accept="image/png,image/jpeg,image/webp,image/*" onChange={(e) => void onFile(e.target.files?.[0])} />
-            📷 {image ? t("check.changeShot") : t("check.addShot")}
+            <Ico icon={Camera} /> {image ? t("check.changeShot") : t("check.addShot")}
           </label>
           {image && (
             <span className="thumb">
@@ -144,8 +145,8 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
       {!compact && !outcome && (
         <div className="check-links">
           <RadarTeaser />
-          <p><a href="#/practice">{t("practice.banner")}</a></p>
-          <p><a href="#/radar">{t("radar.link")}</a></p>
+          <p><a href="#/practice" className="icon-link"><Ico icon={GraduationCap} /> {t("practice.banner")}</a></p>
+          <p><a href="#/radar" className="icon-link"><Ico icon={Radar} /> {t("radar.link")}</a></p>
         </div>
       )}
 

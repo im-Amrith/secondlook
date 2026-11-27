@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useApp } from "../lib/app-context";
 import { describeAlert, listenAlerts, type AlertDoc } from "../lib/family";
+import { SourceIcon } from "../components/icons";
 
-const SOURCE_TEXT = { ON_DEVICE: "🟢 checked on their device", IN_CLOUD: "🔵 checked in the cloud (details removed)", RULES: "⚪ quick check" } as const;
+const SOURCE_TEXT = { ON_DEVICE: "checked on their device", IN_CLOUD: "checked in the cloud (details removed)", RULES: "quick check" } as const;
+const SOURCE_ROUTE = { ON_DEVICE: "device", IN_CLOUD: "cloud", RULES: "rules" } as const;
 
 /** Guardian dashboard: real-time alerts (metadata only) from circles you belong to. */
 export function GuardianPage() {
@@ -48,7 +50,7 @@ export function GuardianPage() {
         {alerts?.map((a) => (
           <li key={a.id} className={`alert alert-${a.level}`}>
             <strong>{describeAlert(a)}</strong>
-            <span className="muted">Risk {a.score}/100 · {SOURCE_TEXT[a.source]} · {a.platform}</span>
+            <span className="muted">Risk {a.score}/100 · <SourceIcon route={SOURCE_ROUTE[a.source]} /> {SOURCE_TEXT[a.source]} · {a.platform}</span>
             <span>Give them a call and check they're OK. Don't ask them to forward the message.</span>
           </li>
         ))}

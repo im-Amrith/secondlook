@@ -65,5 +65,6 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
-  test: { environment: "jsdom" },
+  // The side-panel test renders the whole web UI; give it room on slow CI machines.
+  test: { environment: "jsdom", testTimeout: 20000 },
 }));

@@ -5,6 +5,10 @@ import { useT } from "../lib/useT";
 import { signalText } from "../lib/i18n";
 import { isFirmRefusal, practicePrompt, PRACTICE, PRACTICE_KINDS, REMEMBER, replyOrder, type PracticeScenario } from "../lib/practice";
 import { ReadAloud } from "../components/ReadAloud";
+import { ArrowLeft, CircleCheck, Ico, Landmark, ShieldAlert, Smartphone, SourceIcon, TriangleAlert } from "../components/icons";
+import type { LucideIcon } from "lucide-react";
+
+const SCENARIO_ICON: Record<string, LucideIcon> = { digital_arrest: ShieldAlert, kyc: Landmark, family: Smartphone };
 
 type Answer = "safe" | "unsafe";
 
@@ -29,7 +33,7 @@ export function PracticePage() {
       <div className="practice-list">
         {PRACTICE.map((s) => (
           <button key={s.id} type="button" className="practice-card" onClick={() => setScenario(s)}>
-            <span className="practice-icon" aria-hidden>{s.icon}</span>
+            <span className="practice-icon"><Ico icon={SCENARIO_ICON[s.id] ?? ShieldAlert} size={26} /></span>
             <span>{s.title[lang]}</span>
           </button>
         ))}
@@ -63,8 +67,8 @@ function Guided({ scenario, onExit }: { scenario: PracticeScenario; onExit: () =
 
   return (
     <div className="page practice-page">
-      <button type="button" className="link-button" onClick={onExit}>← {t("practice.back")}</button>
-      <h1>{scenario.icon} {scenario.title[lang]}</h1>
+      <button type="button" className="link-button" onClick={onExit}><Ico icon={ArrowLeft} /> {t("practice.back")}</button>
+      <h1>{scenario.title[lang]}</h1>
       <p className="muted">{t("practice.note")}</p>
 
       <ol className="chat" aria-live="polite">
@@ -81,7 +85,7 @@ function Guided({ scenario, onExit }: { scenario: PracticeScenario; onExit: () =
                   {s[answers[i]!].reply[lang]}
                 </div>
                 <div className={`practice-feedback practice-${answers[i]}`} role="status">
-                  <strong>{answers[i] === "safe" ? `✅ ${t("practice.good")}` : `⚠️ ${t("practice.careful")}`}</strong>{" "}
+                  <strong>{answers[i] === "safe" ? <><Ico icon={CircleCheck} /> {t("practice.good")}</> : <><Ico icon={TriangleAlert} /> {t("practice.careful")}</>}</strong>{" "}
                   <span className="trick-chip">{t("practice.trick")}: {s.trick[lang]}</span>
                   <p>{s[answers[i]!].feedback[lang]}</p>
                 </div>
@@ -111,7 +115,7 @@ function Guided({ scenario, onExit }: { scenario: PracticeScenario; onExit: () =
           <h2 id="practice-done">{t("practice.score", { n: spotted, total: scenario.steps.length })}</h2>
           <ul className="trick-list">
             {scenario.steps.map((s, i) => (
-              <li key={i}>{answers[i] === "safe" ? "✅" : "⚠️"} {s.trick[lang]}</li>
+              <li key={i} className={answers[i] === "safe" ? "trick-ok" : "trick-miss"}><Ico icon={answers[i] === "safe" ? CircleCheck : TriangleAlert} /> {s.trick[lang]}</li>
             ))}
           </ul>
           <h3>{t("practice.remember")}</h3>
@@ -176,9 +180,9 @@ function FreePractice({ onExit }: { onExit: () => void }) {
 
   return (
     <div className="page practice-page">
-      <button type="button" className="link-button" onClick={onExit}>← {t("practice.back")}</button>
+      <button type="button" className="link-button" onClick={onExit}><Ico icon={ArrowLeft} /> {t("practice.back")}</button>
       <h1>{t("practice.freeTitle")}</h1>
-      <p className="badge badge-device">🟢 {t("practice.freePrivate")}</p>
+      <p className="badge badge-device"><SourceIcon route="device" /> {t("practice.freePrivate")}</p>
       <ol className="chat" aria-live="polite">
         {turns.map((x, i) => {
           const tricks = x.who === "caller" ? scoreRules(x.text).signals : [];
@@ -199,7 +203,7 @@ function FreePractice({ onExit }: { onExit: () => void }) {
         {busy && <li className="muted">{t("practice.typing")}</li>}
       </ol>
       {error && <p className="notice notice-error" role="alert">{error}</p>}
-      {won && <p className="practice-feedback practice-safe" role="status"><strong>✅ {t("practice.freeWon")}</strong></p>}
+      {won && <p className="practice-feedback practice-safe" role="status"><strong><Ico icon={CircleCheck} /> {t("practice.freeWon")}</strong></p>}
       {!won && over && <p className="practice-feedback practice-unsafe" role="status">{t("practice.freeOver")}</p>}
       {!over && (
         <form onSubmit={send} className="row">

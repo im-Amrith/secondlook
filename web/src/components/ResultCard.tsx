@@ -5,6 +5,9 @@ import { useT } from "../lib/useT";
 import { useOptionalApp } from "../lib/app-context";
 import { ReadAloud } from "./ReadAloud";
 import { adviceText, noteText, reasonText, rulesExplanation, signalText } from "../lib/i18n";
+import { CircleCheck, Ico, OctagonX, ShieldAlert, TriangleAlert } from "./icons";
+
+const LEVEL_ICON = { high: OctagonX, medium: TriangleAlert, low: CircleCheck, unknown: ShieldAlert } as const;
 
 export interface ResultCardProps {
   outcome: CheckOutcome;
@@ -30,7 +33,9 @@ export function ResultCard({ outcome, simulated, actions }: ResultCardProps) {
   return (
     <section className={`result result-${levelKey}`} aria-live="polite" data-testid="result">
       <header className="result-head">
+        <span className={`level-orb level-${levelKey}`}><Ico icon={LEVEL_ICON[levelKey]} size={34} strokeWidth={2.2} /></span>
         <div>
+          <span className={`stamp stamp-${levelKey}`} aria-hidden>{t(`stamp.${levelKey}`)}</span>
           <h2>{title}</h2>
           {!outcome.inconclusive && (
             <div className="meter" aria-label={t("result.riskLabel", { n: v.score })}>
@@ -39,7 +44,6 @@ export function ResultCard({ outcome, simulated, actions }: ResultCardProps) {
             </div>
           )}
         </div>
-        <span className={`stamp stamp-${levelKey}`} aria-hidden>{t(`stamp.${levelKey}`)}</span>
       </header>
 
       <ReadAloud text={spoken} autoPlay={autoRead} />

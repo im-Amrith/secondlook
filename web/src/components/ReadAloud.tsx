@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useT } from "../lib/useT";
 import { useReadAloud } from "../lib/tts/useReadAloud";
+import { Ico, Square, Volume2 } from "./icons";
 
 /** Big "Read aloud" button. Speech runs on this device (open-source voices or the device's own). */
 export function ReadAloud({ text, autoPlay = false }: { text: string; autoPlay?: boolean }) {
@@ -20,11 +21,11 @@ export function ReadAloud({ text, autoPlay = false }: { text: string; autoPlay?:
     <div className="read-aloud">
       {state.speaking ? (
         <button type="button" className="secondary speak-btn" onClick={stop}>
-          <span aria-hidden>⏹</span> {t("tts.stop")}
+          <Ico icon={Square} /> {t("tts.stop")}
         </button>
       ) : (
         <button type="button" className="secondary speak-btn" onClick={() => void speak(text)} disabled={downloading}>
-          <span aria-hidden>🔊</span> {downloading ? t("tts.downloading", { pct: Math.round((state.progress ?? 0) * 100) }) : t("tts.read")}
+          <Ico icon={Volume2} /> {downloading ? t("tts.downloading", { pct: Math.round((state.progress ?? 0) * 100) }) : t("tts.read")}
         </button>
       )}
       {downloading && <progress className="tts-progress" max={1} value={state.progress ?? 0} aria-label={t("tts.loading")} />}

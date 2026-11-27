@@ -1,11 +1,12 @@
 import { decideRoute, deviceBudget, type RouteDecision, type RouteInput } from "@secondlook/shared";
 import { useApp } from "../lib/app-context";
 import { NANO_STATUS_TEXT } from "../lib/nano";
+import { SourceIcon } from "../components/icons";
 
 const ROUTE_LABEL: Record<RouteDecision["route"], string> = {
-  device: "🟢 On this device",
-  cloud: "🔵 Personal details removed, then cloud",
-  rules: "⚪ Quick check on this device",
+  device: "On this device",
+  cloud: "Personal details removed, then cloud",
+  rules: "Quick check on this device",
 };
 
 /** The privacy router, live: what WOULD happen on this device right now, for a few typical cases. */
@@ -58,7 +59,7 @@ export function HowPage() {
               return (
                 <tr key={c.label} data-route={d.route}>
                   <td>{c.label}</td>
-                  <td className="nowrap">{ROUTE_LABEL[d.route]}</td>
+                  <td className="nowrap"><SourceIcon route={d.route} /> {ROUTE_LABEL[d.route]}</td>
                   <td className="muted">{d.reason}</td>
                 </tr>
               );
@@ -71,9 +72,9 @@ export function HowPage() {
       <section className="card">
         <h2>What leaves your device</h2>
         <ul className="steps">
-          <li><strong>🟢 On this device:</strong> nothing.</li>
-          <li><strong>🔵 Cloud:</strong> the message with phone numbers, emails, UPI IDs, card and account numbers, codes, Aadhaar, PAN and names replaced by labels like <code>[PHONE_1]</code>. You can read exactly what was sent under every cloud result. Screenshots are only sent if you say yes.</li>
-          <li><strong>⚪ Quick check:</strong> nothing.</li>
+          <li><strong><SourceIcon route="device" /> On this device:</strong> nothing.</li>
+          <li><strong><SourceIcon route="cloud" /> Cloud:</strong> the message with phone numbers, emails, UPI IDs, card and account numbers, codes, Aadhaar, PAN and names replaced by labels like <code>[PHONE_1]</code>. You can read exactly what was sent under every cloud result. Screenshots are only sent if you say yes.</li>
+          <li><strong><SourceIcon route="rules" /> Quick check:</strong> nothing.</li>
           <li><strong>Family alerts</strong> (only if you press the button): the risk level, the kinds of warning signs, and the time. Never the message.</li>
         </ul>
       </section>

@@ -1,6 +1,7 @@
 import { describeRedactions, totalRedactions, type Redaction, type VerdictSource } from "@secondlook/shared";
 import { useT } from "../lib/useT";
 import { redactionsText } from "../lib/i18n";
+import { SourceIcon } from "./icons";
 
 export interface PrivacyBadgeProps {
   source: VerdictSource;
@@ -20,7 +21,7 @@ export function PrivacyBadge({ source, redactions, sentImage, simulated, sent }:
   if (source === "RULES" && sent) {
     return (
       <div className="badge badge-cloud" role="status" data-source="RULES_AFTER_CLOUD">
-        <span className="badge-dot" aria-hidden>🔵</span>
+        <span className="badge-dot"><SourceIcon route="cloud" /></span>
         <span>
           <strong>{t("badge.sentTitle")}</strong>
           {removed()} {t("badge.unusable")}
@@ -31,7 +32,7 @@ export function PrivacyBadge({ source, redactions, sentImage, simulated, sent }:
   if (source === "ON_DEVICE") {
     return (
       <div className="badge badge-device" role="status" data-source="ON_DEVICE">
-        <span className="badge-dot" aria-hidden>🟢</span>
+        <span className="badge-dot"><SourceIcon route="device" /></span>
         <span>
           <strong>{t("badge.deviceTitle")}</strong> {t("badge.deviceBody")}
           {simulated && <em className="badge-sim"> {t("badge.sim")}</em>}
@@ -42,7 +43,7 @@ export function PrivacyBadge({ source, redactions, sentImage, simulated, sent }:
   if (source === "IN_CLOUD") {
     return (
       <div className="badge badge-cloud" role="status" data-source="IN_CLOUD">
-        <span className="badge-dot" aria-hidden>🔵</span>
+        <span className="badge-dot"><SourceIcon route="cloud" /></span>
         <span>
           <strong>{t("badge.cloudTitle")}</strong>
           {removed()}
@@ -53,7 +54,7 @@ export function PrivacyBadge({ source, redactions, sentImage, simulated, sent }:
   }
   return (
     <div className="badge badge-rules" role="status" data-source="RULES">
-      <span className="badge-dot" aria-hidden>⚪</span>
+      <span className="badge-dot"><SourceIcon route="rules" /></span>
       <span>
         <strong>{t("badge.rulesTitle")}</strong> {t("badge.rulesBody")}
       </span>

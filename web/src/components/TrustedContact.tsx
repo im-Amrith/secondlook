@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useApp } from "../lib/app-context";
 import { useT } from "../lib/useT";
+import { Ico, Phone } from "./icons";
 
 /** Digits and a leading + only, for a tel: link. */
 export function telHref(phone: string): string | null {
@@ -48,7 +49,7 @@ export function TrustedContact({ showHelpline = true, editable = true }: { showH
     <div className="trusted">
       {href && settings.trustedName && !editing ? (
         <>
-          <a className="primary big call-button" href={href}>{t("trusted.call", { name: settings.trustedName })}</a>
+          <a className="primary big call-button" href={href}><Ico icon={Phone} /> {t("trusted.call", { name: settings.trustedName })}</a>
           {editable && <button type="button" className="link-button" onClick={() => setEditing(true)}>{t("trusted.edit")}</button>}
         </>
       ) : editable ? (
@@ -59,7 +60,7 @@ export function TrustedContact({ showHelpline = true, editable = true }: { showH
           </details>
         ) : null
       ) : null}
-      {showHelpline && <a className="secondary big call-button" href="tel:1930">{t("trusted.call1930")}</a>}
+      {showHelpline && <a className="secondary big call-button" href="tel:1930"><Ico icon={Phone} /> {t("trusted.call1930")}</a>}
     </div>
   );
 }

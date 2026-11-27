@@ -3,6 +3,7 @@ import { RADAR_REGIONS, radarWeeks, summariseRadar, type RadarRow } from "@secon
 import { useApp } from "../lib/app-context";
 import { useT } from "../lib/useT";
 import { radarPatternText } from "../lib/i18n";
+import { Ico, Radar, SourceIcon, TrendingDown, TrendingUp } from "../components/icons";
 
 /** Load this week's and last week's counters (null while loading, [] when unavailable). */
 export function useRadar(region?: string): { rows: RadarRow[] | null; error: boolean } {
@@ -35,9 +36,9 @@ export function RadarPage() {
 
   return (
     <div className="page">
-      <h1>📡 {t("radar.title")}</h1>
+      <h1><Ico icon={Radar} className="h1-ico" /> {t("radar.title")}</h1>
       <p className="lead">{t("radar.lead")}</p>
-      <p className="badge badge-device">🟢 {t("radar.private")}</p>
+      <p className="badge badge-device"><SourceIcon route="device" /> {t("radar.private")}</p>
 
       <label className="label" htmlFor="radar-region">{t("radar.region")}</label>
       <select id="radar-region" value={region} onChange={(e) => setRegion(e.target.value)}>
@@ -56,7 +57,7 @@ export function RadarPage() {
       ) : (
         <ol className="radar-list" aria-label={t("radar.title")}>
           {rows.map((r) => {
-            const trend = r.thisWeek > r.lastWeek ? "↑" : r.thisWeek < r.lastWeek ? "↓" : "→";
+            const trend = r.thisWeek > r.lastWeek ? <Ico icon={TrendingUp} /> : r.thisWeek < r.lastWeek ? <Ico icon={TrendingDown} /> : null;
             return (
               <li key={r.pattern} className="radar-row">
                 <div className="radar-head">
@@ -91,7 +92,7 @@ export function RadarTeaser() {
   if (!top) return null;
   return (
     <p className="radar-teaser">
-      <a href="#/radar">📡 {t("radar.teaser", { type: radarPatternText(top.pattern, lang), n: top.thisWeek })}</a>
+      <a href="#/radar"><Ico icon={Radar} /> {t("radar.teaser", { type: radarPatternText(top.pattern, lang), n: top.thisWeek })}</a>
     </p>
   );
 }

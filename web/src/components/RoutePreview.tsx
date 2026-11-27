@@ -2,8 +2,8 @@ import { decideRoute, estimateTokens, guessLang, type RouteDecision } from "@sec
 import { useApp } from "../lib/app-context";
 import { useT } from "../lib/useT";
 import { reasonText } from "../lib/i18n";
+import { SourceIcon } from "./icons";
 
-const ICON: Record<RouteDecision["route"], string> = { device: "🟢", cloud: "🔵", rules: "⚪" };
 const SHOW_REASON: RouteDecision["code"][] = ["cloud_lang", "device_chunked", "cloud_too_long", "device_forced_lang"];
 
 /** Shows where a check WILL run before the user presses the button (same router as the real check). */
@@ -24,7 +24,7 @@ export function RoutePreview({ text, hasImage }: { text: string; hasImage: boole
   });
   return (
     <p className={`route-preview route-preview-${d.route}`} data-testid="route-preview" data-route={d.route}>
-      <span aria-hidden>{ICON[d.route]}</span> {t(`preview.${d.route}`)}
+      <SourceIcon route={d.route} /> {t(`preview.${d.route}`)}
       {d.route === "cloud" && hasImage && <> {t("preview.image")}</>}
       {SHOW_REASON.includes(d.code) && <span className="muted"> {reasonText(d, lang)}</span>}
     </p>
