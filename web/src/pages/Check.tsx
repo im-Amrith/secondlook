@@ -137,9 +137,11 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
         ))}
       </div>}
 
+      </div>
+      {!compact && <CheckSidebar />}
       {error && <div className="notice notice-error" role="alert">{error}</div>}
 
-      <div ref={resultRef}>
+      <div ref={resultRef} className="check-result">
         {outcome && (
           <ResultCard
             outcome={outcome}
@@ -161,8 +163,6 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
         )}
         {outcome && !outcome.inconclusive && checkedText && <FollowUp key={outcome.latencyMs} original={checkedText} verdict={outcome.verdict} />}
       </div>
-      </div>
-      {!compact && <CheckSidebar />}
       </div>
 
       {consent && (

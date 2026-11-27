@@ -46,6 +46,8 @@ export function ResultCard({ outcome, simulated, actions }: ResultCardProps) {
         </div>
       </header>
 
+      <div className="result-body">
+      <div className="result-col-main">
       <ReadAloud text={spoken} autoPlay={autoRead} />
 
       <p className="advice"><strong>{t("result.whatToDo")}</strong> {adviceText(v.advice, lang)}</p>
@@ -54,6 +56,10 @@ export function ResultCard({ outcome, simulated, actions }: ResultCardProps) {
         {aiInEnglish && <span className="muted"> {t("result.inEnglish")}</span>}
       </p>
 
+      {actions}
+      </div>
+
+      <div className="result-col-side">
       {signals.length > 0 && (
         <div className="signals">
           <h3>{t("result.signs")}</h3>
@@ -72,12 +78,12 @@ export function ResultCard({ outcome, simulated, actions }: ResultCardProps) {
         </div>
       )}
 
-      {actions}
-
       <div className="privacy">
         <PrivacyBadge source={v.source} redactions={v.redactions} sentImage={outcome.sentImage} sent={outcome.sentText !== null} simulated={simulated && v.source === "ON_DEVICE"} />
         {(outcome.fallbackNote || outcome.decision.code !== "device_default") && <p className="route-reason" data-testid="route-reason">{outcome.fallbackNote ? noteText(outcome.fallbackNote, lang) : reasonText(outcome.decision, lang)}</p>}
         <SentDrawer sentText={outcome.sentText} sentImage={outcome.sentImage} items={outcome.redactionItems} />
+      </div>
+      </div>
       </div>
     </section>
   );

@@ -441,6 +441,12 @@ details > summary { cursor: pointer; font-weight: 600; color: var(--orange-hi); 
 }
 
 /* ---------- wide screens: use the whole width ---------- */
+/* Narrow: one column in reading order (form, result, then the side tools). */
+.check-layout { display: flex; flex-direction: column; }
+.check-layout > .check-main { order: 1; }
+.check-layout > .notice { order: 2; }
+.check-layout > .check-result { order: 3; }
+.check-layout > .check-side { order: 4; }
 .side-banner { display: none; }
 .status-card h2 { font-size: 1.05rem; }
 .status-list { list-style: none; padding: 0; margin: 4px 0 12px; display: grid; gap: 14px; }
@@ -493,4 +499,14 @@ details > summary { cursor: pointer; font-weight: 600; color: var(--orange-hi); 
   .check-layout { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr); gap: 36px; align-items: start; }
   .check-side { padding-top: 28px; }
   .check-main .check-form textarea { min-height: 12em; }
+  /* The result spans both columns, and splits inside: what to do | why and privacy. */
+  .check-layout > * { order: 0; }
+  .check-layout > .check-main { grid-column: 1; grid-row: 1; }
+  .check-layout > .check-side { grid-column: 2; grid-row: 1; }
+  .check-layout > .notice, .check-layout > .check-result { grid-column: 1 / -1; }
+  .check-layout .result { margin-top: 8px; }
+  .check-layout .result-body { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+  .check-layout .result-col-side .signals h3 { margin-top: 14px; }
+  .check-layout .result-col-side .privacy { margin-top: 18px; }
+  .check-layout .followup { margin-top: 0; }
 }
