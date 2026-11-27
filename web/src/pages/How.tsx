@@ -35,10 +35,11 @@ export function HowPage() {
   ];
 
   return (
-    <div className="page">
+    <div className="page page-wide">
       <h1>How SecondLook keeps your messages private</h1>
       <p className="lead">Every check starts with quick rules on your device. Then a small router decides where the AI check runs, and tells you why.</p>
 
+      <div className="card-grid">
       <section className="card">
         <h2>This device right now</h2>
         <dl className="facts">
@@ -78,6 +79,7 @@ export function HowPage() {
           <li><strong>Family alerts</strong> (only if you press the button): the risk level, the kinds of warning signs, and the time. Never the message.</li>
         </ul>
       </section>
+      </div>
     </div>
   );
 }

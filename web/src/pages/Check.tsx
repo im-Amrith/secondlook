@@ -7,9 +7,9 @@ import { FamilyAlertButton } from "../components/FamilyAlertButton";
 import { FollowUp } from "../components/FollowUp";
 import { RoutePreview } from "../components/RoutePreview";
 import { RadarButton } from "../components/RadarButton";
-import { RadarTeaser } from "./Radar";
 import { useT } from "../lib/useT";
-import { Camera, ChevronRight, GraduationCap, Ico, PhoneCall, Radar } from "../components/icons";
+import { Camera, Ico } from "../components/icons";
+import { CallBanner, CheckSidebar } from "../components/CheckSidebar";
 
 export const EXAMPLES = [
   { label: "\"CBI officer\" call", text: "This is Inspector Rajesh Sharma from CBI Mumbai. A parcel in your name has drugs and fake passports. You are under digital arrest. Stay on the video call and do not tell your family. Transfer Rs 4,50,000 to the RBI verification account 50100234567891 immediately. Call 9876543210." },
@@ -83,7 +83,7 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
   }
 
   return (
-    <div className="page">
+    <div className={compact ? "page" : "page page-wide"}>
       {!app.aiConfigured && (
         <div className="notice" role="note">
           <strong>{t("notice.aiOff")}</strong> {app.simulatedNano ? t("notice.simulated") : t("notice.rulesOnly")}
@@ -93,15 +93,10 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
         <div className="notice notice-week" role="note"><strong>{t("notice.week")}</strong> {app.config.scamOfTheWeek}</div>
       )}
 
-      {!compact && (
-        <a className="call-banner" href="#/call">
-          <span className="call-banner-icon"><Ico icon={PhoneCall} size={26} /></span>
-          <strong>{t("call.bannerTitle")}</strong>
-          <span className="call-banner-action">{t("call.bannerAction")}</span>
-          <span className="call-banner-go"><Ico icon={ChevronRight} size={26} /></span>
-        </a>
-      )}
+      {!compact && <div className="top-banner"><CallBanner /></div>}
 
+      <div className={compact ? undefined : "check-layout"}>
+      <div className="check-main">
       {!compact && (
         <>
           <h1>{t("check.title")}</h1>
@@ -142,14 +137,6 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
         ))}
       </div>}
 
-      {!compact && !outcome && (
-        <div className="check-links">
-          <RadarTeaser />
-          <p><a href="#/practice" className="icon-link"><Ico icon={GraduationCap} /> {t("practice.banner")}</a></p>
-          <p><a href="#/radar" className="icon-link"><Ico icon={Radar} /> {t("radar.link")}</a></p>
-        </div>
-      )}
-
       {error && <div className="notice notice-error" role="alert">{error}</div>}
 
       <div ref={resultRef}>
@@ -173,6 +160,9 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
           />
         )}
         {outcome && !outcome.inconclusive && checkedText && <FollowUp key={outcome.latencyMs} original={checkedText} verdict={outcome.verdict} />}
+      </div>
+      </div>
+      {!compact && <CheckSidebar />}
       </div>
 
       {consent && (

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useApp } from "../lib/app-context";
 import { publicAppUrl } from "../lib/env";
 import { createCircle, joinCircle, myCircles, signIn, signInErrorText, signOutUser, type Circle } from "../lib/family";
+import { Bell, EyeOff, Ico, Link2 } from "../components/icons";
 
 export function FamilyPage({ joinId }: { joinId?: string }) {
   const { services, user } = useApp();
@@ -26,11 +27,16 @@ export function FamilyPage({ joinId }: { joinId?: string }) {
 
   if (!user) {
     return (
-      <div className="page">
+      <div className="page page-wide">
         <h1>Family circle</h1>
-        <p className="lead">Link someone you trust. When a message looks like a scam, they get a short alert with the warning signs. <strong>They never see your messages.</strong></p>
-        <button className="primary big" onClick={() => signIn(services.auth).catch((e: unknown) => setMsg(signInErrorText(e)))}>Sign in with Google</button>
-        {msg && <p className="notice notice-error">{msg}</p>}
+        <div className="split">
+          <div className="split-main">
+            <p className="lead">Link someone you trust. When a message looks like a scam, they get a short alert with the warning signs. <strong>They never see your messages.</strong></p>
+            <button className="primary big" onClick={() => signIn(services.auth).catch((e: unknown) => setMsg(signInErrorText(e)))}>Sign in with Google</button>
+            {msg && <p className="notice notice-error">{msg}</p>}
+          </div>
+          <FamilyExplainer />
+        </div>
       </div>
     );
   }
@@ -42,8 +48,10 @@ export function FamilyPage({ joinId }: { joinId?: string }) {
   const inviteUrl = mine ? `${appUrl}#/join/${mine.id}` : "";
 
   return (
-    <div className="page">
+    <div className="page page-wide">
       <h1>Family circle</h1>
+      <div className="split">
+      <div className="split-main">
       <p className="muted">Signed in as {user.displayName ?? user.email}. <button className="link-button" onClick={() => signOutUser(services.auth)}>Sign out</button></p>
 
       <section className="card">
@@ -88,6 +96,25 @@ export function FamilyPage({ joinId }: { joinId?: string }) {
         </form>
         {msg && <p className="muted" role="status">{msg}</p>}
       </section>
+      </div>
+      <FamilyExplainer />
+      </div>
     </div>
+  );
+}
+
+/** What family alerts are, shown beside the family controls on wide screens. */
+function FamilyExplainer() {
+  return (
+    <aside className="split-side">
+      <section className="card">
+        <h2>How family alerts work</h2>
+        <ul className="explain-list">
+          <li><Ico icon={Bell} /><span><strong>What they get</strong>A short alert when a check looks risky: the risk level, the kinds of warning signs and the time.</span></li>
+          <li><Ico icon={EyeOff} /><span><strong>What they never see</strong>Your messages, names, numbers or screenshots. The database rules make storing them impossible.</span></li>
+          <li><Ico icon={Link2} /><span><strong>How to start</strong>Sign in, create your circle and send the invite link to a son, daughter or friend you trust.</span></li>
+        </ul>
+      </section>
+    </aside>
   );
 }

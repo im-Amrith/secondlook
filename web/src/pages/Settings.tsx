@@ -21,8 +21,9 @@ export function SettingsPage() {
   const { settings, updateSettings, config, aiConfigured } = useApp();
   const { t } = useT();
   return (
-    <div className="page">
+    <div className="page page-wide">
       <h1>{t("settings.title")}</h1>
+      <div className="card-columns">
       <section className="card">
         <h2>{t("setup.language")}</h2>
         <LanguagePicker />
@@ -73,6 +74,7 @@ export function SettingsPage() {
           <dt>Extra live rules</dt><dd>{config.rules.extraRules?.length ?? 0}</dd>
         </dl>
       </section>
+      </div>
     </div>
   );
 }

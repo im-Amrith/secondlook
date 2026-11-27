@@ -27,7 +27,7 @@ export function PracticePage() {
   if (free) return <FreePractice onExit={() => setFree(false)} />;
 
   return (
-    <div className="page">
+    <div className="page page-wide">
       <h1>{t("practice.title")}</h1>
       <p className="lead">{t("practice.lead")}</p>
       <div className="practice-list">

@@ -35,10 +35,12 @@ export function PausePage({ seconds: secondsProp }: { seconds?: number } = {}) {
   const pct = total > 0 ? Math.max(0, left) / total : 0;
 
   return (
-    <div className="page pause-page">
+    <div className="page page-wide pause-page">
       <h1>{t("pause.title")}</h1>
       <p className="lead">{t("pause.lead")}</p>
 
+      <div className="split">
+      <div className="split-main pause-timer">
       <div className="countdown" role="timer" aria-live="off" aria-label={t("pause.seconds", { n: Math.max(0, left) })}>
         <svg viewBox="0 0 120 120" width="140" height="140" aria-hidden>
           <circle cx="60" cy="60" r="52" className="countdown-track" />
@@ -47,6 +49,10 @@ export function PausePage({ seconds: secondsProp }: { seconds?: number } = {}) {
         <span className="countdown-num">{left > 0 ? left : <Ico icon={Check} size={48} strokeWidth={2.5} />}</span>
       </div>
       {left <= 0 && <p className="ok">{t("pause.done")}</p>}
+      <TrustedContact />
+      {risky && <FamilyAlertButton verdict={verdict} />}
+      </div>
+      <div className="split-side">
 
       <section className="card" aria-labelledby="pause-q">
         <h2 id="pause-q">{t("pause.answer")}</h2>
@@ -71,12 +77,11 @@ export function PausePage({ seconds: secondsProp }: { seconds?: number } = {}) {
         {!risky && answeredAll && <p className="notice">{t("pause.ok")}</p>}
       </section>
 
-      <TrustedContact />
-      {risky && <FamilyAlertButton verdict={verdict} />}
-
       <button type="button" className="secondary big" disabled={left > 0} onClick={() => (history.length > 1 ? history.back() : (location.hash = "#/"))}>
         {left > 0 ? t("pause.seconds", { n: left }) : t("pause.close")}
       </button>
+      </div>
+      </div>
     </div>
   );
 }

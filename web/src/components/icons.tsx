@@ -4,9 +4,9 @@ import type { LucideIcon } from "lucide-react";
 import { Cloud, ShieldCheck, Zap } from "lucide-react";
 
 export {
-  ArrowLeft, ArrowRight, BadgeCheck, Camera, Check, ChevronRight, CircleCheck, Cloud, GraduationCap, Landmark, MessageSquareText,
+  ArrowLeft, ArrowRight, BadgeCheck, Bell, Camera, Check, ChevronRight, CircleCheck, Cloud, EyeOff, GraduationCap, Landmark, Link2, MessageSquareText,
   Mic, OctagonX, Phone, PhoneCall, Play, Radar, Settings, ShieldAlert, ShieldCheck, Smartphone, Square, TrendingDown, TrendingUp,
-  TriangleAlert, Users, Volume2, Zap,
+  Timer, TriangleAlert, Users, Volume2, Zap,
 } from "lucide-react";
 
 /** A Lucide icon with the app's defaults. */

@@ -35,11 +35,13 @@ export function RadarPage() {
   const regionName = RADAR_REGIONS.find((r) => r.id === region)?.name;
 
   return (
-    <div className="page">
+    <div className="page page-wide">
       <h1><Ico icon={Radar} className="h1-ico" /> {t("radar.title")}</h1>
       <p className="lead">{t("radar.lead")}</p>
       <p className="badge badge-device"><SourceIcon route="device" /> {t("radar.private")}</p>
 
+      <div className="split">
+      <div className="split-main">
       <label className="label" htmlFor="radar-region">{t("radar.region")}</label>
       <select id="radar-region" value={region} onChange={(e) => setRegion(e.target.value)}>
         <option value="">{t("radar.allIndia")}</option>
@@ -75,11 +77,15 @@ export function RadarPage() {
         </ol>
       )}
 
+      </div>
+      <div className="split-side">
       <section className="card">
         <h2>{t("radar.howTitle")}</h2>
         <p>{t("radar.how")}</p>
         <p className="muted small">{t("radar.disclaimer")}</p>
       </section>
+      </div>
+      </div>
     </div>
   );
 }

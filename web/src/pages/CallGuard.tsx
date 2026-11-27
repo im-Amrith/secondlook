@@ -194,11 +194,13 @@ export function CallGuardPage() {
   const spoken = warningText ? `${combined.level === "high" ? t("call.hangUp") : t("call.careful")} ${warningText}` : "";
 
   return (
-    <div className="page call-page">
+    <div className="page page-wide call-page">
       <h1>{t("call.title")}</h1>
       <p className="lead">{t("call.lead")}</p>
       <p className="badge badge-device call-private"><SourceIcon route="device" /> {t("call.private")}</p>
 
+      <div className="split">
+      <div className="split-main">
       <div className="card">
         <p className="label" id="call-lang">{t("call.langQ")}</p>
         <div className="row" role="group" aria-labelledby="call-lang">
@@ -267,6 +269,8 @@ export function CallGuardPage() {
         </div>
       )}
 
+      </div>
+      <div className="split-side">
       {combined.signals.length > 0 && (
         <section className="signals card" aria-labelledby="heard-title">
           <h2 id="heard-title">{t("call.heard")}</h2>
@@ -328,6 +332,8 @@ export function CallGuardPage() {
       {(state.lines.length > 0 || Object.keys(answers).length > 0) && (
         <button type="button" className="link-button" onClick={reset}>{t("call.reset")}</button>
       )}
+      </div>
+      </div>
     </div>
   );
 }

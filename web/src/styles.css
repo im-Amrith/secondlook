@@ -86,7 +86,7 @@ a { color: var(--orange-hi); text-underline-offset: 4px; text-decoration-thickne
 /* ---------- top bar ---------- */
 .topbar {
   display: flex; align-items: center; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap;
-  padding: 12px max(16px, calc((100vw - 1000px) / 2));
+  padding: 12px max(20px, calc((100vw - 1240px) / 2));
   background: rgba(0, 0, 0, 0.55); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass);
   border-bottom: 1px solid var(--line);
   position: sticky; top: 0; z-index: 10;
@@ -101,7 +101,9 @@ nav.mainnav a {
 nav.mainnav a:hover { color: var(--ink); background: rgba(255, 255, 255, 0.07); }
 nav.mainnav a[aria-current="page"] { color: var(--on-orange); background: var(--grad); }
 
-main { max-width: 720px; margin: 0 auto; padding: 8px 18px 40px; }
+main { max-width: 1240px; margin: 0 auto; padding: 8px 20px 40px; }
+.page { max-width: 760px; margin: 0 auto; }
+.page-wide { max-width: none; }
 .page h1 { font-size: 2.5rem; font-weight: 800; margin: 28px 0 8px; }
 .page h2 { font-size: 1.3rem; }
 .h1-ico { color: var(--orange); vertical-align: -0.12em; }
@@ -109,7 +111,7 @@ main { max-width: 720px; margin: 0 auto; padding: 8px 18px 40px; }
 .muted { color: var(--muted); font-size: 0.9rem; }
 .small { font-size: 0.85rem; margin: 0; }
 
-.footer { max-width: 720px; margin: 28px auto 0; padding: 22px 18px 36px; border-top: 1px solid var(--line); }
+.footer { max-width: 1240px; margin: 28px auto 0; padding: 22px 20px 36px; border-top: 1px solid var(--line); }
 .footer-links { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0 0 12px; padding: 0; list-style: none; font-weight: 600; }
 .footer-links a { color: var(--ink); text-decoration: none; }
 .footer-links a:hover { color: var(--orange-hi); }
@@ -340,7 +342,8 @@ details > summary { cursor: pointer; font-weight: 600; color: var(--orange-hi); 
 .tts-progress { display: block; width: 100%; max-width: 360px; height: 8px; margin-top: 10px; accent-color: var(--orange); }
 .tts-offer { margin-top: 12px; padding: 16px 18px; border-radius: var(--radius-sm); background: var(--grad-soft); border: 1px solid rgba(255, 138, 0, 0.35); color: var(--ink); }
 .tts-offer p { margin: 0 0 8px; }
-.voice-row { padding: 16px 0; border-bottom: 1px solid var(--line); display: grid; gap: 8px; }
+.voice-row { padding: 16px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.voice-row select, .card select { width: 100%; }
 .voice-row .row { margin: 4px 0 0; }
 
 /* ---------- Call Guard ---------- */
@@ -435,4 +438,59 @@ details > summary { cursor: pointer; font-weight: 600; color: var(--orange-hi); 
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+
+/* ---------- wide screens: use the whole width ---------- */
+.side-banner { display: none; }
+.status-card h2 { font-size: 1.05rem; }
+.status-list { list-style: none; padding: 0; margin: 4px 0 12px; display: grid; gap: 14px; }
+.status-list li { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: start; }
+.status-list li > .ico { margin-top: 3px; }
+.status-list strong { display: block; font-weight: 600; font-size: 0.95rem; }
+.status-list .muted { display: block; font-size: 0.85rem; }
+.status-link { font-size: 0.85rem; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.tiles { display: grid; gap: 10px; margin: 16px 0; }
+.tile {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; padding: 14px 16px;
+  border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--line); color: var(--ink); text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.tile:hover { border-color: rgba(255, 138, 0, 0.55); transform: translateY(-1px); }
+.tile-icon { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: rgba(255, 138, 0, 0.14); color: var(--orange-hi); }
+.tile-text strong { display: block; font-weight: 600; font-size: 0.98rem; letter-spacing: -0.01em; }
+.tile-text span { display: block; font-size: 0.84rem; color: var(--muted); }
+.tile-go { color: var(--muted); }
+.tile-help .tile-icon { background: rgba(255, 69, 58, 0.14); color: #ff8a80; }
+.explain-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 16px; }
+.explain-list li { display: grid; grid-template-columns: auto 1fr; gap: 14px; }
+.explain-list .ico { color: var(--orange-hi); margin-top: 3px; }
+.explain-list strong { display: block; font-weight: 600; }
+.pause-timer { text-align: center; }
+.pause-timer .trusted { text-align: left; }
+
+@media (min-width: 960px) {
+  .page-wide h1 { font-size: 2.8rem; }
+  .split { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+  .split-side > :first-child, .split-main > :first-child { margin-top: 0; }
+  .card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+  .card-grid > .card { margin: 0; }
+  .card-grid > .card:nth-child(2) { grid-column: 1 / -1; order: 3; }
+  .card-columns { columns: 2; column-gap: 22px; }
+  .card-columns > * { break-inside: avoid; display: block; width: 100%; margin: 0 0 22px; }
+  .practice-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .practice-card { min-height: 120px; flex-direction: column; align-items: flex-start; justify-content: space-between; }
+  .radar-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pause-timer .countdown { width: 240px; height: 240px; }
+  .pause-timer .countdown svg { width: 240px; height: 240px; }
+  .pause-timer .countdown-num { font-size: 4.4rem; }
+}
+
+@media (min-width: 940px) {
+  .top-banner { display: none; }
+  .side-banner { display: block; }
+  .side-banner .call-banner { margin-top: 0; grid-template-columns: auto 1fr; }
+  .side-banner .call-banner-go { display: none; }
+  .check-layout { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr); gap: 36px; align-items: start; }
+  .check-side { padding-top: 28px; }
+  .check-main .check-form textarea { min-height: 12em; }
 }

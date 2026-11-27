@@ -49,9 +49,11 @@ export function SetupPage() {
   const canDownload = !!app.device && (app.nano === "downloadable" || app.nano === "downloading");
 
   return (
-    <div className="page">
+    <div className="page page-wide">
       <h1>{t("setup.title")}</h1>
       <p className="lead">{t("setup.lead")}</p>
+      <div className="split">
+      <div className="split-main">
       <LanguagePicker />
 
       <ol className="steps">
@@ -60,6 +62,8 @@ export function SetupPage() {
         <li>{t("setup.step3")}</li>
       </ol>
 
+      </div>
+      <div className="split-side">
       <section className="card">
         <h2>{t("setup.model")}</h2>
         <p>{t("setup.status")} <strong data-testid="nano-status">{t(`nano.${app.nano}`)}</strong>{app.simulatedNano && ` ${t("check.simulated")}`}</p>
@@ -98,6 +102,8 @@ export function SetupPage() {
       >
         {t("setup.start")}
       </button>
+      </div>
+      </div>
     </div>
   );
 }
