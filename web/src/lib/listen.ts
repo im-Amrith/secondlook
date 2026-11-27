@@ -11,10 +11,15 @@
 //     Firebase AI Logic 13.3's on-device adapter turns every inlineData part into an image, so
 //     audio can't go through the SDK yet; we call the Prompt API directly, which is on-device by
 //     definition (no network path exists).
-//  3. "demo": a scripted call for demos and tests (no microphone). Clearly labelled in the UI.
+//  3. "whisper": an open Whisper model from Hugging Face, run by Transformers.js in a Web Worker
+//     (WebGPU when available, else WASM). Chrome's on-device speech packs are English-only today,
+//     so this is what makes Hindi and Malayalam calls work. One-time model download, with consent.
+//  4. "demo": a scripted call for demos and tests (no microphone). Clearly labelled in the UI.
 import type { TtsLang } from "./tts/voices";
+import { ASR_MODELS, type AsrIn, type AsrOut } from "./asr/protocol";
+import { fixScript } from "./asr-text";
 
-export type ListenEngine = "speech" | "nano" | "demo";
+export type ListenEngine = "speech" | "whisper" | "nano" | "demo";
 export type EngineStatus = "available" | "downloadable" | "downloading" | "unavailable" | "unsupported";
 
 export interface ListenHandlers {
@@ -275,6 +280,152 @@ export async function startNanoAudio(stream: MediaStream, h: ListenHandlers): Pr
   };
 }
 
+// ---- 3. Whisper in a worker (Transformers.js) ------------------------------------------------
+
+let asrWorker: Worker | null = null;
+let asrSeq = 0;
+const asrWaiters = new Map<number, (m: AsrOut) => void>();
+const asrReady = new Map<TtsLang, Promise<"webgpu" | "wasm">>();
+
+function asr(): Worker {
+  if (!asrWorker) {
+    asrWorker = new Worker(new URL("./asr/asr.worker.ts", import.meta.url), { type: "module" });
+    asrWorker.onmessage = (e: MessageEvent<AsrOut>) => asrWaiters.get(e.data.id)?.(e.data);
+  }
+  return asrWorker;
+}
+
+type AsrRequest = { type: "load"; lang: TtsLang } | { type: "transcribe"; pcm: Float32Array; lang: TtsLang };
+
+function ask(msg: AsrRequest, onProgress?: (p: number) => void): Promise<AsrOut> {
+  const id = ++asrSeq;
+  return new Promise((resolve) => {
+    asrWaiters.set(id, (m) => {
+      if (m.type === "progress") return onProgress?.(m.total ? m.loaded / m.total : 0);
+      asrWaiters.delete(id);
+      resolve(m);
+    });
+    asr().postMessage({ ...msg, id } as AsrIn, msg.type === "transcribe" ? [msg.pcm.buffer] : []);
+  });
+}
+
+/** Is this language's Whisper model already in the browser cache (no download needed)? */
+export async function whisperDownloaded(lang: TtsLang): Promise<boolean> {
+  if (typeof caches === "undefined") return false;
+  try {
+    const c = await caches.open("transformers-cache");
+    const keys = await c.keys();
+    const id = ASR_MODELS[lang].id;
+    return keys.filter((r) => r.url.includes(`/${id}/`) && r.url.endsWith(".onnx")).length >= 2;
+  } catch {
+    return false;
+  }
+}
+
+/** Whisper runs anywhere Web Workers and WebAssembly do. */
+export function whisperSupported(): boolean {
+  return typeof Worker !== "undefined" && typeof WebAssembly !== "undefined";
+}
+
+/** Download (first time) and load the model for a language. Resolves with the device it runs on. */
+export function prepareWhisper(lang: TtsLang, onProgress?: (p: number) => void): Promise<"webgpu" | "wasm"> {
+  let p = asrReady.get(lang);
+  if (!p) {
+    p = ask({ type: "load", lang }, onProgress).then((m) => {
+      if (m.type === "ready") return m.device;
+      throw new Error(m.type === "error" ? m.message : "The listening model didn't load.");
+    });
+    // The worker keeps one model at a time; forget the others so they reload when needed.
+    asrReady.clear();
+    asrReady.set(lang, p);
+    p.catch(() => asrReady.delete(lang));
+  }
+  return p;
+}
+
+/** Seconds per piece sent to Whisper (it reads up to 30 s; short pieces keep warnings quick). */
+const WHISPER_CHUNK_SECONDS = 5;
+
+export async function startWhisper(stream: MediaStream, lang: TtsLang, h: ListenHandlers): Promise<Listening> {
+  await prepareWhisper(lang);
+  // Whisper wants 16 kHz mono; let the browser resample.
+  const ctx = new AudioContext({ sampleRate: 16000 });
+  const src = ctx.createMediaStreamSource(stream);
+  const proc = ctx.createScriptProcessor(4096, 1, 1);
+  let parts: Float32Array[] = [];
+  let collected = 0;
+  let loudBlocks = 0;
+  let busy = false;
+  let stopped = false;
+  let pending: Float32Array | null = null;
+
+  const send = async (pcm: Float32Array) => {
+    busy = true;
+    try {
+      const m = await ask({ type: "transcribe", pcm, lang });
+      if (stopped) return;
+      if (m.type === "text") {
+        const t = fixScript(m.text, lang).trim();
+        if (t) h.onText(t);
+      } else if (m.type === "error") h.onError?.(m.message);
+    } finally {
+      busy = false;
+      // If speech arrived while we were busy, send it now (merged, never more than ~15 s).
+      if (pending && !stopped) {
+        const next = pending;
+        pending = null;
+        void send(next);
+      }
+    }
+  };
+
+  proc.onaudioprocess = (e) => {
+    const input = e.inputBuffer.getChannelData(0);
+    let sum = 0;
+    for (let i = 0; i < input.length; i++) sum += input[i]! * input[i]!;
+    const rms = Math.sqrt(sum / input.length);
+    h.onLevel?.(Math.min(1, rms * 8));
+    if (rms > 0.01) loudBlocks++;
+    parts.push(new Float32Array(input));
+    collected += input.length;
+    if (collected < 16000 * WHISPER_CHUNK_SECONDS) return;
+    const pcm = new Float32Array(collected);
+    let o = 0;
+    for (const p of parts) {
+      pcm.set(p, o);
+      o += p.length;
+    }
+    const speech = loudBlocks >= 3; // skip silence: Whisper invents words when given none
+    parts = [];
+    collected = 0;
+    loudBlocks = 0;
+    if (!speech) return;
+    if (!busy) void send(pcm);
+    else {
+      const merged = pending ? new Float32Array(pending.length + pcm.length) : pcm;
+      if (pending) {
+        merged.set(pending);
+        merged.set(pcm, pending.length);
+      }
+      pending = merged.length > 16000 * 15 ? merged.subarray(merged.length - 16000 * 15) : merged;
+    }
+  };
+  src.connect(proc);
+  const mute = ctx.createGain();
+  mute.gain.value = 0;
+  proc.connect(mute);
+  mute.connect(ctx.destination);
+
+  return {
+    stop() {
+      stopped = true;
+      proc.disconnect();
+      src.disconnect();
+      void ctx.close();
+    },
+  };
+}
+
 // ---- microphone level (shared) -------------------------------------------------------------
 
 /** Ask for the microphone. Audio stays in this tab. */
@@ -304,7 +455,7 @@ export function watchLevel(stream: MediaStream, onLevel: (l: number) => void): (
   };
 }
 
-// ---- 3. scripted demo call -------------------------------------------------------------------
+// ---- 4. scripted demo call -------------------------------------------------------------------
 
 export const DEMO_CALL: Record<TtsLang, string[]> = {
   en: [

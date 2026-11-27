@@ -43,7 +43,7 @@ Under the badge, one sentence from the router says *why* that path was chosen. T
 
 "Digital arrest" and bank-fraud scams happen **live**: a fake officer keeps someone on a video call for hours until they transfer their savings. A checker you paste a message into comes too late, so SecondLook also works *during* the call (**On a call** in the menu, and a banner on the check screen):
 
-- **Put the call on speaker and press *Start listening*.** Speech is recognised **on the device**: Chrome's on-device Web Speech (`processLocally: true`), or Gemini Nano with audio input a few seconds at a time. As the caller talks, the rules run on every phrase, and a big warning appears the moment a scam pattern shows up: *"⛔ Hang up now. There is no such thing as a 'digital arrest'…"*, in English, Hindi or Malayalam, with **Read aloud**. Signals stay on screen after the words scroll past, with the exact phrase that triggered them.
+- **Put the call on speaker and press *Start listening*.** Speech is recognised **on the device**. For **Hindi and Malayalam** (and English when Chrome has no speech pack), it uses **Whisper**, an open multilingual model from Hugging Face run by Transformers.js in a Web Worker: WebGPU when available, WASM otherwise, a one-time download after the person agrees, then it works offline. Chrome's own on-device Web Speech (`processLocally: true`) streams English words when available, and Gemini Nano audio is the last resort. Whisper sometimes writes Malayalam speech in Devanagari letters; the app shifts them back before the rules read them. [evals/ASR.md](evals/ASR.md) measures whether spoken Hindi and Malayalam scam calls still reach "hang up". As the caller talks, the rules run on every phrase, and a big warning appears the moment a scam pattern shows up: *"⛔ Hang up now. There is no such thing as a 'digital arrest'…"*, in English, Hindi or Malayalam, with **Read aloud**. Signals stay on screen after the words scroll past, with the exact phrase that triggered them.
 - **Call audio never goes to the cloud.** There is no cloud path in the code (`web/src/lib/listen.ts`). If neither on-device engine is available, listening stays off and says why. We also refuse to start Chrome's recogniser unless it confirms `processLocally`, because the default Web Speech API sends audio to a server. The words live only in the page's memory and disappear when you leave.
 - **With Gemini Nano**, the private model gives a second opinion on the conversation every ~15 s, again on the device only.
 - **No microphone? Tap instead.** Six yes/no questions ("Did they tell you not to tell your family?") feed the same warning, and you can type what they said.
@@ -171,7 +171,8 @@ extension/  Chrome MV3: side panel (reuses the web UI), right-click check, look-
             pause banner on payment pages, chrome.identity sign-in
             src/lib/tts/ read-aloud: voice catalogue, phonemizer, Piper engine, Web Worker, player
             src/lib/listen.ts on-device speech for Call Guard (Web Speech processLocally, Nano audio, demo)
-evals/      labelled datasets (scam + redaction), runner, RESULTS.md, TTS.md (voice intelligibility + speed)
+evals/      labelled datasets (scam + redaction), runner, RESULTS.md, TTS.md (voice intelligibility + speed),
+            ASR.md (Call Guard speech recognition in en/hi/ml)
 scripts/    tts-samples.mts (WAV for every voice, in Node), tts-eval.mts (Whisper round-trip check)
 firebase.json, firestore.rules, firestore.indexes.json, remoteconfig.template.json
 ```

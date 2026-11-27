@@ -43,6 +43,24 @@ Two features to make SecondLook stand out from paste-a-message checkers. They st
 - Writes are allowed without sign-in (so anyone can warn others), which makes **App Check enforcement for Firestore** important before going public.
 - Rules tests on this laptop need `JAVA_TOOL_OPTIONS=-Djdk.net.unixdomain.tmpdir=<a folder path without spaces>` (see step 12 below).
 
+## Added later: new look, Hindi/Malayalam listening, sign-in fix
+
+**Sign-in error `auth/configuration-not-found`:** Google sign-in isn't switched on in the Firebase project yet. Fix it in the console (I can't change your project):
+1. Firebase console → **Authentication** → **Get started** (if you haven't clicked it).
+2. **Sign-in method** → **Google** → **Enable**, pick a support email, **Save**.
+3. **Settings → Authorised domains**: `localhost` is there by default; add your Hosting domain when you deploy.
+
+The app now explains this in plain words instead of showing the raw Firebase code.
+
+**Hindi and Malayalam listening:** Chrome's on-device speech recognition only has English packs, which is why Hindi and Malayalam calls weren't understood. Call Guard now uses **Whisper** (open models from Hugging Face) in a Web Worker for Hindi and Malayalam, and for English when Chrome has no pack:
+- Hindi: `onnx-community/whisper-hindi-small-ONNX` (a Hindi fine-tune of Whisper small), Malayalam: `onnx-community/whisper-small`, English fallback: `onnx-community/whisper-base`. WebGPU when available (your RTX 3050 laptop has it), WASM otherwise.
+- A one-time download, asked first: about 300 MB for Hindi or Malayalam, 80 MB for English. On this laptop's connection Hugging Face downloads ran at roughly 0.25 MB/s, so expect 15–20 minutes the first time; downloads retry if they drop, and the model is cached afterwards.
+- Audio never leaves the device. Whisper sometimes writes Malayalam in Devanagari letters; the app shifts them back before the rules read them, and drops Whisper's made-up text on silence ("Thank you.", "[Music]").
+- Measured with `npm run asr:eval` (Piper voices speak the demo scam calls, Whisper transcribes them, Call Guard scores them): **whisper-base** caught the English call (CER 7%) but wrote Hindi in Urdu/Roman script and Malayalam as Tamil, so it is **not** used for those. Results for the small models: see `evals/ASR.md`.
+- **Not verified with a real microphone in your Chrome.** Try `#/call` → हिंदी → Start listening → allow the download, then play or speak the Hindi script from DEMO.md near the laptop.
+
+**New look:** ink-blue and marigold, the verdict as a rubber stamp ("SCAM" / "धोखा" / "തട്ടിപ്പ്"), Baloo 2 / Baloo Chettan 2 headings with Atkinson Hyperlegible body text (self-hosted, so offline and private), a message box shaped like a chat bubble, a big "Someone on the phone with you right now?" panel, and on phones a bottom tab bar (Check, On a call, Practise, Family, Settings). Alerts, Scam radar and Privacy moved to the footer. Light and dark, checked in English, Hindi and Malayalam at desktop and phone widths.
+
 ## What got built
 
 **`shared/`** (core, all unit-tested): rules engine (16 shield-paypal-ai rules made generic + secrecy, digital-arrest/video custody, account/KYC block, payment demand; Hinglish/Manglish/Devanagari terms), verdict schema + tolerant parser, redactor (phones, emails, UPI, cards, IBAN, accounts, OTPs, Aadhaar, PAN, names), prompts, privacy router (routing table as a pure function with reasons), combiner, the full check pipeline (fallbacks both ways, screenshot consent, chunking, Nano name masking, follow-ups, answers in Hindi/Malayalam from the cloud), local URL/page scorer.

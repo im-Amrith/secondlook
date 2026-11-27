@@ -92,7 +92,14 @@ export function CheckPage({ initialText, initialKind = "text", requestId, compac
         <div className="notice notice-week" role="note"><strong>{t("notice.week")}</strong> {app.config.scamOfTheWeek}</div>
       )}
 
-      {!compact && <a className="call-banner" href="#/call">{t("call.banner")}</a>}
+      {!compact && (
+        <a className="call-banner" href="#/call">
+          <span className="call-banner-icon" aria-hidden>📞</span>
+          <strong>{t("call.bannerTitle")}</strong>
+          <span className="call-banner-action">{t("call.bannerAction")}</span>
+          <span className="call-banner-go" aria-hidden>›</span>
+        </a>
+      )}
 
       {!compact && (
         <>

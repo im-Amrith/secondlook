@@ -74,3 +74,15 @@ export function timeAgo(ms: number, nowMs = Date.now()): string {
   const d = Math.round(h / 24);
   return `${d} day${d === 1 ? "" : "s"} ago`;
 }
+
+/** Plain-language text for Firebase sign-in errors (the raw codes mean nothing to most people). */
+export function signInErrorText(e: unknown): string {
+  const code = (e as { code?: string } | null)?.code ?? "";
+  if (code === "auth/configuration-not-found" || code === "auth/operation-not-allowed")
+    return "Google sign-in isn't switched on for this app yet. (Owner: Firebase console → Authentication → Get started → Sign-in method → Google → Enable.)";
+  if (code === "auth/unauthorized-domain") return "Sign-in isn't allowed from this web address yet. (Owner: add it under Authentication → Settings → Authorised domains.)";
+  if (code === "auth/popup-blocked") return "The sign-in window was blocked. Allow pop-ups for this site and try again.";
+  if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") return "The sign-in window was closed before finishing. Try again.";
+  if (code === "auth/network-request-failed") return "Couldn't reach Google. Check the internet connection and try again.";
+  return e instanceof Error ? e.message : String(e);
+}

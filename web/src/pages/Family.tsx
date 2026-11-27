@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useApp } from "../lib/app-context";
 import { publicAppUrl } from "../lib/env";
-import { createCircle, joinCircle, myCircles, signIn, signOutUser, type Circle } from "../lib/family";
+import { createCircle, joinCircle, myCircles, signIn, signInErrorText, signOutUser, type Circle } from "../lib/family";
 
 export function FamilyPage({ joinId }: { joinId?: string }) {
   const { services, user } = useApp();
@@ -29,7 +29,7 @@ export function FamilyPage({ joinId }: { joinId?: string }) {
       <div className="page">
         <h1>Family circle</h1>
         <p className="lead">Link someone you trust. When a message looks like a scam, they get a short alert with the warning signs. <strong>They never see your messages.</strong></p>
-        <button className="primary big" onClick={() => signIn(services.auth).catch((e: Error) => setMsg(e.message))}>Sign in with Google</button>
+        <button className="primary big" onClick={() => signIn(services.auth).catch((e: unknown) => setMsg(signInErrorText(e)))}>Sign in with Google</button>
         {msg && <p className="notice notice-error">{msg}</p>}
       </div>
     );

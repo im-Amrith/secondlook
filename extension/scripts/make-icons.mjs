@@ -1,4 +1,4 @@
-// Draws the SecondLook icon (teal tile, white magnifier, mint tick) as PNGs with no dependencies.
+// Draws the SecondLook icon (ink-blue tile, white lens, marigold handle and tick) as PNGs with no dependencies.
 import { writeFileSync } from "node:fs";
 import { deflateSync } from "node:zlib";
 
@@ -27,9 +27,10 @@ function pixel(x, y) {
   const r = 14; const cx = Math.min(Math.max(x, r), 64 - r), cy = Math.min(Math.max(y, r), 64 - r);
   if (Math.hypot(x - cx, y - cy) > r) return [0, 0, 0, 0];
   const d = Math.hypot(x - 28, y - 28);
-  if (distSeg(x, y, 22, 28, 26, 32) < 2.2 || distSeg(x, y, 26, 32, 34, 24) < 2.2) return [159, 224, 201, 255];
-  if (Math.abs(d - 13) < 2.6 || distSeg(x, y, 38, 38, 49, 49) < 3.2) return [255, 255, 255, 255];
-  return [31, 95, 91, 255];
+  if (distSeg(x, y, 22, 28, 26, 32) < 2.2 || distSeg(x, y, 26, 32, 34, 24) < 2.2) return [240, 162, 2, 255];
+  if (distSeg(x, y, 38, 38, 49, 49) < 3.2) return [240, 162, 2, 255];
+  if (Math.abs(d - 13) < 2.6) return [255, 255, 255, 255];
+  return [31, 43, 108, 255];
 }
 for (const s of [16, 48, 128]) writeFileSync(new URL(`../public/icons/icon${s}.png`, import.meta.url), png(s, pixel));
 for (const s of [192, 512]) writeFileSync(new URL(`../../web/public/icon-${s}.png`, import.meta.url), png(s, pixel));

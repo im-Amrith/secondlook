@@ -6,8 +6,6 @@ import { useOptionalApp } from "../lib/app-context";
 import { ReadAloud } from "./ReadAloud";
 import { adviceText, noteText, reasonText, rulesExplanation, signalText } from "../lib/i18n";
 
-const LEVEL_ICON = { high: "⛔", medium: "⚠️", low: "✅", unknown: "❔" } as const;
-
 export interface ResultCardProps {
   outcome: CheckOutcome;
   simulated?: boolean;
@@ -32,7 +30,6 @@ export function ResultCard({ outcome, simulated, actions }: ResultCardProps) {
   return (
     <section className={`result result-${levelKey}`} aria-live="polite" data-testid="result">
       <header className="result-head">
-        <span className="result-icon" aria-hidden>{LEVEL_ICON[levelKey]}</span>
         <div>
           <h2>{title}</h2>
           {!outcome.inconclusive && (
@@ -42,6 +39,7 @@ export function ResultCard({ outcome, simulated, actions }: ResultCardProps) {
             </div>
           )}
         </div>
+        <span className={`stamp stamp-${levelKey}`} aria-hidden>{t(`stamp.${levelKey}`)}</span>
       </header>
 
       <ReadAloud text={spoken} autoPlay={autoRead} />

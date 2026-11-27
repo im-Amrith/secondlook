@@ -5,5 +5,8 @@ main { padding: 12px; }
 .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; }
 .panel-source { margin: 4px 0 0; }
 .result { padding: 14px; }
-nav a { font-size: 0.8rem; padding: 6px 8px; }
+nav a { font-size: 0.8rem; padding: 6px 10px; border-radius: 999px; text-decoration: none; color: var(--muted); font-weight: 700; }
+nav a[aria-current="page"] { background: var(--primary); color: var(--primary-ink); }
+nav { display: flex; flex-wrap: wrap; gap: 2px; }
+.topbar { flex-wrap: wrap; gap: 6px; }
 .panel-page-button { width: 100%; margin-top: 8px; }

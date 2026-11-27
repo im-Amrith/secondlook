@@ -320,6 +320,20 @@ const D = {
   "radar.link": { en: "📡 See which scams are going around this week", hi: "📡 देखें इस हफ़्ते कौन-सी धोखाधड़ी चल रही है", ml: "📡 ഈ ആഴ്ച ഏതൊക്കെ തട്ടിപ്പുകൾ നടക്കുന്നുവെന്ന് കാണുക" },
   "radar.settingsTitle": { en: "Your state, for the scam radar", hi: "स्कैम रडार के लिए आपका राज्य", ml: "തട്ടിപ്പ് റഡാറിനായി നിങ്ങളുടെ സംസ്ഥാനം" },
   "radar.settingsHelp": { en: "Only used when you tap \"Add to the scam radar\". Saved on this device.", hi: "सिर्फ़ तब इस्तेमाल होता है जब आप \"स्कैम रडार में जोड़ें\" दबाते हैं। इसी डिवाइस पर सेव होता है।", ml: "\"തട്ടിപ്പ് റഡാറിൽ ചേർക്കുക\" അമർത്തുമ്പോൾ മാത്രം ഉപയോഗിക്കും. ഈ ഉപകരണത്തിൽ സേവ് ചെയ്യുന്നു." },
+  "call.engineWhisper": { en: "Listening with Whisper, an open speech model running on this device.", hi: "Whisper से सुन रहे हैं, जो इसी डिवाइस पर चलने वाला खुला बोली-पहचान मॉडल है।", ml: "ഈ ഉപകരണത്തിൽ പ്രവർത്തിക്കുന്ന തുറന്ന സംസാര മോഡലായ Whisper ഉപയോഗിച്ച് കേൾക്കുന്നു." },
+  "call.whisperTitle": { en: "Download the listening model?", hi: "सुनने वाला मॉडल डाउनलोड करें?", ml: "കേൾക്കാനുള്ള മോഡൽ ഡൗൺലോഡ് ചെയ്യണോ?" },
+  "call.whisperOffer": { en: "To understand calls in {lang}, SecondLook needs a speech model on this device (about {mb} MB, one time). After that it works without the internet, and no sound ever leaves this device.", hi: "{lang} में कॉल समझने के लिए SecondLook को इस डिवाइस पर एक बोली-पहचान मॉडल चाहिए (लगभग {mb} MB, सिर्फ़ एक बार)। उसके बाद यह बिना इंटरनेट के चलता है, और कोई आवाज़ कभी इस डिवाइस से बाहर नहीं जाती।", ml: "{lang}-ലെ കോളുകൾ മനസ്സിലാക്കാൻ SecondLook-ന് ഈ ഉപകരണത്തിൽ ഒരു സംസാര മോഡൽ വേണം (ഏകദേശം {mb} MB, ഒരിക്കൽ മാത്രം). അതിനുശേഷം ഇന്റർനെറ്റ് ഇല്ലാതെ പ്രവർത്തിക്കും, ഒരു ശബ്ദവും ഈ ഉപകരണം വിട്ട് പോകില്ല." },
+  "call.whisperYes": { en: "Download ({mb} MB) and listen", hi: "डाउनलोड करें ({mb} MB) और सुनें", ml: "ഡൗൺലോഡ് ചെയ്ത് ({mb} MB) കേൾക്കുക" },
+  "call.whisperNo": { en: "Not now", hi: "अभी नहीं", ml: "ഇപ്പോൾ വേണ്ട" },
+  "call.downloading": { en: "Downloading the listening model… {pct}%", hi: "सुनने वाला मॉडल डाउनलोड हो रहा है… {pct}%", ml: "കേൾക്കാനുള്ള മോഡൽ ഡൗൺലോഡ് ചെയ്യുന്നു… {pct}%" },
+  "nav.radar": { en: "Scam radar", hi: "स्कैम रडार", ml: "തട്ടിപ്പ് റഡാർ" },
+  "call.bannerTitle": { en: "Someone on the phone with you right now?", hi: "क्या अभी कोई आपसे फ़ोन पर बात कर रहा है?", ml: "ഇപ്പോൾ ആരെങ്കിലും നിങ്ങളോട് ഫോണിൽ സംസാരിക്കുന്നുണ്ടോ?" },
+  "call.bannerAction": { en: "Turn on Call Guard. It listens and warns you while they talk.", hi: "कॉल गार्ड चालू करें। यह सुनता है और बात के दौरान ही चेतावनी देता है।", ml: "കോൾ ഗാർഡ് ഓണാക്കുക. അവർ സംസാരിക്കുമ്പോൾ തന്നെ ഇത് കേട്ട് മുന്നറിയിപ്പ് നൽകും." },
+  "stamp.high": { en: "SCAM", hi: "धोखा", ml: "തട്ടിപ്പ്" },
+  "stamp.medium": { en: "CAREFUL", hi: "सावधान", ml: "ശ്രദ്ധിക്കൂ" },
+  "stamp.low": { en: "LOOKS OK", hi: "ठीक लगता है", ml: "കുഴപ്പമില്ല" },
+  "stamp.unknown": { en: "NOT SURE", hi: "पक्का नहीं", ml: "ഉറപ്പില്ല" },
+  "stamp.hangUp": { en: "HANG UP", hi: "फ़ोन काटें", ml: "ഫോൺ വയ്ക്കൂ" },
 } satisfies Record<string, Entry>;
 
 export type Key = keyof typeof D;

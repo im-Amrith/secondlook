@@ -3,7 +3,8 @@ import { addTranscript, CALL_QUESTIONS, checkMessage, combine, createCallState, 
 import { useApp } from "../lib/app-context";
 import { useT } from "../lib/useT";
 import { callQuestionText, callWarningText, signalText, UI_LANGS } from "../lib/i18n";
-import { installSpeech, nanoAudioStatus, openMicrophone, speechStatus, startDemo, startNanoAudio, startSpeech, watchLevel, type EngineStatus, type Listening, type ListenEngine } from "../lib/listen";
+import { installSpeech, nanoAudioStatus, openMicrophone, prepareWhisper, speechStatus, startDemo, startNanoAudio, startSpeech, startWhisper, watchLevel, whisperDownloaded, whisperSupported, type EngineStatus, type Listening, type ListenEngine } from "../lib/listen";
+import { ASR_MODELS } from "../lib/asr/protocol";
 import type { TtsLang } from "../lib/tts/voices";
 import { TrustedContact } from "../components/TrustedContact";
 import { FamilyAlertButton } from "../components/FamilyAlertButton";
@@ -26,7 +27,9 @@ export function CallGuardPage() {
   const app = useApp();
   const { t, lang } = useT();
   const [callLang, setCallLang] = useState<TtsLang>(lang);
-  const [engine, setEngine] = useState<{ speech: { status: EngineStatus; tag: string }; nano: EngineStatus } | null>(null);
+  const [engine, setEngine] = useState<{ speech: { status: EngineStatus; tag: string }; nano: EngineStatus; whisper: boolean; whisperHave: boolean } | null>(null);
+  const [offer, setOffer] = useState(false);
+  const [loadPct, setLoadPct] = useState<number | null>(null);
   const [mode, setMode] = useState<Mode>("idle");
   const [used, setUsed] = useState<ListenEngine | null>(null);
   const [state, setState] = useState<CallState>(createCallState);
@@ -45,7 +48,7 @@ export function CallGuardPage() {
   useEffect(() => {
     let alive = true;
     setEngine(null);
-    void Promise.all([speechStatus(callLang), nanoAudioStatus()]).then(([speech, nano]) => alive && setEngine({ speech, nano }));
+    void Promise.all([speechStatus(callLang), nanoAudioStatus(), whisperDownloaded(callLang)]).then(([speech, nano, whisperHave]) => alive && setEngine({ speech, nano, whisper: whisperSupported(), whisperHave }));
     return () => {
       alive = false;
     };
@@ -69,30 +72,53 @@ export function CallGuardPage() {
 
   const handlers = { onText, onInterim: setInterim, onLevel: setLevel, onError: (m: string) => setError(m) };
 
-  async function start() {
+  /**
+   * Which engine to use. English: Chrome's on-device speech if it has a pack (streams words, no
+   * download), else Whisper. Hindi and Malayalam: Whisper, because Chrome's on-device packs are
+   * English-only today and Gemini Nano only writes English. Nano audio is the last resort.
+   */
+  function pick(): ListenEngine | null {
+    if (!engine) return null;
+    const sp = engine.speech.status;
+    const speechOk = sp === "available" || sp === "downloadable" || sp === "downloading";
+    if (callLang === "en" && speechOk) return "speech";
+    if (engine.whisper) return "whisper";
+    if (speechOk) return "speech";
+    if (engine.nano === "available" || engine.nano === "downloadable") return "nano";
+    return null;
+  }
+
+  async function start(confirmedDownload = false) {
     setError(null);
+    const choice = pick();
+    if (!choice) return;
+    // The Whisper model is a one-time download: ask first, like the read-aloud voices.
+    if (choice === "whisper" && !engine?.whisperHave && !confirmedDownload) return setOffer(true);
+    setOffer(false);
     started.current = Date.now();
-    const sp = engine?.speech;
-    const useSpeech = sp && (sp.status === "available" || sp.status === "downloadable" || sp.status === "downloading");
-    const useNano = !useSpeech && (engine?.nano === "available" || engine?.nano === "downloadable");
-    if (!useSpeech && !useNano) return;
     setMode("preparing");
     try {
       // Ask for the microphone first so the permission prompt comes straight from the click.
       const mic = await openMicrophone();
       cleanup.current.push(() => mic.getTracks().forEach((tr) => tr.stop()));
-      if (useSpeech) {
-        if (sp!.status !== "available" && !(await installSpeech(sp!.tag))) throw new Error(t("call.engineNone"));
+      if (choice === "speech") {
+        const sp = engine!.speech;
+        if (sp.status !== "available" && !(await installSpeech(sp.tag))) throw new Error(t("call.engineNone"));
         cleanup.current.push(watchLevel(mic, setLevel));
-        listening.current = startSpeech(sp!.tag, handlers);
-        setUsed("speech");
+        listening.current = startSpeech(sp.tag, handlers);
+      } else if (choice === "whisper") {
+        await prepareWhisper(callLang, (p) => setLoadPct(p));
+        setLoadPct(null);
+        setEngine((e) => (e ? { ...e, whisperHave: true } : e));
+        listening.current = await startWhisper(mic, callLang, handlers);
       } else {
         listening.current = await startNanoAudio(mic, handlers);
-        setUsed("nano");
       }
+      setUsed(choice);
       setMode("listening");
     } catch (e) {
       stop();
+      setLoadPct(null);
       setError(e instanceof DOMException && e.name === "NotAllowedError" ? t("call.micError") : e instanceof Error ? e.message : String(e));
     }
   }
@@ -161,7 +187,7 @@ export function CallGuardPage() {
     [combined, state.explanation, state.advice, ai],
   );
 
-  const canListen = engine && (engine.speech.status !== "unsupported" && engine.speech.status !== "unavailable" || engine.nano === "available" || engine.nano === "downloadable");
+  const canListen = pick() !== null;
   const active = mode === "listening" || mode === "demo";
   const warningText = combined.warn ? callWarningText(combined.warn.rule, combined.warn.text, lang) : null;
   const spoken = warningText ? `${combined.level === "high" ? t("call.hangUp") : t("call.careful")} ${warningText}` : "";
@@ -183,17 +209,28 @@ export function CallGuardPage() {
         {!active ? (
           <>
             <button type="button" className="primary big" disabled={!canListen || mode === "preparing"} onClick={() => void start()}>
-              {mode === "preparing" ? t("call.preparing") : t("call.start")}
+              {mode === "preparing" ? (loadPct !== null ? t("call.downloading", { pct: Math.round(loadPct * 100) }) : t("call.preparing")) : t("call.start")}
             </button>
+            {loadPct !== null && <progress className="tts-progress" max={1} value={loadPct} aria-label={t("call.preparing")} />}
+            {offer && (
+              <div className="tts-offer" role="dialog" aria-label={t("call.whisperTitle")}>
+                <p><strong>{t("call.whisperTitle")}</strong></p>
+                <p>{t("call.whisperOffer", { mb: ASR_MODELS[callLang].sizeMB, lang: t(`tts.lang.${callLang}`) })}</p>
+                <div className="row">
+                  <button type="button" className="primary" onClick={() => void start(true)}>{t("call.whisperYes", { mb: ASR_MODELS[callLang].sizeMB })}</button>
+                  <button type="button" className="secondary" onClick={() => setOffer(false)}>{t("call.whisperNo")}</button>
+                </div>
+              </div>
+            )}
             {engine && !canListen && <p className="muted">{t("call.engineNone")}</p>}
             <button type="button" className="link-button" onClick={demo}>{t("call.demo")}</button>
           </>
         ) : (
           <>
-            <button type="button" className="secondary big" onClick={stop}>{t("call.stop")}</button>
+            <div className="listening-pulse"><button type="button" className="secondary big" onClick={stop}>{t("call.stop")}</button></div>
             <p className="muted listening-line" role="status">
-              <span className="mic-level" aria-hidden><span style={{ transform: `scaleX(${mode === "demo" ? 0 : level})` }} /></span>
-              {mode === "demo" ? t("call.demoNote") : `${t("call.listening")} ${used === "nano" ? t("call.engineNano") : t("call.engineSpeech")}`}
+              {mode !== "demo" && <span className="mic-level" aria-hidden><span style={{ transform: `scaleX(${level})` }} /></span>}
+              {mode === "demo" ? t("call.demoNote") : `${t("call.listening")} ${used === "nano" ? t("call.engineNano") : used === "whisper" ? t("call.engineWhisper") : t("call.engineSpeech")}`}
             </p>
           </>
         )}
@@ -203,7 +240,14 @@ export function CallGuardPage() {
       <section className={active || state.lines.length > 0 || warningText ? `call-alert call-alert-${combined.level}` : "call-alert-empty"} aria-live="assertive" data-testid="call-alert">
         {warningText ? (
           <>
-            <p className="call-alert-head">{combined.level === "high" ? `⛔ ${t("call.hangUp")}` : combined.level === "medium" ? `⚠️ ${t("call.careful")}` : "⚠️"}</p>
+            {combined.level === "high" ? (
+              <>
+                <span className="stamp stamp-high stamp-hero" aria-hidden>{t("stamp.hangUp")}</span>
+                <p className="call-alert-head sr-only">{t("call.hangUp")}</p>
+              </>
+            ) : (
+              <p className="call-alert-head">{combined.level === "medium" ? t("call.careful") : "⚠️"}</p>
+            )}
             <p className="call-alert-text">{warningText}</p>
             <ReadAloud text={spoken} />
           </>
