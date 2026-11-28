@@ -31,6 +31,7 @@ export function CallGuardPage() {
   const [engine, setEngine] = useState<{ speech: { status: EngineStatus; tag: string }; nano: EngineStatus; whisper: boolean; whisperHave: boolean } | null>(null);
   const [offer, setOffer] = useState(false);
   const [loadPct, setLoadPct] = useState<number | null>(null);
+  const [asrDevice, setAsrDevice] = useState<"webgpu" | "wasm" | null>(null);
   const [mode, setMode] = useState<Mode>("idle");
   const [used, setUsed] = useState<ListenEngine | null>(null);
   const [state, setState] = useState<CallState>(createCallState);
@@ -108,7 +109,7 @@ export function CallGuardPage() {
         cleanup.current.push(watchLevel(mic, setLevel));
         listening.current = startSpeech(sp.tag, handlers);
       } else if (choice === "whisper") {
-        await prepareWhisper(callLang, (p) => setLoadPct(p));
+        setAsrDevice(await prepareWhisper(callLang, (p) => setLoadPct(p)));
         setLoadPct(null);
         setEngine((e) => (e ? { ...e, whisperHave: true } : e));
         listening.current = await startWhisper(mic, callLang, handlers);
@@ -235,6 +236,8 @@ export function CallGuardPage() {
               {mode !== "demo" && <span className="mic-level" aria-hidden><span style={{ transform: `scaleX(${level})` }} /></span>}
               {mode === "demo" ? t("call.demoNote") : `${t("call.listening")} ${used === "nano" ? t("call.engineNano") : used === "whisper" ? t("call.engineWhisper") : t("call.engineSpeech")}`}
             </p>
+            {/* Without WebGPU the larger Hindi/Malayalam models run slower than the call itself. */}
+            {mode === "listening" && used === "whisper" && asrDevice === "wasm" && callLang !== "en" && <p className="notice">{t("call.slowDevice")}</p>}
           </>
         )}
         {error && <p className="notice notice-error" role="alert">{error}</p>}

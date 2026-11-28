@@ -137,7 +137,7 @@ export const RULES: Rule[] = [
   {
     id: "secrecy", category: "secrecy", label: "Tells you to keep it secret", weight: 0.5,
     why: "Being told not to tell your family or bank, or to stay on the call, is how scammers stop anyone from warning you.",
-    re: /(don'?t|do not|never) (tell|inform|share (this )?with|discuss (this )?with) (anyone|anybody|your (family|son|daughter|wife|husband|children|bank|relatives|friends))|keep (this|it) (a )?(secret|confidential|between us)|(stay|remain) on (the )?(call|line|video)|(do not|don'?t) (disconnect|hang up|cut the call|leave the call)|confidential (investigation|matter|case)|kisi ko (bhi )?(mat|na|nahi) bata|kisi se (bhi )?(baat )?mat kar|aarod(um|o) parayar?uth|aarodum parayalle|किसी को (भी )?(मत|न|ना) बता|किसी से (बात )?मत|(फ़ोन|फोन|कॉल) (मत|न) काट|वीडियो (कॉल )?(पर|में) (ही )?रह|ആരോടും പറയരുത്|ഫോൺ കട്ട് ചെയ്യരുത്/i,
+    re: /(don'?\s?t|do not|never) let (anyone|anybody|your family|others) know|(don'?\s?t|do not|never) (tell|inform|share (this )?with|discuss (this )?with) (anyone|anybody|your (family|son|daughter|wife|husband|children|bank|relatives|friends))|keep (this|it) (a )?(secret|confidential|between us)|(stay|remain) on (the )?(call|line|video)|(do not|don'?t) (disconnect|hang up|cut the call|leave the call)|confidential (investigation|matter|case)|kisi ko (bhi )?(mat|na|nahi) bata|kisi se (bhi )?(baat )?mat kar|aarod(um|o) parayar?uth|aarodum parayalle|किसी को (भी )?(मत|न|ना) बता|किसी से (बात )?मत|(फ़ोन|फोन|कॉल) (मत|न) काट|वीडियो (कॉल )?(पर|में) (ही )?रह|ആരോടും പറയരുത്|ഫോൺ കട്ട് ചെയ്യരുത്/i,
   },
   {
     id: "video_custody", category: "authority", label: "\"Digital arrest\" or video-call custody", weight: 0.55,

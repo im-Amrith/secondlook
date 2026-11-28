@@ -354,6 +354,7 @@ const D = {
   "side.radarSub": { en: "What's going around this week", hi: "इस हफ़्ते क्या चल रहा है", ml: "ഈ ആഴ്ച എന്താണ് നടക്കുന്നത്" },
   "side.helpline": { en: "Cyber crime helpline", hi: "साइबर क्राइम हेल्पलाइन", ml: "സൈബർ ക്രൈം ഹെൽപ്‌ലൈൻ" },
   "side.helplineSub": { en: "Call 1930 if you lost money", hi: "पैसे गए हों तो 1930 पर कॉल करें", ml: "പണം നഷ്ടപ്പെട്ടാൽ 1930-ൽ വിളിക്കുക" },
+  "call.slowDevice": { en: "This computer has no graphics acceleration for the listening model, so warnings may come 20–30 seconds late. The quick questions below work instantly.", hi: "इस कंप्यूटर में सुनने वाले मॉडल के लिए ग्राफ़िक्स एक्सेलेरेशन नहीं है, इसलिए चेतावनी 20–30 सेकंड देर से आ सकती है। नीचे के आसान सवाल तुरंत काम करते हैं।", ml: "ഈ കമ്പ്യൂട്ടറിൽ കേൾക്കാനുള്ള മോഡലിന് ഗ്രാഫിക്സ് ആക്സിലറേഷൻ ഇല്ല, അതിനാൽ മുന്നറിയിപ്പുകൾ 20–30 സെക്കൻഡ് വൈകി വരാം. താഴെയുള്ള ചെറിയ ചോദ്യങ്ങൾ ഉടൻ പ്രവർത്തിക്കും." },
 } satisfies Record<string, Entry>;
 
 export type Key = keyof typeof D;

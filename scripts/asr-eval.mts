@@ -78,7 +78,7 @@ for (const lang of ["en", "hi", "ml"] as const) {
 }
 
 // "model[:langs]" e.g. onnx-community/whisper-hindi-small-ONNX:hi
-const specs = process.argv.slice(2).length ? process.argv.slice(2) : ["onnx-community/whisper-base", "onnx-community/whisper-small:hi,ml", "onnx-community/whisper-hindi-small-ONNX:hi"];
+const specs = process.argv.slice(2).length ? process.argv.slice(2) : ["onnx-community/whisper-base", "onnx-community/whisper-hindi-small-ONNX:hi", "onnx-community/whisper-small:ml", "onnx-community/whisper-small:ml:translate"];
 const rows: string[] = [];
 async function load(model: string) {
   // Hugging Face downloads can drop on slow connections; retry a few times.
@@ -92,7 +92,9 @@ async function load(model: string) {
   }
 }
 for (const spec of specs) {
-  const [model, langList] = spec.split(":") as [string, string | undefined];
+  // "model:langs[:translate]": translate = Whisper's speech-to-English task.
+  const [model, langList, mode] = spec.split(":") as [string, string | undefined, string | undefined];
+  const task = mode === "translate" ? "translate" : "transcribe";
   const langs = (langList ? langList.split(",") : ["en", "hi", "ml"]) as ("en" | "hi" | "ml")[];
   const asr = await load(model);
   for (const lang of langs) {
@@ -102,7 +104,7 @@ for (const spec of specs) {
     const heard: string[] = [];
     for (let i = 0; i < pcm.length; i += CHUNK) {
       // Single-language fine-tunes (e.g. whisper-hindi-small) reject a language option.
-      const opts = /hindi/i.test(model) ? {} : { language: LANG[lang], task: "transcribe" };
+      const opts = /hindi/i.test(model) ? {} : { language: LANG[lang], task, no_repeat_ngram_size: 3 };
       const out = (await asr(pcm.subarray(i, i + CHUNK), opts as never)) as { text: string };
       const t = fixScript(out.text, lang).trim();
       heard.push(t);
@@ -111,8 +113,8 @@ for (const spec of specs) {
     const secs = (performance.now() - t0) / 1000;
     const audio = pcm.length / 16000;
     const c = cer(text, heard.join(" "));
-    console.log(model, lang, `CER ${(c * 100).toFixed(1)}%`, `RTF ${(secs / audio).toFixed(2)}`, state.level, state.signals.map((s) => s.ruleId).join(","), "|", heard.join(" / "));
-    rows.push(`| \`${model.split("/")[1]}\` | ${lang} | ${(c * 100).toFixed(1)}% | ${(secs / audio).toFixed(2)} | **${state.level}** | ${state.signals.map((s) => s.ruleId).join(", ")} |`);
+    console.log(model, task, lang, `CER ${(c * 100).toFixed(1)}%`, `RTF ${(secs / audio).toFixed(2)}`, state.level, state.signals.map((s) => s.ruleId).join(","), "|", heard.join(" / "));
+    rows.push(`| \`${model.split("/")[1]}\`${task === "translate" ? " (translate to English)" : ""} | ${lang} | ${(c * 100).toFixed(1)}% | ${(secs / audio).toFixed(2)} | **${state.level}** | ${state.signals.map((s) => s.ruleId).join(", ")} |`);
   }
 }
 

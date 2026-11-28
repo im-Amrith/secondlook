@@ -74,7 +74,8 @@ self.onmessage = async (e: MessageEvent<AsrIn>) => {
   try {
     const a = await load(m.lang, m.id);
     if (m.type === "load") return post({ id: m.id, type: "ready", device: a.device });
-    const opts = ASR_MODELS[m.lang].languageHint ? { language: WHISPER_LANG[m.lang], task: "transcribe" } : {};
+    const model = ASR_MODELS[m.lang];
+    const opts = model.languageHint ? { language: WHISPER_LANG[m.lang], task: model.task ?? "transcribe", no_repeat_ngram_size: 3 } : { no_repeat_ngram_size: 3 };
     const out = await a.run(m.pcm, opts);
     post({ id: m.id, type: "text", text: out.text ?? "" });
   } catch (err) {
